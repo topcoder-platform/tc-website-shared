@@ -59,18 +59,7 @@ public class Cache
 
     public int getSize(String key) {
         Object o = get(key);
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(o);
-            oos.flush();
-            int size = baos.size();
-            oos.close();
-            return size;
-        } catch (IOException e) {
-
-        }
-        return -1;
+        return getSize(o);
     }
 
 	private int getSize(Object o) {
