@@ -18,7 +18,7 @@ public class Cache
 
     private static final Logger log = Logger.getLogger(Cache.class);
     Object _lock = new Integer(0); // can't serialize Object :)
-    TreeMap _keymap = new TreeMap();
+    HashMap _keymap = new HashMap(10000);
     TreeSet _timeset = new TreeSet(new CachedValue.TimeComparator());
     TreeSet _prioset = new TreeSet(new CachedValue.PriorityComparator());
 
