@@ -1,6 +1,5 @@
 package com.topcoder.shared.messaging;
 
-import com.topcoder.shared.util.TCException;
 import com.topcoder.web.common.TCWebException;
 
 /**
