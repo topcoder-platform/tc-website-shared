@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.*;
 /**
@@ -25,9 +24,7 @@ public class DataTypeFactory {
     static public void initialize() {
         if(initialized)
             return;
-        
-        log.info("INITIALIZING DATA TYPES");
-        
+               
         Connection conn = null;
         PreparedStatement s = null;
         ResultSet rs = null;
@@ -43,7 +40,6 @@ public class DataTypeFactory {
                 int dataTypeId = rs.getInt(1);
                 int languageId = rs.getInt(2);
                 String desc = rs.getString(3);
-                log.debug("TYPE: " + dataTypeId + "," + languageId + "," + desc);
                 HashMap mapping = (HashMap) mappings.get(new Integer(dataTypeId));
 
                 if (mapping == null) {
@@ -65,8 +61,7 @@ public class DataTypeFactory {
             
             initialized = true;
         } catch (Exception ex) {
-            log.error("DataTypeFactory.initialize: unable to "
-                    + "get data types: " + ex, ex);
+            ex.printStackTrace();
         } finally {
             DBMS.close(conn, s, rs);
         }
@@ -101,6 +96,7 @@ public class DataTypeFactory {
     }
 
     static void registerDataType(DataType type) {
+        initialized = true;
         if (types.containsKey(type.getDescription()))
             return;
         types.put(type.getDescription(), type.cloneDataType());
