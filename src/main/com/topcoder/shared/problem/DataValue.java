@@ -200,7 +200,11 @@ abstract public class DataValue extends BaseElement implements Element {
                     values.add(new IntegralValue((long) ints[i]));
                 dataValue = new ArrayValue(values);
             } else if (desc.equals("double[]")) {
-                throw new DataValueParseException("double[] not supported.");
+                ArrayList values = new ArrayList();
+                double[] nums = (double[]) obj;
+                for (int i = 0; i < nums.length; i++)
+                    values.add(new DecimalValue(nums[i]));
+                dataValue = new ArrayValue(values);
             } else if (desc.equals("String[]")) {
                 ArrayList values = new ArrayList();
                 String[] strings = (String[]) obj;
