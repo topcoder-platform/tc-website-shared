@@ -238,7 +238,6 @@ public class ProblemComponentFactory
 
     void checkTypes(Node node)
     {
-        DataTypeFactory.initialize();
         NodeList nl = node.getChildNodes();
 
         for(int i = 0; i < nl.getLength(); i++) {
@@ -268,7 +267,6 @@ public class ProblemComponentFactory
     DataType getType(Node node)
         throws InvalidTypeException
     {
-        DataTypeFactory.initialize();
         String value = node.getFirstChild().getNodeValue();
 
         return DataTypeFactory.getDataType(value);
