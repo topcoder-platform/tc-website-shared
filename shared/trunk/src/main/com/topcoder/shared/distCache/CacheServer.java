@@ -108,6 +108,7 @@ public class CacheServer {
     public void startCache() {
         initRegistry();
 
+        boolean hasPeer = CacheConfiguration.hasSecondary();
         long start = System.currentTimeMillis();
         _cache = findCache();
         long end = System.currentTimeMillis();
@@ -115,16 +116,17 @@ public class CacheServer {
         log.info("CACHE xfer took " + (end - start) + "ms");
 
         try {
-            CacheClientImpl client = new CacheClientImpl(_cache);
-            String clienturl = getLocalClientURL();
+            if (hasPeer) {
+                CacheClientImpl client = new CacheClientImpl(_cache);
+                String clienturl = getLocalClientURL();
+                // wont get exception on fail...  how then ?
+                log.info("BINDING @ " + clienturl);
+                Naming.rebind(clienturl, client);
+                log.info("registered " + clienturl);
+            }
 
             CacheServerSyncImpl server = new CacheServerSyncImpl(this);
             String serverurl = getLocalServerURL();
-
-            // wont get exception on fail...  how then ?
-            log.info("BINDING @ " + clienturl);
-            Naming.rebind(clienturl, client);
-            log.info("registered " + clienturl);
 
             log.info("BINDING @ " + serverurl);
             Naming.rebind(serverurl, server);
@@ -135,7 +137,7 @@ public class CacheServer {
 
         }
 
-        if (CacheConfiguration.hasSecondary()) startSync();
+        if (hasPeer) startSync();
         startExpiration();
 
     }
