@@ -7,6 +7,11 @@ import com.topcoder.shared.netCommon.screening.ScreeningConstants;
  */
 public class ScreeningLogoutRequest extends ScreeningBaseRequest {
 
+
+    public ScreeningLogoutRequest() {
+        sync=false;
+    }
+
     public int getRequestType() {
         return ScreeningConstants.LOGOUT;
     }
