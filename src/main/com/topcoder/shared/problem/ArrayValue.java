@@ -67,8 +67,7 @@ public class ArrayValue
         buf.append('{');
         for (int i = 0; i < vals.length; i++) {
             if (i > 0)
-                buf.append(",");
-            buf.append(' ');
+                buf.append(", ");
             buf.append(vals[i]);
         }
         buf.append(" }");
