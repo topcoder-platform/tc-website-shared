@@ -10,11 +10,11 @@ import org.apache.log4j.Category;
 
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.parsers.StandardParserConfiguration;
- 
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.NamedNodeMap;
- 
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -83,6 +83,7 @@ public class ProblemComponentFactory
             ResourceBundle bundle = ResourceBundle.getBundle("ProblemParser");
             DOMParser parser = new DOMParser(new StandardParserConfiguration());
 
+            trace.debug("getting schema from " + bundle.getString("schema"));
             parser.setErrorHandler(this);
             parser.setFeature("http://xml.org/sax/features/validation", true);
             parser.setFeature("http://apache.org/xml/features/validation/schema", true);
@@ -296,7 +297,7 @@ public class ProblemComponentFactory
         String className = getText(getChildByName(nl, SIGNATURE_CLASS));
         String methodName = getText(getChildByName(nl, SIGNATURE_METHOD));
         DataType returnType = getNestedType(getChildByName(nl, SIGNATURE_RETURN));
-        
+
         Node params = getChildByName(nl, SIGNATURE_PARAMS);
 
         removeTextChildren(params);
@@ -304,7 +305,7 @@ public class ProblemComponentFactory
         NodeList paramList = params.getChildNodes();
         DataType[] paramTypes = new DataType[paramList.getLength()];
         String[] paramNames = new String[paramList.getLength()];
-        
+
         for(int i = 0; i < paramTypes.length; i++) {
             Node n = paramList.item(i);
 
@@ -394,31 +395,31 @@ public class ProblemComponentFactory
         map.put(new Integer(cpp.ID), "string");
         map.put(new Integer(csharp.ID), "String");
         t_string.setTypeMapping(map);
- 
+
         map = new HashMap();
         map.put(new Integer(java.ID), "String[]");
         map.put(new Integer(cpp.ID), "vector<string>");
         map.put(new Integer(csharp.ID), "String[]");
         t_astring.setTypeMapping(map);
- 
+
         map = new HashMap();
         map.put(new Integer(java.ID), "String[][]");
         map.put(new Integer(cpp.ID), "vector< vector<string> >");
         map.put(new Integer(csharp.ID), "String[][]");
         t_aastring.setTypeMapping(map);
- 
+
         map = new HashMap();
         map.put(new Integer(java.ID), "int");
         map.put(new Integer(cpp.ID), "int");
         map.put(new Integer(csharp.ID), "int");
         t_int.setTypeMapping(map);
- 
+
         map = new HashMap();
         map.put(new Integer(java.ID), "int[]");
         map.put(new Integer(cpp.ID), "vector<int>");
         map.put(new Integer(csharp.ID), "int[]");
         t_aint.setTypeMapping(map);
- 
+
         map = new HashMap();
         map.put(new Integer(java.ID), "long");
         map.put(new Integer(cpp.ID), "long long");
