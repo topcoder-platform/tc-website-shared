@@ -122,7 +122,7 @@ public class QueueMessageSender {
      * @param messObject
      * @return
      */
-    public boolean sendMessage(HashMap props, Object messObject) {
+    public synchronized boolean sendMessage(HashMap props, Object messObject) {
         return sendMessageGetID(props,messObject)!=null;
     }
     public synchronized String sendMessageGetID(HashMap props, Object messObject) {
