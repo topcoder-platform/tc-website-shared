@@ -77,6 +77,8 @@ public class DataTypeFactory {
      */
     static public DataType getDataType(String description)
             throws InvalidTypeException {
+        DataTypeFactory.initialize();
+        
         DataType type = (DataType) types.get(description);
 
         if (type == null)
@@ -86,6 +88,8 @@ public class DataTypeFactory {
 
     static public DataType getDataType(int typeID)
             throws InvalidTypeException {
+        DataTypeFactory.initialize();
+        
         DataType type = (DataType) types.get(new Integer(typeID));
 
         if (type == null)
@@ -101,6 +105,8 @@ public class DataTypeFactory {
     }
 
     static public Collection getDataTypes() {
+        DataTypeFactory.initialize();
+        
         return types.values();
     }
 }
