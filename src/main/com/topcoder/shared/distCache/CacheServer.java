@@ -135,7 +135,7 @@ public class CacheServer {
 
         }
 
-        startSync();
+        if (CacheConfiguration.hasSecondary()) startSync();
         startExpiration();
 
     }

@@ -4,6 +4,7 @@ import com.topcoder.shared.util.TCResourceBundle;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.rmi.registry.Registry;
+import java.util.MissingResourceException;
 
 /**
  * @author orb
@@ -54,10 +55,16 @@ public class CacheConfiguration {
      */
     public static String[] getURLS() {
         //log.debug("primary: " + getPrimaryClientURL() + " secondary: " + getSecondaryClientURL());
-        return new String[]{
-            getPrimaryClientURL(),
-            getSecondaryClientURL()
-        };
+        if (hasSecondary()) {
+            return new String[]{
+                getPrimaryClientURL(),
+                getSecondaryClientURL()
+            };
+        } else {
+            return new String[]{
+                getPrimaryClientURL()
+            };
+        }
     }
 
      /**
@@ -122,6 +129,16 @@ public class CacheConfiguration {
      */
     public static int getSecondaryServerPort() {
         return extractPort(getBundle().getProperty(PROP_SECONDARY, ""));
+    }
+
+    public static boolean hasSecondary() {
+        boolean ret = true;
+        try {
+            getBundle().getProperty(PROP_SECONDARY);
+        } catch (MissingResourceException e) {
+            ret = false;
+        }
+        return ret;
     }
 
 
