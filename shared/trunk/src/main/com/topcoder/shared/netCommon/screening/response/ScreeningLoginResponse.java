@@ -23,6 +23,7 @@ public final class ScreeningLoginResponse extends ScreeningBaseResponse {
      * Constructor needed for CS.
      */
     public ScreeningLoginResponse() {
+        this.sync = false;
     }
 
     /**
