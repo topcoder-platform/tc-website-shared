@@ -174,9 +174,11 @@ public class CacheServer {
 
     Cache findCache() {
         try {
-            CacheServerSync sync = getPeer(getRemoteServerURL());
-            log.info("located peer, getting cache");
-            return sync.getCache();
+            if (CacheConfiguration.hasSecondary()) {
+                CacheServerSync sync = getPeer(getRemoteServerURL());
+                log.info("located peer, getting cache");
+                return sync.getCache();
+            }
 
         } catch (MalformedURLException e) {
             log.error("problem A w/ peer - " + e.getMessage());
