@@ -5,7 +5,10 @@ import com.topcoder.shared.util.logging.Logger;
 import javax.jms.*;
 import javax.naming.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.Hashtable;
 
 /**
  * @author mike lydon
