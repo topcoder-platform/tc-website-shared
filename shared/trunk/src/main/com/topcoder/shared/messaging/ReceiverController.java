@@ -192,15 +192,15 @@ public class ReceiverController extends Thread {
                     }
 
                     try {
-                        log.debug("RECEIVING");
+                        //log.debug("RECEIVING");
                         msg = (ObjectMessage) qreceiver.receive(blockTime);
-                        log.debug("POSTRECEIVING");
+                        //log.debug("POSTRECEIVING");
                         //log.debug("got a message " + msg);
                         if (qsession.getTransacted() && autoCommit) {
                         //if (this.transacted && autoCommit)
                             qsession.commit();
                         }
-                        log.debug("POSTPOSTRECEIVING");
+                        //log.debug("POSTPOSTRECEIVING");
                     break;
                     } catch (Exception e) {
                         log.debug("ERROR: Error retreiving next message.");
