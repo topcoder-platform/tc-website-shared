@@ -184,7 +184,7 @@ public class CachedValue
             CachedValue cached1 = (CachedValue) o1;
             CachedValue cached2 = (CachedValue) o2;
 
-            int result = result = cached1.getPriority() - cached2.getPriority();
+            int result = cached1.getPriority() - cached2.getPriority();
             if (result == 0) {
                 result = (int) (cached1.getExpireTime() - cached2.getExpireTime());
 
