@@ -139,6 +139,8 @@ public class Cache
         CachedValue cached = null;
 
         synchronized (_lock) {
+            long start=0;
+            if (log.isDebugEnabled()) start = System.currentTimeMillis();
             if (value == null) {
                 cached = remove(key);
             } else {
@@ -164,6 +166,7 @@ public class Cache
                     purgeInternal(_max);
                 }
             }
+            if (log.isDebugEnabled()) log.debug("updated in " + (System.currentTimeMillis()-start));
         }
 
 
