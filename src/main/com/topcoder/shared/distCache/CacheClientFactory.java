@@ -19,10 +19,6 @@ public class CacheClientFactory {
      */
     public static CacheClient createCacheClient() {
         Class iface = CacheClient.class;
-        String[] urls = CacheConfiguration.getURLS();
-        for (int i=0; i<urls.length; i++) {
-            log.debug("connect to " + urls[i]);
-        }
         return (CacheClient) java.lang.reflect.Proxy.newProxyInstance(
                 iface.getClassLoader(),
                 new Class[]{iface},
