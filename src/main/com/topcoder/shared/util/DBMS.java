@@ -113,6 +113,7 @@ public class DBMS {
     public static final int WEB_SERVICE_JAVA_DOC_SEQ = getIntProperty("WEB_SERVICE_JAVA_DOC_SEQ",90);
     public static final int ROUND_SEQ = getIntProperty("ROUND_SEQ",95);
     public static final int CONTEST_SEQ = getIntProperty("CONTEST_SEQ",96);
+    public static final int MESSAGE_SEQ = getIntProperty("MESSAGE_SEQ",98);
     public static final int BACKUP_SEQ = getIntProperty("BACKUP_SEQ",97);
     public static final int MAIN_SEQ = getIntProperty("MAIN_SEQ",200);
 
