@@ -700,6 +700,7 @@ public class DBMS {
     private static void error(Object message) {
         log.error(message);
     }
+/*
     public static void loadJdbcDriver() {
         try {
             Class.forName(JDBC_DRIVER);
@@ -707,4 +708,5 @@ public class DBMS {
             error(e);
         }
     }
+*/
 }
