@@ -1,12 +1,7 @@
 package com.topcoder.shared.problemParser;
 
-import com.topcoder.shared.language.CPPLanguage;
-import com.topcoder.shared.language.CSharpLanguage;
-import com.topcoder.shared.language.JavaLanguage;
-
 import com.topcoder.shared.problem.*;
-
-import org.apache.log4j.Category;
+import com.topcoder.shared.util.logging.Logger;
 
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.parsers.StandardParserConfiguration;
@@ -58,7 +53,8 @@ public class ProblemComponentFactory
     Node doc, root;
     NodeList sections;
     ProblemComponent stmt;
-    Category trace = Category.getInstance(getClass());
+//    Category trace = Category.getInstance(getClass());
+    protected static final Logger trace = Logger.getLogger(ProblemComponentFactory.class);
 
     public ProblemComponentFactory()
     {
@@ -150,10 +146,12 @@ public class ProblemComponentFactory
         System.out.println("</" + node.getNodeName() + ">");
     }
 
+/*
     public Category getCategory()
     {
         return trace;
     }
+*/
 
     public void error(SAXParseException ex)
         throws SAXException
@@ -376,6 +374,7 @@ public class ProblemComponentFactory
         stmt.setTestCases(testCases);
     }
 
+/*
     static public void main(String[] args)
         throws Exception
     {
@@ -452,5 +451,6 @@ public class ProblemComponentFactory
         } else
             System.out.println("Problem statement not valid!");
     }
+*/
 }
 
