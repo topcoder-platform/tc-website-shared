@@ -156,21 +156,21 @@ public class ProblemComponentFactory
     public void error(SAXParseException ex)
         throws SAXException
     {
-        //trace.error(ex.toString());
+        trace.error(ex.toString());
         stmt.addMessage(new ProblemMessage(ProblemMessage.ERROR, ex.getMessage(), ex.getLineNumber(), ex.getColumnNumber()));
     }
 
     public void warning(SAXParseException ex)
         throws SAXException
     {
-        //trace.warn(ex.toString());
+        trace.info(ex.toString());
         stmt.addMessage(new ProblemMessage(ProblemMessage.WARNING, ex.getMessage(), ex.getLineNumber(), ex.getColumnNumber()));
     }
 
     public void fatalError(SAXParseException ex)
         throws SAXException
     {
-        //trace.fatal(ex.toString());
+        trace.error(ex.toString());
         stmt.addMessage(new ProblemMessage(ProblemMessage.FATAL_ERROR, ex.getMessage(), ex.getLineNumber(), ex.getColumnNumber()));
     }
 
