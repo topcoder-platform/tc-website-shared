@@ -116,18 +116,12 @@ public class CacheServer {
         log.info("CACHE xfer took " + (end - start) + "ms");
 
         try {
-/*
-            if (hasPeer) {
-*/
-                CacheClientImpl client = new CacheClientImpl(_cache);
-                String clienturl = getLocalClientURL();
-                // wont get exception on fail...  how then ?
-                log.info("BINDING @ " + clienturl);
-                Naming.rebind(clienturl, client);
-                log.info("registered " + clienturl);
-/*
-            }
-*/
+            CacheClientImpl client = new CacheClientImpl(_cache);
+            String clienturl = getLocalClientURL();
+            // wont get exception on fail...  how then ?
+            log.info("BINDING @ " + clienturl);
+            Naming.rebind(clienturl, client);
+            log.info("registered " + clienturl);
 
             if (hasPeer) {
                 CacheServerSyncImpl server = new CacheServerSyncImpl(this);
