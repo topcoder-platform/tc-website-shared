@@ -60,7 +60,7 @@ public class ReceiverController extends Thread {
      */
     public ReceiverController(String factoryName, String queueName, boolean isTransacted) throws NamingException {
         this.transacted = isTransacted;
-        this.ctx = (Context) TCContext.getInitial();
+        this.ctx = TCContext.getInitial();
         initObject(factoryName, queueName, "");
         initJMS();
     }
@@ -304,7 +304,7 @@ public class ReceiverController extends Thread {
                     env = ctx.getEnvironment();
                 } catch (Exception ignore) {}
                 log.info("env.toString() = "+env.toString());
-                this.ctx = new InitialContext(env);
+                this.ctx = TCContext.getInitial();
                 this.qconFactory = (QueueConnectionFactory) ctx.lookup(factoryName);
             }
             try{
