@@ -18,14 +18,26 @@ public class SimpleClient {
      * @param args
      */
     public static void main(String[] args) {
+/*
         try {
+*/
+            StringBuffer buf = new StringBuffer(100);
+            for (int i=0; i<args.length; i++) {
+                buf.append(args[i]);
+                buf.append("");
+            }
+            processLine(buf.toString());
+/*
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
             while (readEval(in)) {
             }
+*/
+/*
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+*/
     }
 
 
@@ -35,6 +47,7 @@ public class SimpleClient {
      * @return
      * @throws IOException
      */
+/*
     static boolean readEval(BufferedReader in)
             throws IOException {
         System.out.print("> ");
@@ -48,6 +61,7 @@ public class SimpleClient {
 
         return processLine(line);
     }
+*/
 
     /**
      *
