@@ -299,7 +299,10 @@ public class ReceiverController extends Thread {
                 this.qconFactory = (QueueConnectionFactory) ctx.lookup(factoryName);
             }catch(Exception e){
                 log.error("Failed to get QueueConnectionFactory, attempting to reinitialize InitialContext",e);
-                Hashtable env = ctx.getEnvironment();
+                Hashtable env = null;
+                try {
+                    env = ctx.getEnvironment();
+                } catch (Exception ignore) {}
                 log.info("env.toString() = "+env.toString());
                 this.ctx = new InitialContext(env);
                 this.qconFactory = (QueueConnectionFactory) ctx.lookup(factoryName);
