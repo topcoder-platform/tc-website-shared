@@ -11,7 +11,7 @@ import javax.rmi.PortableRemoteObject;
 import java.io.*;
 import java.sql.*;
 
-
+import java.util.Date;
 /**
  * A class to hold constants related to the database, and some convenience methods.
  * @author Jason Evans
@@ -148,6 +148,7 @@ public class DBMS {
         Connection conn = null;
         InitialContext ctx = null;
         try {
+            System.out.println("PRE-CONTEXT: " + new Date());
             ctx = TCContext.getInitial();
             conn = getConnection(ctx, dataSourceName);
         } catch (NamingException e) {
@@ -162,6 +163,7 @@ public class DBMS {
                 }
             }
         }
+        System.out.println("POST-CONTEXT: " + new Date());
 
         return conn;
     }
