@@ -1,5 +1,7 @@
 package com.topcoder.shared.distCache;
 
+import com.topcoder.shared.util.logging.Logger;
+
 import java.io.Serializable;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -14,6 +16,7 @@ public class Cache
         implements Serializable {
     static final int DEFAULT_PRIORITY = 5;
 
+    private static final Logger log = Logger.getLogger(Cache.class);
     Object _lock = new Integer(0); // can't serialize Object :)
     TreeMap _keymap = new TreeMap();
     TreeSet _timeset = new TreeSet(new CachedValue.TimeComparator());
@@ -249,10 +252,12 @@ public class Cache
         Object retval = null;
 
         synchronized (_lock) {
+            if (log.isDebugEnabled()) log.debug("look for " + key);
             CachedValue cached = findKey(key);
             if (cached != null) {
                 retval = cached.getValue();
             }
+            if (log.isDebugEnabled()) log.debug("looked for " + key);
         }
 
         return retval;
@@ -482,7 +487,7 @@ public class Cache
 
     public ArrayList getKeys() {
         ArrayList al = new ArrayList();
-       
+
         Iterator it = _keymap.values().iterator();
         while (it.hasNext()) {
             al.add(((CachedValue)it.next()).getKey());
@@ -492,7 +497,7 @@ public class Cache
 
     public ArrayList getValues() {
         ArrayList al = new ArrayList();
-       
+
         Iterator it = _keymap.values().iterator();
         while (it.hasNext()) {
             al.add(((CachedValue)it.next()).getValue());
