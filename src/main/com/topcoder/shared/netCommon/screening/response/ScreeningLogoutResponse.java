@@ -15,7 +15,7 @@ public class ScreeningLogoutResponse extends ScreeningBaseResponse {
      * Constructor needed for CS.
      */
     public ScreeningLogoutResponse() {
-        sync = true;
+        sync = false;
     }
 
 
