@@ -11,7 +11,9 @@ import java.util.Date;
  */
 public class SimpleClient {
     static CacheClient client = CacheClientFactory.createCacheClient();
+/*
     static private boolean confirm = false;
+*/
 
     /**
      *
@@ -24,7 +26,7 @@ public class SimpleClient {
             StringBuffer buf = new StringBuffer(100);
             for (int i=0; i<args.length; i++) {
                 buf.append(args[i]);
-                buf.append("");
+                buf.append(" ");
             }
             processLine(buf.toString());
 /*
@@ -73,6 +75,7 @@ public class SimpleClient {
         if (line.length() == 0) {
             return true;
         }
+/*
         if (confirm) {
             if (line.charAt(0) == 'Y' || line.charAt(0) == 'y') {
                 try {
@@ -90,6 +93,7 @@ public class SimpleClient {
                 System.out.println("Please enter yes or no.");
             return true;
         }
+*/
         if (line.equals("info")) {
             System.out.println("client: " + client);
         } else if (line.equals("bulk")) {
