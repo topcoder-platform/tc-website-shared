@@ -33,10 +33,12 @@ public class DecimalValue extends DataValue {
             i = reader.read();
         }
 
-        while (i != -1) {
+        while (i != -1 && (Character.isDigit((char)i) || i=='.' || i=='e' || i=='E')){
             sb.append((char) i);
             i = reader.read();
+            valid = true;
         }
+        reader.unread(i);
 
         try {
             value = Double.parseDouble(sb.toString());
