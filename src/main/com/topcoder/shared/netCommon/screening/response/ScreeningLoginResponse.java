@@ -25,6 +25,7 @@ public final class ScreeningLoginResponse extends ScreeningBaseResponse {
     public ScreeningLoginResponse() {
         super();
         this.sync = false;
+        System.out.println("sync is " + sync);
     }
 
     /**
@@ -32,6 +33,7 @@ public final class ScreeningLoginResponse extends ScreeningBaseResponse {
      */
     public ScreeningLoginResponse(boolean success) {
         this(success, null);
+        System.out.println("sync is " + sync);
     }
 
     /**
@@ -42,6 +44,7 @@ public final class ScreeningLoginResponse extends ScreeningBaseResponse {
         this();
         isSuccess = success;
         this.msg = msg;
+        System.out.println("sync is " + sync);
     }
 
     /**
