@@ -1,5 +1,7 @@
 package com.topcoder.shared.distCache;
 
+import com.topcoder.shared.util.logging.Logger;
+
 import java.util.ArrayList;
 
 /**
@@ -8,6 +10,8 @@ import java.util.ArrayList;
  */
 public class ListSyncImpl
         implements CacheUpdateListener {
+
+    private static final Logger log = Logger.getLogger(ListSyncImpl.class);
     int count = 0;
     int sent = 0;
     Object _lock = new Object();
@@ -38,12 +42,12 @@ public class ListSyncImpl
             mychanged = _changed;
             _changed = new ArrayList();
             sent += mychanged.size();
-            System.out.println("RCV=" + count + " XMIT=" + sent);
+            log.info("RCV=" + count + " XMIT=" + sent);
         }
 
         CachedValue[] result = (CachedValue[]) mychanged.toArray(new
                 CachedValue[mychanged.size()]);
-        System.out.println("OUT: " + result.length);
+        log.info("OUT: " + result.length);
         return result;
     }
 

@@ -104,7 +104,7 @@ public class Cache
      */
     public void lock(String key) {
         synchronized (_locklistlock) {
-            System.out.println("WANT LOCK: " + key);
+            log.info("WANT LOCK: " + key);
             if (_locklist == null) {
                 _locklist = new TreeSet();
             }
@@ -117,7 +117,7 @@ public class Cache
             }
 
             _locklist.add(key);
-            System.out.println("GOT LOCK: " + key);
+            log.info("GOT LOCK: " + key);
         }
     }
 
@@ -133,7 +133,7 @@ public class Cache
 
             _locklist.remove(key);
             _locklistlock.notifyAll();
-            System.out.println("UNLOCK: " + key);
+            log.info("UNLOCK: " + key);
         }
     }
 
@@ -220,7 +220,7 @@ public class Cache
      *
      */
     void clear() {
-        System.out.println("CLEARING");
+        log.info("CLEARING");
         _keymap = new TreeMap();
         _timeset = new TreeSet(new CachedValue.TimeComparator());
         _prioset = new TreeSet(new CachedValue.PriorityComparator());
@@ -295,7 +295,7 @@ public class Cache
                 }
 
                 CachedValue value = (CachedValue) _timeset.first();
-                System.out.println(value.getKey() + " - " + new Date(value.getExpireTime()));
+                log.info(value.getKey() + " - " + new Date(value.getExpireTime()));
                 if (value.getExpireTime() > time) {
                     break;
                 }
@@ -333,7 +333,7 @@ public class Cache
      * @param values
      */
     public void integrateChanges(CachedValue[] values) {
-        System.out.println("TO INTEGRATE: " + values.length);
+        log.info("TO INTEGRATE: " + values.length);
         synchronized (_lock) {
             for (int i = 0; i < values.length; i++) {
                 CachedValue val = values[i];
@@ -343,7 +343,7 @@ public class Cache
 
                 int presize = size();
                 if (val.getValue() == null) {
-                    System.out.println("REMOVE: " + val.getKey());
+                    log.info("REMOVE: " + val.getKey());
                     removeCached(val);
                 } else {
                     current = findKey(val.getKey());
@@ -361,8 +361,8 @@ public class Cache
                 int postsize = size();
 
                 if (postsize - presize != 1) {
-                    System.out.println("pre=" + presize + " post=" + postsize);
-                    System.out.println("new= " + val.getKey() + " current=" +
+                    log.info("pre=" + presize + " post=" + postsize);
+                    log.info("new= " + val.getKey() + " current=" +
                             ((current == null) ?
                             "null" : current.getKey()));
                 }
