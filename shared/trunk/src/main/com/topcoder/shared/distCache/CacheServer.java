@@ -147,10 +147,12 @@ public class CacheServer {
     }
 
     private void startSync() {
+        log.info("staring synchronization thread");
         (new Thread(new CacheSynchronizer(this))).start();
     }
 
     private void startExpiration() {
+        log.info("staring expiration thread");
         (new Thread(new CacheManager(this))).start();
     }
 
