@@ -143,8 +143,8 @@ public class Cache
         CachedValue cached = null;
 
         synchronized (_lock) {
-            long start=0;
-            if (log.isDebugEnabled()) start = System.currentTimeMillis();
+            //long start=0;
+            //if (log.isDebugEnabled()) start = System.currentTimeMillis();
             if (value == null) {
                 cached = remove(key);
             } else {
@@ -170,7 +170,7 @@ public class Cache
                     purgeInternal(_max);
                 }
             }
-            if (log.isDebugEnabled()) log.debug("updated in " + (System.currentTimeMillis()-start));
+            //if (log.isDebugEnabled()) log.debug("updated in " + (System.currentTimeMillis()-start));
             incrementPut();
         }
 
@@ -249,12 +249,12 @@ public class Cache
         Object retval = null;
 
         synchronized (_lock) {
-            if (log.isDebugEnabled()) log.debug("look for " + key);
+            //if (log.isDebugEnabled()) log.debug("look for " + key);
             CachedValue cached = findKey(key);
             if (cached != null) {
                 retval = cached.getValue();
             }
-            if (log.isDebugEnabled()) log.debug("looked for " + key);
+            //if (log.isDebugEnabled()) log.debug("looked for " + key);
             incrementGet();
         }
 
