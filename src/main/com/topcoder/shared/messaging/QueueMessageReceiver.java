@@ -181,6 +181,7 @@ public class QueueMessageReceiver {
         }
 
         while (isAlive()) {
+            log.debug("CHECKING QUEUE");
             retVal = controller.getMessage(time, this.autoCommit);
 
             if (retVal != null) {
