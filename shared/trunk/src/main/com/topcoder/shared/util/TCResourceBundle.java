@@ -37,7 +37,7 @@ public final class TCResourceBundle {
         String ret = null;
         try {
             ret = getProperty(key);
-            log.debug("setting " + key + " = " + ret);
+            //log.debug("setting " + key + " = " + ret);
         } catch (MissingResourceException e) {
             ret = defaultValue;
             log.debug("key not found, setting default " + key + " = " + ret);
