@@ -26,6 +26,8 @@ public class DataTypeFactory {
         if(initialized)
             return;
         
+        log.info("INITIALIZING DATA TYPES");
+        
         Connection conn = null;
         PreparedStatement s = null;
         ResultSet rs = null;
@@ -41,6 +43,7 @@ public class DataTypeFactory {
                 int dataTypeId = rs.getInt(1);
                 int languageId = rs.getInt(2);
                 String desc = rs.getString(3);
+                log.debug("TYPE: " + dataTypeId + "," + languageId + "," + desc);
                 HashMap mapping = (HashMap) mappings.get(new Integer(dataTypeId));
 
                 if (mapping == null) {
