@@ -124,7 +124,13 @@ abstract public class DataValue extends BaseElement implements Element {
                 }
                 object = arrayI;
             } else if (desc.equals("double[]")) {
-                throw new DataValueParseException("double[] not supported.");
+                Object[] arrayO = (Object[]) value.getValue();
+                double[] arrayI = new double[arrayO.length];
+                for (int j = 0; j < arrayO.length; j++) {
+                    arrayI[j] =  ((Double) ((DataValue) arrayO[j]).getValue())
+                            .doubleValue();
+                }
+                object = arrayI;
             } else if (desc.equals("String[]")) {
                 Object[] arrayO = (Object[]) value.getValue();
                 String[] arrayS = new String[arrayO.length];
