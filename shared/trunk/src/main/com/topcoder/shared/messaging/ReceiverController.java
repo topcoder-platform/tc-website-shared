@@ -192,6 +192,7 @@ public class ReceiverController extends Thread {
                     }
 
                     try {
+                        log.debug("RECEIVING");
                         msg = (ObjectMessage) qreceiver.receive(blockTime);
                         //log.debug("got a message " + msg);
                         if (qsession.getTransacted() && autoCommit) {
