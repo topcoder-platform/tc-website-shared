@@ -364,10 +364,22 @@ public abstract class CSHandler implements CSReader, CSWriter {
     }
 
     public final String readString() throws IOException {
-        if (isNull(STRING)) {
+        byte b = readByte();
+        if (b == NULL) {
             return null;
         }
-        return readUTF();
+        String s;
+        switch (b) {
+        case STRING:
+            s = readUTF();
+            break;
+        case LONG_STRING:
+            s = readLongString();
+            break;
+        default:
+            throw new RuntimeException("unexpected, b=" + b + ", expected a string");
+        }
+        return s;
     }
     
     static int getUTFLength(String s) {
