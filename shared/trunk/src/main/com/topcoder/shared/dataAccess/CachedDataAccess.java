@@ -19,7 +19,7 @@ import java.util.Map;
 public class CachedDataAccess extends DataAccess {
     private static Logger log = Logger.getLogger(CachedDataAccess.class);
     protected long expireTime;
-    protected static final int DEFAULT_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 5;
+    protected static final int DEFAULT_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 3;
 
     /**
      * Constructor that sets the timeout for the object should it need to be
