@@ -15,10 +15,11 @@ import java.util.*;
 public class Cache
         implements Serializable {
     static final int DEFAULT_PRIORITY = 5;
+    static final int INITIAL_MAP_SIZE = 10000;
 
     private static final Logger log = Logger.getLogger(Cache.class);
     Object _lock = new Integer(0); // can't serialize Object :)
-    HashMap _keymap = new HashMap(10000);
+    HashMap _keymap = new HashMap(INITIAL_MAP_SIZE);
     TreeSet _timeset = new TreeSet(new CachedValue.TimeComparator());
     TreeSet _prioset = new TreeSet(new CachedValue.PriorityComparator());
 
@@ -213,7 +214,7 @@ public class Cache
      */
     void clear() {
         log.info("CLEARING");
-        _keymap = new TreeMap();
+        _keymap = new HashMap(INITIAL_MAP_SIZE);
         _timeset = new TreeSet(new CachedValue.TimeComparator());
         _prioset = new TreeSet(new CachedValue.PriorityComparator());
     }
