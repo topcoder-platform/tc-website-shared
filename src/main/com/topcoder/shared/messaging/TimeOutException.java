@@ -1,13 +1,14 @@
 package com.topcoder.shared.messaging;
 
 import com.topcoder.shared.util.TCException;
+import com.topcoder.web.common.TCWebException;
 
 /**
  * User: dok
  * Date: Dec 10, 2004
  * Time: 3:57:07 PM
  */
-public class TimeOutException extends TCException {
+public class TimeOutException extends TCWebException {
 
     /**
      * Default Constructor
