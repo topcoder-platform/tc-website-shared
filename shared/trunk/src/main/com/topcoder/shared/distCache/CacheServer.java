@@ -129,12 +129,14 @@ public class CacheServer {
             }
 */
 
-            CacheServerSyncImpl server = new CacheServerSyncImpl(this);
-            String serverurl = getLocalServerURL();
+            if (hasPeer) {
+                CacheServerSyncImpl server = new CacheServerSyncImpl(this);
+                String serverurl = getLocalServerURL();
 
-            log.info("BINDING @ " + serverurl);
-            Naming.rebind(serverurl, server);
-            log.info("registered " + serverurl);
+                log.info("BINDING @ " + serverurl);
+                Naming.rebind(serverurl, server);
+                log.info("registered " + serverurl);
+            }
 
         } catch (Exception e) {
             log.error("Exception: " + e.getMessage());
