@@ -25,6 +25,9 @@ public class Cache
 
     int _max = -1;
 
+    long getCount = 0;
+    long putCount = 0;
+
     Object _locklistlock = new Integer(1);
 
     /** not serialized */
@@ -168,6 +171,7 @@ public class Cache
                 }
             }
             if (log.isDebugEnabled()) log.debug("updated in " + (System.currentTimeMillis()-start));
+            incrementPut();
         }
 
 
@@ -251,6 +255,7 @@ public class Cache
                 retval = cached.getValue();
             }
             if (log.isDebugEnabled()) log.debug("looked for " + key);
+            incrementGet();
         }
 
         return retval;
@@ -497,4 +502,14 @@ public class Cache
         }
         return al;
     }
+
+    void incrementGet() {
+        getCount++;
+        if ((getCount%500)==0) log.info("" + getCount + " get requests processed");
+    }
+    void incrementPut() {
+        putCount++;
+        if ((putCount%500)==0) log.info("" + putCount + " put requests processed");
+    }
+
 }
