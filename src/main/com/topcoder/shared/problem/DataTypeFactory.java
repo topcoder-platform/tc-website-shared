@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import com.topcoder.shared.util.DBMS;
-import com.topcoder.server.util.logging.Logger;
+import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.*;
 /**
