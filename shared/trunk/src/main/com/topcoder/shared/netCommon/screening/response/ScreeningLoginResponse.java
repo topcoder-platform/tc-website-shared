@@ -23,6 +23,7 @@ public final class ScreeningLoginResponse extends ScreeningBaseResponse {
      * Constructor needed for CS.
      */
     public ScreeningLoginResponse() {
+        super();
         this.sync = false;
     }
 
@@ -38,7 +39,7 @@ public final class ScreeningLoginResponse extends ScreeningBaseResponse {
      * @param msg Message to explain result of login attempt.
      */
     public ScreeningLoginResponse(boolean success, String msg) {
-        super();
+        this();
         isSuccess = success;
         this.msg = msg;
     }
