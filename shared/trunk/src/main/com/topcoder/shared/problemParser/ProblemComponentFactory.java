@@ -100,6 +100,9 @@ public class ProblemComponentFactory
             parseNotes();
             parseConstraints();
             parseTestCases();
+            
+            if(!unsafe)
+                removeNonExampleTestCases();
         } catch(Exception ex) {
             System.out.println("Exception while parsing statement: " + ex);
             ex.printStackTrace();
@@ -271,6 +274,19 @@ public class ProblemComponentFactory
 
         return DataTypeFactory.getDataType(value);
     }
+    
+    void removeNonExampleTestCases() {
+        ArrayList al_testCases = new ArrayList();
+        for (int i = 0; i < stmt.getTestCases().length; i++)
+            if (stmt.getTestCases()[i].isExample())
+                al_testCases.add(stmt.getTestCases()[i]);
+
+        TestCase[] testCases = new TestCase[al_testCases.size()];
+        for (int i = 0; i < testCases.length; i++)
+            testCases[i] = (TestCase) al_testCases.get(i);
+        stmt.setTestCases(testCases);
+    }
+
 
     DataType getNestedType(Node node)
         throws InvalidTypeException
