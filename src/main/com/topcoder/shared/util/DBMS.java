@@ -148,7 +148,6 @@ public class DBMS {
         Connection conn = null;
         InitialContext ctx = null;
         try {
-            System.out.println("PRE-CONTEXT: " + new Date());
             ctx = TCContext.getInitial();
             conn = getConnection(ctx, dataSourceName);
         } catch (NamingException e) {
@@ -163,7 +162,6 @@ public class DBMS {
                 }
             }
         }
-        System.out.println("POST-CONTEXT: " + new Date());
 
         return conn;
     }
