@@ -166,8 +166,18 @@ public class SimpleClient {
                 e.printStackTrace();
             }
         } else if (line.equals("clear")) {
+            try {
+                client.clearCache();
+                System.out.println("CLEARED");
+            } catch (RemoteException e) {
+                System.out.println("Exception: " + e.getMessage());
+                e.printStackTrace();
+            }
+/*
+
             confirm = true;
             System.out.println("Are you sure you want to clear the cache?");
+*/
         } else if (line.equals("values")) {
             try {
                 ArrayList al = client.getEntries();
