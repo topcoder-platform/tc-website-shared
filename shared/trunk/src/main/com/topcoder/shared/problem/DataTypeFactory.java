@@ -16,8 +16,6 @@ import java.sql.*;
  */
 public class DataTypeFactory {
     static private HashMap types = new HashMap();
-
-    private final static Logger log =  Logger.getLogger(DataTypeFactory.class);
     
     static private boolean initialized = false;
     
