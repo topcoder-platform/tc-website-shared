@@ -47,6 +47,7 @@ public class GenericRMIProxy
         try {
             return Naming.lookup(url);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
