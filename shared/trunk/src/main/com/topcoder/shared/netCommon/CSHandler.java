@@ -37,6 +37,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     private static final byte LONG=13;
     private static final byte OBJECT_ARRAY_ARRAY=14;
     private static final byte LONG_STRING=15;
+    private static final byte DOUBLE_ARRAY=16;
 
     // collections
     private static final byte ARRAY_LIST=33;
@@ -245,6 +246,14 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return intArray;
     }
+    private double[] readJustDoubleArray() throws IOException {
+        int size=readShort();
+        double[] array=new double[size];
+        for (int i=0; i<size; i++) {
+            array[i]=readDouble();
+        }
+        return array;
+    }
 
     private void writeIntArray(int[] intArray) throws IOException {
         if (intArray==null) {
@@ -259,6 +268,21 @@ public abstract class CSHandler implements CSReader, CSWriter {
         writeShort((short) size);
         for (int i=0; i<size; i++) {
             writeInt(intArray[i]);
+        }
+    }
+    private void writeDoubleArray(double[] array) throws IOException {
+        if (array==null) {
+            writeNull();
+            return;
+        }
+        int size=array.length;
+        if (size>Short.MAX_VALUE) {
+            throw new RuntimeException("double array big size: "+size);
+        }
+        writeByte(DOUBLE_ARRAY);
+        writeShort((short) size);
+        for (int i=0; i<size; i++) {
+            writeDouble(array[i]);
         }
     }
 
@@ -574,6 +598,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeCharArray((char[]) object);
         } else if (object instanceof int[]) {
             writeIntArray((int[]) object);
+        } else if (object instanceof double[]) {
+            writeDoubleArray((double[]) object);
         } else if (object instanceof String[]) {
             writeStringArray((String[]) object);
         } else if (object instanceof CustomSerializable) { // this is mainly for testing
@@ -621,6 +647,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             return readJustCharArray();
         case INT_ARRAY:
             return readJustIntArray();
+        case DOUBLE_ARRAY:
+            return readJustDoubleArray();
         case STRING_ARRAY:
             return readJustStringArray();
         case LONG_STRING:
