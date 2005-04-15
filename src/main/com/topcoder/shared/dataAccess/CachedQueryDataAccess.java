@@ -12,7 +12,7 @@ public class CachedQueryDataAccess extends CachedDataAccess {
      * cached, to 1 week.
      */
     public CachedQueryDataAccess() {
-        this(DEFAULT_EXPIRE_TIME);
+        this(DataAccessConstants.DEFAULT_EXPIRE_TIME);
     }
 
     /**
@@ -31,7 +31,7 @@ public class CachedQueryDataAccess extends CachedDataAccess {
      * @param dataSource
      */
     public CachedQueryDataAccess(String dataSource) {
-        this(DEFAULT_EXPIRE_TIME);
+        this(DataAccessConstants.DEFAULT_EXPIRE_TIME);
         this.dataSource = dataSource;
     }
 

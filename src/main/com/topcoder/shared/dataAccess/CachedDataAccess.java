@@ -20,14 +20,14 @@ public class CachedDataAccess extends DataAccess {
     private static Logger log = Logger.getLogger(CachedDataAccess.class);
     protected long expireTime;
 //    protected static final int DEFAULT_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 3;
-    protected static final int DEFAULT_EXPIRE_TIME = 1000 * 60 * 60 * 4;
+    //protected static final int DEFAULT_EXPIRE_TIME = 1000 * 60 * 60 * 4;
 
     /**
      * Constructor that sets the timeout for the object should it need to be
      * cached, to 1 week.
      */
     public CachedDataAccess() {
-        this(DEFAULT_EXPIRE_TIME);
+        this(DataAccessConstants.DEFAULT_EXPIRE_TIME);
     }
 
     /**
@@ -46,7 +46,7 @@ public class CachedDataAccess extends DataAccess {
      * @param dataSource
      */
     public CachedDataAccess(String dataSource) {
-        this(DEFAULT_EXPIRE_TIME);
+        this(DataAccessConstants.DEFAULT_EXPIRE_TIME);
         this.dataSource = dataSource;
     }
 
