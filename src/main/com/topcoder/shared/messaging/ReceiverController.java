@@ -304,7 +304,7 @@ public class ReceiverController extends Thread {
                 try {
                     env = ctx.getEnvironment();
                 } catch (Exception ignore) {}
-                log.info("env.toString() = "+env.toString());
+                log.info("env.toString() = "+(env==null?"null":env.toString()));
                 this.ctx = TCContext.getInitial();
                 this.qconFactory = (QueueConnectionFactory) ctx.lookup(factoryName);
             }
