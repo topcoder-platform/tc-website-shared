@@ -14,6 +14,20 @@ public class ScreeningTimeExpiredResponse extends ScreeningBaseResponse {
     public ScreeningTimeExpiredResponse() {
         sync = false;
     }
+    
+    private boolean forceLogout;
+    private String message;
+    
+    public ScreeningTimeExpiredResponse(boolean forceLogout, String message) {
+        this.forceLogout = forceLogout;
+        this.message = message;
+        sync = false;
+        
+    }
+    
+    public boolean forceLogout() {
+        return forceLogout;
+    }
 
 
     /**
@@ -27,6 +41,8 @@ public class ScreeningTimeExpiredResponse extends ScreeningBaseResponse {
      */
     public void customWriteObject(CSWriter writer) throws IOException {
         super.customWriteObject(writer);
+        writer.writeBoolean(forceLogout);
+        writer.writeString(message);
     }
 
     /**
@@ -42,6 +58,8 @@ public class ScreeningTimeExpiredResponse extends ScreeningBaseResponse {
      */
     public void customReadObject(CSReader reader) throws IOException, ObjectStreamException {
         super.customReadObject(reader);
+        forceLogout = reader.readBoolean();
+        message = reader.readString();
     }
 
     /**
