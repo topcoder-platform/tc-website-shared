@@ -28,6 +28,10 @@ public class ScreeningTimeExpiredResponse extends ScreeningBaseResponse {
     public boolean forceLogout() {
         return forceLogout;
     }
+    
+    public String getMessage() {
+        return message;
+    }
 
 
     /**
