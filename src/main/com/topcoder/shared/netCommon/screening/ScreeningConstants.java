@@ -40,6 +40,7 @@ public final class ScreeningConstants {
     public final static int KEEP_ALIVE_REQUEST = 77;
     public final static int TUNNEL_IP_REQUEST = 78;
     public final static int OPEN_PROBLEM_SET = 79;
+    public final static int TERMS_REQUEST = 80;
 
     // Regarding multiple submissions
     public static boolean ACCEPT_MULTIPLE_SUBMISSIONS = true;
