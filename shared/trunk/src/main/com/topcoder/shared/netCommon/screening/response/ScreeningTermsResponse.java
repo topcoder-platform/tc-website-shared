@@ -14,10 +14,13 @@ public class ScreeningTermsResponse extends ScreeningBaseResponse {
      * Constructor needed for CS.
      */
     public ScreeningTermsResponse() {
+        super();
+        this.sync = false;
     }
 
     public ScreeningTermsResponse(String msg) {
         super();
+        this.sync =false;
         this.msg = msg;
     }
 
