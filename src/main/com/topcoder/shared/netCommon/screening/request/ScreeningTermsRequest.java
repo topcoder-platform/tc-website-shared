@@ -16,6 +16,7 @@ public class ScreeningTermsRequest extends ScreeningBaseRequest {
 
     public ScreeningTermsRequest(
             long companyID) {
+        this.sync = false;
         this.companyID = companyID;
     }
 
