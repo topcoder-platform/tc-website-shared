@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
+ * Provides a way to asynchronously receive messages from a queue including the ability
+ * to wait for a specified period of time only, and then quit.
  * User: dok
  * Date: Dec 15, 2004
  * Time: 4:09:48 PM
@@ -28,7 +30,14 @@ public class ResponsePool {
         this.waitTime = waitTime;
     }
 
-
+    /**
+     * Polls the response pool for <code>timeoutLength</code> milliseconds for
+     * a message associated with the <cocde>correlationId</code>
+     * @param timeoutLength
+     * @param correlationId
+     * @return
+     * @throws TimeOutException
+     */
     public synchronized Serializable get(int timeoutLength, String correlationId) throws TimeOutException {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeoutLength;
@@ -43,13 +52,16 @@ public class ResponsePool {
                 }
             }
         }
+        //perhaps a change is in order.  if this got very large, we could have a
+        //memory problem.  perhaps we could track the the people waiting
+        //and throw out stuff that doesn't below to someone waiting.
         dropList.add(correlationId);
         throw new TimeOutException();
     }
 
 
     /**
-     *
+     * Put an object into the pool
      * @param key
      * @param val
      */
@@ -59,7 +71,9 @@ public class ResponsePool {
     }
 
     /**
-     *
+     * Check if a response has been orphaned.  A response
+     * will be orphaned if it took too long for it to show
+     * up and dies
      * @param correlationId
      * @return
      */
@@ -68,7 +82,7 @@ public class ResponsePool {
     }
 
     /**
-     *
+     * Remove an orphaned response.
      * @param correlationId
      */
     public synchronized void removeDroppedResponse(String correlationId) {
