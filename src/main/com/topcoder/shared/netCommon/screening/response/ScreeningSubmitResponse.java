@@ -27,6 +27,9 @@ public class ScreeningSubmitResponse extends ScreeningBaseResponse {
     /** message to accompany the submit-response */
     private String msg;
     private ProblemComponent comp;
+    
+    private long openTime;
+    private long length;
 
     /**
      * Constructor needed for CS.
@@ -42,8 +45,8 @@ public class ScreeningSubmitResponse extends ScreeningBaseResponse {
      * Constructor that only sets status.
      * @param status - ERROR/SUCCESS/RESUBMIT.
      */
-    public ScreeningSubmitResponse(int status, ProblemComponent comp) {
-        this(status, null,comp);
+    public ScreeningSubmitResponse(int status, ProblemComponent comp, long openTime, long length) {
+        this(status, null,comp, openTime, length);
     }
 
     /**
@@ -51,11 +54,21 @@ public class ScreeningSubmitResponse extends ScreeningBaseResponse {
      * @param status - ERROR/SUCCESS/RESUBMIT.
      * @param msg - message.
      */
-    public ScreeningSubmitResponse(int status, String msg, ProblemComponent comp) {
+    public ScreeningSubmitResponse(int status, String msg, ProblemComponent comp, long openTime, long length) {
         super();
         this.status = status;
         this.msg = msg;
         this.comp = comp;
+        this.openTime = openTime;
+        this.length = length;
+    }
+    
+    public long getOpenTime() {
+        return openTime;
+    }
+    
+    public long getLength() {
+        return length;
     }
 
     /**
@@ -88,6 +101,8 @@ public class ScreeningSubmitResponse extends ScreeningBaseResponse {
         writer.writeInt(status);
         writer.writeString(msg);
         writer.writeObject(comp);
+        writer.writeLong(openTime);
+        writer.writeLong(length);
     }
 
     /**
@@ -107,6 +122,8 @@ public class ScreeningSubmitResponse extends ScreeningBaseResponse {
         status = reader.readInt();
         msg = reader.readString();
         comp = (ProblemComponent)reader.readObject();
+        openTime = reader.readLong();
+        length = reader.readLong();
     }
 
     /**
@@ -123,6 +140,12 @@ public class ScreeningSubmitResponse extends ScreeningBaseResponse {
         ret.append(", ");
         ret.append("msg = ");
         ret.append(msg.toString());
+        ret.append(", ");
+        ret.append("openTime = ");
+        ret.append(openTime);
+        ret.append(", ");
+        ret.append("length = ");
+        ret.append(length);
         ret.append("]");
         return ret.toString();
     }
