@@ -1113,6 +1113,26 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
             return sbReturn.toString();
         }
 
+        /**
+         * Validates that the column specified is valid
+         *
+         * @param i The column index accessed
+         * @return  True iff the column index is valid.
+         */
+        public boolean isValidColumn(int i) {
+            return (i >= 0 && i < columns.length);
+        }
+
+        /**
+         * Validates that the column specified is valid
+         *
+         * @param name The column name accessed
+         * @return True iff the column name is valid.
+         */
+        public boolean isValidColumn(String name) {
+            return columnNameMap.containsKey(name);
+        }
+
 
     }
 
