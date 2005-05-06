@@ -20,6 +20,9 @@ public class ScreeningCompileResponse extends ScreeningBaseResponse {
     /** message to accompany the compile-response(errors/warnings/success) */
     private String msg;
     private ProblemComponent comp;
+    
+    private long openTime;
+    private long length;
 
     /**
      * Constructor needed for CS.
@@ -31,8 +34,8 @@ public class ScreeningCompileResponse extends ScreeningBaseResponse {
      * Constructor that only sets status.
      * @param status - true if success.
      */
-    public ScreeningCompileResponse(boolean status,ProblemComponent comp) {
-        this(status, null, comp);
+    public ScreeningCompileResponse(boolean status,ProblemComponent comp, long openTime, long length) {
+        this(status, null, comp, openTime, length);
     }
 
     /**
@@ -40,11 +43,21 @@ public class ScreeningCompileResponse extends ScreeningBaseResponse {
      * @param status - true if success.
      * @param msg - message(errors/warnings/success).
      */
-    public ScreeningCompileResponse(boolean status, String msg, ProblemComponent comp) {
+    public ScreeningCompileResponse(boolean status, String msg, ProblemComponent comp, long openTime, long length) {
         super();
         this.status = status;
         this.msg = msg;
         this.comp = comp;
+        this.openTime = openTime;
+        this.length = length;
+    }
+    
+    public long getOpenTime() {
+        return openTime;
+    }
+    
+    public long getLength() {
+        return length;
     }
 
     public ProblemComponent getProblemComponent() {
@@ -80,6 +93,8 @@ public class ScreeningCompileResponse extends ScreeningBaseResponse {
         writer.writeBoolean(status);
         writer.writeString(msg);
         writer.writeObject(comp);
+        writer.writeLong(openTime);
+        writer.writeLong(length);
     }
 
     /**
@@ -99,6 +114,8 @@ public class ScreeningCompileResponse extends ScreeningBaseResponse {
         status = reader.readBoolean();
         msg = reader.readString();
         comp = (ProblemComponent)reader.readObject();
+        openTime = reader.readLong();
+        length = reader.readLong();
     }
 
     /**
@@ -115,6 +132,12 @@ public class ScreeningCompileResponse extends ScreeningBaseResponse {
         ret.append(", ");
         ret.append("msg = ");
         ret.append(msg.toString());
+        ret.append(", ");
+        ret.append("openTime = ");
+        ret.append(openTime);
+        ret.append(", ");
+        ret.append("length = ");
+        ret.append(length);
         ret.append("]");
         return ret.toString();
     }

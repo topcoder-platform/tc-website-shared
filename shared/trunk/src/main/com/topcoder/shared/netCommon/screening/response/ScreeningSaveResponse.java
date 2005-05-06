@@ -20,6 +20,9 @@ public class ScreeningSaveResponse extends ScreeningBaseResponse {
     /** Possible error-messages */
     private String msg;
     private ProblemComponent comp;
+    
+    private long openTime;
+    private long length;
 
     /**
      * Constructor needed for CS.
@@ -32,11 +35,21 @@ public class ScreeningSaveResponse extends ScreeningBaseResponse {
      * @param status - true if success.
      * @param msg - error-message.
      */
-    public ScreeningSaveResponse(boolean status, String msg, ProblemComponent comp) {
+    public ScreeningSaveResponse(boolean status, String msg, ProblemComponent comp, long openTime, long length) {
         super();
         this.status = status;
         this.msg = msg;
         this.comp = comp;
+        this.openTime = openTime;
+        this.length = length;
+    }
+    
+    public long getOpenTime() {
+        return openTime;
+    }
+    
+    public long getLength() {
+        return length;
     }
 
     public ProblemComponent getProblemComponent() {
@@ -72,6 +85,8 @@ public class ScreeningSaveResponse extends ScreeningBaseResponse {
         writer.writeBoolean(status);
         writer.writeString(msg);
         writer.writeObject(comp);
+        writer.writeLong(openTime);
+        writer.writeLong(length);
     }
 
     /**
@@ -91,6 +106,8 @@ public class ScreeningSaveResponse extends ScreeningBaseResponse {
         status = reader.readBoolean();
         msg = reader.readString();
         comp = (ProblemComponent)reader.readObject();
+        openTime = reader.readLong();
+        length = reader.readLong();
     }
 
     /**
@@ -107,6 +124,12 @@ public class ScreeningSaveResponse extends ScreeningBaseResponse {
         ret.append(", ");
         ret.append("msg = ");
         ret.append(msg.toString());
+        ret.append(", ");
+        ret.append("openTime = ");
+        ret.append(openTime);
+        ret.append(", ");
+        ret.append("length = ");
+        ret.append(length);
         ret.append("]");
         return ret.toString();
     }
