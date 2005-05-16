@@ -19,7 +19,10 @@ public class ResponsePool {
      * Contains a map of the responses that we have gotten off the queue
      */
     protected Map responseMap = new HashMap();
-    protected HashSet dropList = new HashSet();
+    /**
+     * List of correlation id's for responses that someone is actually waiting for
+     */
+    protected HashSet waitList = new HashSet();
     protected int waitTime;
 
     public ResponsePool() {
@@ -33,6 +36,8 @@ public class ResponsePool {
     /**
      * Polls the response pool for <code>timeoutLength</code> milliseconds for
      * a message associated with the <cocde>correlationId</code>
+     *
+     * If it is found, the response is removed from the pool and returned.
      * @param timeoutLength
      * @param correlationId
      * @return
@@ -41,9 +46,10 @@ public class ResponsePool {
     public synchronized Serializable get(int timeoutLength, String correlationId) throws TimeOutException {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeoutLength;
+        waitList.add(correlationId);
         while (System.currentTimeMillis() < endTime) {
             if (responseMap.containsKey(correlationId)) {
-                return (Serializable) responseMap.get(correlationId);
+                return get(correlationId);
             } else {
                 try {
                     wait(waitTime);
@@ -52,11 +58,22 @@ public class ResponsePool {
                 }
             }
         }
-        //perhaps a change is in order.  if this got very large, we could have a
-        //memory problem.  perhaps we could track the the people waiting
-        //and throw out stuff that doesn't below to someone waiting.
-        dropList.add(correlationId);
+        //get it and ignore it cuz we don't care
+        get(correlationId);
         throw new TimeOutException();
+    }
+
+    /**
+     * Return the value for the specified key from this pool.
+     * This call removes the specified entry in the pool as well
+     * as from the list of responses that are being waited for
+     * @param correlationId
+     * @return
+     */
+    protected synchronized Serializable get(String correlationId) {
+        waitList.remove(correlationId);
+        return (Serializable)responseMap.remove(correlationId);
+
     }
 
 
@@ -73,12 +90,12 @@ public class ResponsePool {
     /**
      * Check if a response has been orphaned.  A response
      * will be orphaned if it took too long for it to show
-     * up and dies
+     * up and the client is no longer waiting for it
      * @param correlationId
      * @return
      */
     public synchronized boolean isOldResponse(String correlationId) {
-        return dropList.contains(correlationId);
+        return !waitList.contains(correlationId);
     }
 
     /**
@@ -86,8 +103,10 @@ public class ResponsePool {
      * @param correlationId
      */
     public synchronized void removeDroppedResponse(String correlationId) {
-        dropList.remove(correlationId);
+        waitList.remove(correlationId);
+        responseMap.remove(correlationId);
     }
+
 
 
 
