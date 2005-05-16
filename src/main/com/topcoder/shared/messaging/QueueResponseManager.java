@@ -112,13 +112,7 @@ public class QueueResponseManager {
                     ObjectMessage response = receiver.getMessage(blockTime, true);
                     if (response != null) {
                         log.debug("got a response " + response);
-                        //if it's old and the client that was waiting has given up, wack it
-                        if (responses.isOldResponse(response.getJMSCorrelationID())) {
-                            log.debug("throwing out old response");
-                            responses.removeDroppedResponse(response.getJMSCorrelationID());
-                        } else {
-                            responses.put(response.getJMSCorrelationID(), response.getObject());
-                        }
+                        responses.put(response.getJMSCorrelationID(), response.getObject());
                     } else {
                         //log.debug("waitList size " + responses.getWaitCount());
                         Thread.sleep(sleepTime);

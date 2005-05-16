@@ -2,6 +2,7 @@ package com.topcoder.shared.messaging;
 
 import com.topcoder.shared.distCache.Cache;
 import com.topcoder.shared.distCache.CachedValue;
+import com.topcoder.shared.util.logging.Logger;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -14,6 +15,8 @@ import java.util.HashSet;
  * Time: 4:09:48 PM
  */
 public class ResponsePool {
+
+    private final static Logger log = Logger.getLogger(ResponsePool.class);
 
     private int DEFAULT_WAIT_TIME = 10;
     /**
@@ -72,6 +75,9 @@ public class ResponsePool {
      * @return
      */
     protected synchronized Serializable get(String correlationId) {
+        if (log.isDebugEnabled()) {
+            log.debug("get " + correlationId + " wait size: " + waitList.size() + " pool size: " + pool.size());
+        }
         waitList.remove(correlationId);
         CachedValue s = pool.remove(correlationId);
         if (s==null) {
