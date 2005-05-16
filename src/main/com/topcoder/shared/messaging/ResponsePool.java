@@ -1,8 +1,8 @@
 package com.topcoder.shared.messaging;
 
+import com.topcoder.shared.distCache.Cache;
+
 import java.io.Serializable;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -18,7 +18,7 @@ public class ResponsePool {
     /**
      * Contains a map of the responses that we have gotten off the queue
      */
-    protected Map responseMap = new HashMap();
+    protected Cache pool = new Cache();
     /**
      * List of correlation id's for responses that someone is actually waiting for
      */
@@ -48,7 +48,7 @@ public class ResponsePool {
         long endTime = startTime + timeoutLength;
         waitList.add(correlationId);
         while (System.currentTimeMillis() < endTime) {
-            if (responseMap.containsKey(correlationId)) {
+            if (pool.exists(correlationId)) {
                 return get(correlationId);
             } else {
                 try {
@@ -72,42 +72,21 @@ public class ResponsePool {
      */
     protected synchronized Serializable get(String correlationId) {
         waitList.remove(correlationId);
-        return (Serializable)responseMap.remove(correlationId);
+        return (Serializable)pool.remove(correlationId).getValue();
 
     }
 
 
     /**
-     * Put an object into the pool
+     * Put an object into the pool.  The object will automatically be removed after
+     * a while if it is never requested.
      * @param key
      * @param val
      */
-    public synchronized void put(Object key, Object val) {
-        responseMap.put(key, val);
+    public synchronized void put(String key, Object val) {
+        //have stuff time out after 5 minutes.
+        pool.update(key, val, 5*60*1000);
         notifyAll();
     }
-
-    /**
-     * Check if a response has been orphaned.  A response
-     * will be orphaned if it took too long for it to show
-     * up and the client is no longer waiting for it
-     * @param correlationId
-     * @return
-     */
-    public synchronized boolean isOldResponse(String correlationId) {
-        return !waitList.contains(correlationId);
-    }
-
-    /**
-     * Remove an orphaned response.
-     * @param correlationId
-     */
-    public synchronized void removeDroppedResponse(String correlationId) {
-        waitList.remove(correlationId);
-        responseMap.remove(correlationId);
-    }
-
-
-
 
 }
