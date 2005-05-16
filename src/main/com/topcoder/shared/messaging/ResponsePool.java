@@ -62,7 +62,7 @@ public class ResponsePool {
                 }
             }
         }
-        //get it and ignore it cuz we don't care
+        //get it and ignore it (just in case it's now there) but we don't care cuz it's too late
         get(correlationId);
         throw new TimeOutException();
     }
@@ -79,12 +79,11 @@ public class ResponsePool {
             log.debug("get " + correlationId + " wait size: " + waitList.size() + " pool size: " + pool.size());
         }
         waitList.remove(correlationId);
-        CachedValue s = pool.remove(correlationId);
-        if (s==null) {
-            return null;
-        } else {
-            return (Serializable)s.getValue();
-        }
+        //can't do a pool.remove and pick up the object because
+        //the dumb cache's remove method sets the cached value to null by reference
+        Serializable ret = (Serializable) pool.get(correlationId);
+        pool.remove(correlationId);
+        return ret;
     }
 
 
