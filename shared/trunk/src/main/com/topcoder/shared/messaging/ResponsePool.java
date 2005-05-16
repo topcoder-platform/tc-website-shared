@@ -1,6 +1,7 @@
 package com.topcoder.shared.messaging;
 
 import com.topcoder.shared.distCache.Cache;
+import com.topcoder.shared.distCache.CachedValue;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -72,8 +73,12 @@ public class ResponsePool {
      */
     protected synchronized Serializable get(String correlationId) {
         waitList.remove(correlationId);
-        return (Serializable)pool.remove(correlationId).getValue();
-
+        CachedValue s = pool.remove(correlationId);
+        if (s==null) {
+            return null;
+        } else {
+            return (Serializable)s.getValue();
+        }
     }
 
 
