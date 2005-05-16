@@ -14,6 +14,11 @@ import java.io.Serializable;
  * and message B are dispathed in that order, but A takes a long time to come back.  The
  * response to B should be received without waiting for A to come back.
  *
+ * When you create an instance of <code>QueueResponseManager</code> a thread is created
+ * that polls the queue.  When it gets a message, it either puts it into a <code>ResponsePool</code>
+ * or, if the response is old, it is thrown out as it is no longer relevant.
+ *
+ *
  * User: dok
  * Date: Dec 10, 2004
  */
@@ -103,9 +108,11 @@ public class QueueResponseManager {
         public void run() {
             while (true) {
                 try {
+                    //pull an item off the queue
                     ObjectMessage response = receiver.getMessage(blockTime, true);
                     if (response != null) {
                         log.debug("got a response " + response);
+                        //if it's old and the client that was waiting has given up, wack it
                         if (responses.isOldResponse(response.getJMSCorrelationID())) {
                             log.debug("throwing out old response");
                             responses.removeDroppedResponse(response.getJMSCorrelationID());
