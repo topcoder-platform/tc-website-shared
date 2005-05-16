@@ -52,7 +52,6 @@ public class ResponsePool {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeoutLength;
         waitList.add(correlationId);
-        if (log.isDebugEnabled()) log.debug("get waitList " + waitList.size());
         while (System.currentTimeMillis() < endTime) {
             if (pool.exists(correlationId)) {
                 return get(correlationId);
