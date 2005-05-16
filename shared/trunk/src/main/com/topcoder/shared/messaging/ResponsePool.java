@@ -1,7 +1,6 @@
 package com.topcoder.shared.messaging;
 
 import com.topcoder.shared.distCache.Cache;
-import com.topcoder.shared.distCache.CachedValue;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.io.Serializable;
@@ -53,6 +52,7 @@ public class ResponsePool {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeoutLength;
         waitList.add(correlationId);
+        if (log.isDebugEnabled()) log.debug("get waitList " + waitList.size());
         while (System.currentTimeMillis() < endTime) {
             if (pool.exists(correlationId)) {
                 return get(correlationId);
