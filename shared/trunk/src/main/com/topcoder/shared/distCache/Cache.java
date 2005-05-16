@@ -185,7 +185,7 @@ public class Cache
      * @param key
      * @return
      */
-    CachedValue remove(String key) {
+    public CachedValue remove(String key) {
         CachedValue cached = findKey(key);
         if (cached != null) {
             removeCached(cached);
