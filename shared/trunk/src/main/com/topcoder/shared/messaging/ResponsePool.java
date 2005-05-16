@@ -6,6 +6,8 @@ import com.topcoder.shared.util.logging.Logger;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Provides a way to asynchronously receive messages from a queue including the ability
@@ -77,6 +79,14 @@ public class ResponsePool {
     protected synchronized Serializable get(String correlationId) {
         if (log.isDebugEnabled()) {
             log.debug("get " + correlationId + " wait size: " + waitList.size() + " pool size: " + pool.size());
+            for (Iterator it = waitList.iterator(); it.hasNext();) {
+                log.debug("wait " + it.next().toString());
+            }
+            List l = pool.getKeys();
+            for (Iterator it = l.iterator(); it.hasNext();) {
+                String key = (String)it.next();
+                log.debug("pool " + pool.get(key));
+            }
         }
         waitList.remove(correlationId);
         //can't do a pool.remove and pick up the object because
