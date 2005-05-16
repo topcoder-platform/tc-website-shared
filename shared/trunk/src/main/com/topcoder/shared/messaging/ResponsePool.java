@@ -76,6 +76,7 @@ public class ResponsePool {
      * @return
      */
     protected synchronized Serializable get(String correlationId) {
+/*
         if (log.isDebugEnabled()) {
             log.debug("get " + correlationId + " wait size: " + waitList.size() + " pool size: " + pool.size());
             for (Iterator it = waitList.iterator(); it.hasNext();) {
@@ -87,6 +88,7 @@ public class ResponsePool {
                 log.debug("pool " + pool.get(key));
             }
         }
+*/
         waitList.remove(correlationId);
         //can't do a pool.remove and pick up the object because
         //the dumb cache's remove method sets the cached value to null by reference
