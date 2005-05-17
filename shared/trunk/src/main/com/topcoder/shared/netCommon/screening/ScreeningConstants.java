@@ -41,6 +41,15 @@ public final class ScreeningConstants {
     public final static int TUNNEL_IP_REQUEST = 78;
     public final static int OPEN_PROBLEM_SET = 79;
     public final static int TERMS_REQUEST = 80;
+    
+    //history types
+    public final static int HISTORY_LOGIN = 1;
+    public final static int HISTORY_LOGOUT = 2;
+    public final static int HISTORY_OPEN_PROBLEM = 3;
+    public final static int HISTORY_COMPILE = 4;
+    public final static int HISTORY_TEST = 5;
+    public final static int HISTORY_SAVE = 6;
+    public final static int HISTORY_SUBMIT = 7;
 
     // Regarding multiple submissions
     public static boolean ACCEPT_MULTIPLE_SUBMISSIONS = true;
