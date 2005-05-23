@@ -457,6 +457,11 @@ public class DataRetriever implements DataRetrieverInt {
 
                 // Remove leading/trailing input whitespace
                 input = input.trim();
+                if (dataType==DataAccessConstants.STRING_INPUT) {
+                    //escape single quotes for informix
+                    input = StringUtil.replace(input, "\'", "\'\'");
+                }
+
 
                 if (!validateInput(input, dataType))
                     throw new Exception("Invalid data for input " + inputCode + ": " + input);
@@ -529,6 +534,9 @@ public class DataRetriever implements DataRetrieverInt {
         String sortDir = (String) inputs.get(DataAccessConstants.SORT_DIRECTION);
         boolean sortCalled = (sortQueryName != null && sortQueryCol != null);
         try {
+            //todo we can improve this and solve sql injection hacks
+            //todo by replacing the inputs with ?'s and keeping track of
+            //todo what goes where and then calling setXXX on the preparedstatement
             resultMap = new HashMap();
             for (i = 0; i < queryIdList.length; i++) {
                 Integer lookup = new Integer(queryIdList[i]);
