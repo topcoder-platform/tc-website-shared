@@ -101,7 +101,7 @@ public final class ScreeningConstants {
     public static final String IN_PROGRESS = "In-Progress";
 
     // For closing pop-ups.
-    public static final long ACTION_KILL_TIME = 20000;
+    public static final long ACTION_KILL_TIME = 30000;
 
 
     ////////////////////////////////////////////////////////////////////////////////
