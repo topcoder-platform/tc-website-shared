@@ -20,6 +20,7 @@ import org.w3c.dom.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.FileInputStream;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Hashtable;
 
@@ -240,6 +241,27 @@ public class TCLoadUtility {
             fatal_error(e);
         }
 
+    }
+    
+    public static void doLoad(TCLoad tcload, Connection sourceDB, Connection targetDB) throws Exception {
+        log.info("Creating source database connection...");
+        tcload.setSourceConnection(sourceDB);
+        log.info("Success!");
+
+        log.info("Creating target database connection...");
+        tcload.setTargetConnection(targetDB);
+        log.info("Success!");
+    
+        try {
+            tcload.performLoad();
+        } catch (Exception e) {
+            sErrorMsg.setLength(0);
+            sErrorMsg.append(tcload.getReasonFailed());
+            closeLoad(tcload);
+            throw e;
+
+        }
+        closeLoad(tcload);
     }
 
     public static void doLoad(TCLoad tcload) throws Exception {

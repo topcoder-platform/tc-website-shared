@@ -163,8 +163,20 @@ public abstract class TCLoad {
 
         String urlstr = (String) fDatabaseURLs.get(index);
         Connection conn = DriverManager.getConnection(urlstr);
-        fConnections.put(new Integer(index), conn);
+        if(index == SOURCE_DB) {
+            setSourceConnection(conn);
+        } else if(index == TARGET_DB) {
+            setTargetConnection(conn);
+        }
         return conn;
+    }
+    
+    public void setSourceConnection(Connection c) {
+        fConnections.put(new Integer(SOURCE_DB), c);
+    }
+    
+    public void setTargetConnection(Connection c) {
+        fConnections.put(new Integer(TARGET_DB), c);
     }
 
     /**
