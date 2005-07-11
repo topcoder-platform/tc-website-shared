@@ -243,13 +243,13 @@ public class TCLoadUtility {
 
     }
     
-    public static void doLoad(TCLoad tcload, Connection sourceDB, Connection targetDB) throws Exception {
+    public static void doLoad(TCLoad tcload, String sourceDB, String targetDB) throws Exception {
         log.info("Creating source database connection...");
-        tcload.setSourceConnection(sourceDB);
+        tcload.setSourceConnection(DBMS.getConnection(sourceDB));
         log.info("Success!");
 
         log.info("Creating target database connection...");
-        tcload.setTargetConnection(targetDB);
+        tcload.setTargetConnection(DBMS.getConnection(targetDB));
         log.info("Success!");
     
         try {
