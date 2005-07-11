@@ -251,9 +251,6 @@ public class TCLoadUtility {
         log.info("Creating target database connection...");
         tcload.setTargetConnection(DBMS.getConnection(targetDB));
         log.info("Success!");
-        
-        log.info(tcload.getOpenConnection(1));
-        log.info(tcload.getOpenConnection(2));
     
         try {
             tcload.performLoad();
