@@ -446,7 +446,7 @@ public abstract class TCLoad {
      * ArrayList of URLs.
      */
     private boolean checkArrayListIndex(int idx) {
-        if (idx < 0 || idx >= fDatabaseURLs.size())
+        if (idx < 0 || idx >= fConnections.size())
             return false;
         return true;
     }
