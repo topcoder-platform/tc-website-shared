@@ -11,8 +11,6 @@ import java.sql.PreparedStatement;
 /**
  * A class to hold application wide constants
  * @author Steve Burrows
- * @version $Revision$
- * @version $Revision$
  */
 public class ApplicationServer {
     private static Logger log = Logger.getLogger(ApplicationServer.class);
