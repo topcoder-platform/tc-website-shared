@@ -32,4 +32,19 @@ public final class DateUtil {
         return DEFAULT_DATE_FORMAT.format(timestamp);
     }
 
+    public static String toString(Date date) {
+    	return DEFAULT_DATE_FORMAT.format(date);
+    }
+    
+    public static String toString(Date date, DateFormat format) {
+    	return format.format(date);
+    }
+    
+    public static String toString(long millis) {
+    	return toString(new Date(millis));
+    }
+    
+    public static String toString(long millis, DateFormat format) {
+    	return toString(new Date(millis), format);
+    }
 }

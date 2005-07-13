@@ -27,7 +27,7 @@ public class DBMS {
     public static int DB = getIntProperty("DB", INFORMIX);
 
     public final static String DW_DATASOURCE_NAME = getProperty("DW_DATASOURCE_NAME", "DW");
-    public final static String OLTP_DATASOURCE_NAME = getProperty("OLTP_DATASOURCE_NAME", "OLTP");
+    public final static String OLTP_DATASOURCE_NAME = getProperty("OLTP_DATASOURCE_NAME", "java;OLTP");
     public final static String JTS_OLTP_DATASOURCE_NAME = getProperty("JTS_OLTP_DATASOURCE_NAME", "JTS_OLTP");
     public final static String CONTEST_ADMIN_DATASOURCE = getProperty("CONTEST_ADMIN_DATASOURCE", "OLTP");
     public final static String CORP_JTS_OLTP_DATASOURCE_NAME = getProperty("CORP_JTS_OLTP_DATASOURCE_NAME", "JTS_CORP_DS");
@@ -42,7 +42,7 @@ public class DBMS {
     public final static String TCS_OLTP_DATASOURCE_NAME = getProperty("TCS_OLTP_DATASOURCE_NAME", "TCS_CATALOG");
     public final static String TCS_JTS_OLTP_DATASOURCE_NAME = getProperty("TCS_JTS_OLTP_DATASOURCE_NAME", "JTS_TCS_CATALOG");
     public final static String TCS_DW_DATASOURCE_NAME = getProperty("TCS_DW_DATASOURCE_NAME", "TCS_DW");
-
+    
 
 
     public final static String JDBC_DRIVER = getProperty("JDBC_DRIVER", "weblogic.jdbc.jts.Driver");
