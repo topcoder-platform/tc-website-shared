@@ -27,6 +27,7 @@ public class ApplicationServer {
     public static String SERVER_NAME = bundle.getProperty("SERVER_NAME", "172.16.20.20");
     public static String CORP_SERVER_NAME = bundle.getProperty("CORP_SERVER_NAME", "172.16.20.20/corp");
     public static String SOFTWARE_SERVER_NAME = bundle.getProperty("SOFTWARE_SERVER_NAME", "172.16.20.222");
+    public static String FORUMS_SERVER_NAME = bundle.getProperty("FORUMS_SERVER_NAME", "forums.topcoder.com");
     public static String HOST_URL = bundle.getProperty("HOST_URL", "t3://172.16.20.41:7030");
     public static String CONTEST_HOST_URL = bundle.getProperty("CONTEST_HOST_URL", "t3://172.16.20.40:9003");
     public static String[] WEBLOGIC_CLUSTER_IP = getClusterArray(bundle.getProperty("WEBLOGIC_CLUSTER_IP", "172.16.20.41"));
