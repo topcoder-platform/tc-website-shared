@@ -1,4 +1,4 @@
-package com.topcoder.shared.messaging;
+package com.topcoder.shared.screening.common;
 
 import com.topcoder.shared.util.TCException;
 
