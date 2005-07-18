@@ -27,7 +27,7 @@ public interface EmailJob extends EJBObject {
      * @return     the job id for the newly created email job.
      * @throws RemoteException
      */
-    int createEmailJob(int templateId,
+    public int createEmailJob(int templateId,
                               int listId,
                               int commandId,
                               Date startAfter,
@@ -53,7 +53,7 @@ public interface EmailJob extends EJBObject {
      * @return     the job id for the newly created email job.
      * @throws RemoteException
      */
-    int createEmailReportJob(
+    public int createEmailReportJob(
             int sourceJobId,
             int templateId,
             int listId,
@@ -72,7 +72,7 @@ public interface EmailJob extends EJBObject {
      * @param jobId
      * @throws RemoteException
      */
-    void cancelEmailJob(int jobId) throws RemoteException;
+    public void cancelEmailJob(int jobId) throws RemoteException;
 
     /**
      * Restarts an email job that was previously canceled.
@@ -82,7 +82,7 @@ public interface EmailJob extends EJBObject {
      * @param jobId
      * @throws RemoteException
      */
-    void resumeEmailJob(int jobId) throws RemoteException;
+    public void resumeEmailJob(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -90,7 +90,7 @@ public interface EmailJob extends EJBObject {
      * @return     the type of the job
      * @throws RemoteException
      */
-    int getJobTypeId(int jobId) throws RemoteException;
+    public int getJobTypeId(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -99,7 +99,7 @@ public interface EmailJob extends EJBObject {
      * @return     the type name of the job
      * @throws RemoteException
      */
-    String getJobTypeText(int jobId) throws RemoteException;
+    public String getJobTypeText(int jobId) throws RemoteException;
 
     /**
      * Converts a typeId into a name.
@@ -108,7 +108,7 @@ public interface EmailJob extends EJBObject {
      * @return     the name for the job typeId
      * @throws RemoteException
      */
-    String getJobTypeIdText(int typeId) throws RemoteException;
+    public String getJobTypeIdText(int typeId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -117,7 +117,7 @@ public interface EmailJob extends EJBObject {
      * @return     the current statusId for the job
      * @throws RemoteException
      */
-    int getStatusId(int jobId) throws RemoteException;
+    public int getStatusId(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -126,7 +126,7 @@ public interface EmailJob extends EJBObject {
      * @return     the status string for the job
       * @throws RemoteException
      */
-    String getStatusText(int jobId) throws RemoteException;
+    public String getStatusText(int jobId) throws RemoteException;
 
     /**
      * Converts a status id into a status string.
@@ -135,7 +135,7 @@ public interface EmailJob extends EJBObject {
      * @return     the status string for the statusId
      * @throws RemoteException
      */
-    String getStatusIdText(int statusId) throws RemoteException;
+    public String getStatusIdText(int statusId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -144,7 +144,7 @@ public interface EmailJob extends EJBObject {
      * @return     the templateId for the job
      * @throws RemoteException
      */
-    int getTemplateId(int jobId) throws RemoteException;
+    public int getTemplateId(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -153,7 +153,7 @@ public interface EmailJob extends EJBObject {
      * @return     the listId for the job
      * @throws RemoteException
      */
-    int getListId(int jobId) throws RemoteException;
+    public int getListId(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -162,7 +162,7 @@ public interface EmailJob extends EJBObject {
      * @return     the commandId for the job
      * @throws RemoteException
      */
-    int getCommandId(int jobId) throws RemoteException;
+    public int getCommandId(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -171,7 +171,7 @@ public interface EmailJob extends EJBObject {
      * @return     the commandName for the job
      * @throws RemoteException
      */
-    String getCommandName(int jobId) throws RemoteException;
+    public String getCommandName(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -180,7 +180,7 @@ public interface EmailJob extends EJBObject {
      * @return     the startAfter date for the job
      * @throws RemoteException
      */
-    Date getStartAfterDate(int jobId) throws RemoteException;
+    public Date getStartAfterDate(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -189,7 +189,7 @@ public interface EmailJob extends EJBObject {
      * @return     the stopBefore date for the job
      * @throws RemoteException
      */
-    Date getStopBeforeDate(int jobId) throws RemoteException;
+    public Date getStopBeforeDate(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -198,7 +198,7 @@ public interface EmailJob extends EJBObject {
      * @return     the fromAddress for the job
      * @throws RemoteException
      */
-    String getFromAddress(int jobId) throws RemoteException;
+    public String getFromAddress(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -207,7 +207,7 @@ public interface EmailJob extends EJBObject {
      * @return     the fromPersonal for the job
      * @throws RemoteException
      */
-    String getFromPersonal(int jobId) throws RemoteException;
+    public String getFromPersonal(int jobId) throws RemoteException;
 
     /**
      * Returns the requested information about the job.
@@ -216,7 +216,7 @@ public interface EmailJob extends EJBObject {
      * @return     the subject for the job
      * @throws RemoteException
      */
-    String getSubject(int jobId) throws RemoteException;
+    public String getSubject(int jobId) throws RemoteException;
 
     /**
      * Returns a map of the results for the job.
@@ -229,7 +229,7 @@ public interface EmailJob extends EJBObject {
      * @return     a map of jobDetailIds and jobDetailStatusIds for a job
      * @throws RemoteException
      */
-    Map getJobDetailResults(int jobId) throws RemoteException;
+    public Map getJobDetailResults(int jobId) throws RemoteException;
 
     /**
      * Returns a three part array containing the results for a subset of
@@ -259,7 +259,7 @@ public interface EmailJob extends EJBObject {
      *
      * @see #getJobDetailResults(int jobId)
      */
-    Object[] getJobDetailResults(int jobId, int firstRecordOffset, int lastRecordOffset) throws RemoteException;
+    public Object[] getJobDetailResults(int jobId, int firstRecordOffset, int lastRecordOffset) throws RemoteException;
 
     /**
      * Returns the jobDetailReason for a jobDetailId.
@@ -269,7 +269,7 @@ public interface EmailJob extends EJBObject {
      * @return     the reason for the current status
      * @throws RemoteException
      */
-    String getJobDetailReason(int jobId, int jobDetailId) throws RemoteException;
+    public String getJobDetailReason(int jobId, int jobDetailId) throws RemoteException;
 
     /**
      * Returns the jobDetailData for a jobDetailId.
@@ -279,7 +279,7 @@ public interface EmailJob extends EJBObject {
      * @return     the data for the jobDetailId for the current status
      * @throws RemoteException
      */
-    String getJobDetailData(int jobId, int jobDetailId) throws RemoteException;
+    public String getJobDetailData(int jobId, int jobDetailId) throws RemoteException;
 
     /**
      * Returns true if the job's detail records have been archived.
@@ -289,7 +289,7 @@ public interface EmailJob extends EJBObject {
      *             Returns false if the job does not have archived records.
      * @throws RemoteException
      */
-    boolean isJobDetailArchived(int jobId) throws RemoteException;
+    public boolean isJobDetailArchived(int jobId) throws RemoteException;
 
     /**
      * Converts a jobDetailStatusId into a status string.
@@ -298,7 +298,7 @@ public interface EmailJob extends EJBObject {
      * @return     the status string for the jobDetailStatusId
      * @throws RemoteException
      */
-    String getDetailStatusIdText(int jobDetailStatusId) throws RemoteException;
+    public String getDetailStatusIdText(int jobDetailStatusId) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -307,7 +307,7 @@ public interface EmailJob extends EJBObject {
      * @param templateId
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setTemplateId(int jobId, int templateId) throws RemoteException;
+    public void setTemplateId(int jobId, int templateId) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -316,7 +316,7 @@ public interface EmailJob extends EJBObject {
      * @param listId
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setListId(int jobId, int listId) throws RemoteException;
+    public void setListId(int jobId, int listId) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -325,7 +325,7 @@ public interface EmailJob extends EJBObject {
      * @param commandId
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setCommandId(int jobId, int commandId) throws RemoteException;
+    public void setCommandId(int jobId, int commandId) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -334,7 +334,7 @@ public interface EmailJob extends EJBObject {
      * @param startAfterDate
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setStartAfterDate(int jobId, Date startAfterDate) throws RemoteException;
+    public void setStartAfterDate(int jobId, Date startAfterDate) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -343,7 +343,7 @@ public interface EmailJob extends EJBObject {
      * @param stopBeforeDate
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setStopBeforeDate(int jobId, Date stopBeforeDate) throws RemoteException;
+    public void setStopBeforeDate(int jobId, Date stopBeforeDate) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -352,7 +352,7 @@ public interface EmailJob extends EJBObject {
      * @param fromAddress
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setFromAddress(int jobId, String fromAddress) throws RemoteException;
+    public void setFromAddress(int jobId, String fromAddress) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -361,7 +361,7 @@ public interface EmailJob extends EJBObject {
      * @param fromPersonal
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setFromPersonal(int jobId, String fromPersonal) throws RemoteException;
+    public void setFromPersonal(int jobId, String fromPersonal) throws RemoteException;
 
     /**
      * Changes the information about the job.
@@ -370,7 +370,7 @@ public interface EmailJob extends EJBObject {
      * @param subject
      * @throws     RemoteException if the job is already active or the job does not exist.
      */
-    void setSubject(int jobId, String subject) throws RemoteException;
+    public void setSubject(int jobId, String subject) throws RemoteException;
 
     /**
      * Creates or updates command parameters for a job that has a commandId as its data source.
@@ -380,7 +380,7 @@ public interface EmailJob extends EJBObject {
      * @param param
      * @throws     RemoteException if the parameter can not be set.
      */
-    void setCommandParam(int jobId, int inputId, String param) throws RemoteException;
+    public void setCommandParam(int jobId, int inputId, String param) throws RemoteException;
 
     /**
      * Returns a Map of the command parameters for a job.
@@ -390,7 +390,7 @@ public interface EmailJob extends EJBObject {
      *             and the map values being the param (String) for the jobId.
      * @throws RemoteException
      */
-    Map getCommandParams(int jobId) throws RemoteException;
+    public Map getCommandParams(int jobId) throws RemoteException;
 
     /**
      * Returns the inputName for the inputId.
@@ -399,7 +399,7 @@ public interface EmailJob extends EJBObject {
      * @return     The name of the input.  This can be fed to the Statistics bean.
      * @throws RemoteException
      */
-    String getCommandParamName(int inputId) throws RemoteException;
+    public String getCommandParamName(int inputId) throws RemoteException;
 
 }
 
