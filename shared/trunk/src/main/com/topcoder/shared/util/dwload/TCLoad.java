@@ -109,8 +109,9 @@ public abstract class TCLoad {
     /**
      * Call this method to build the source database connection.
      */
-    public void buildSourceDBConn() throws SQLException {
+    public Connection buildSourceDBConn() throws SQLException {
         Connection conn = openConnection(SOURCE_DB);
+        return conn;
     }
 
     /**
@@ -128,8 +129,9 @@ public abstract class TCLoad {
     /**
      * Call this method to build the target database connection.
      */
-    public void buildTargetDBConn() throws SQLException {
+    public Connection buildTargetDBConn() throws SQLException {
         Connection conn = openConnection(TARGET_DB);
+        return conn;
     }
 
     /**
