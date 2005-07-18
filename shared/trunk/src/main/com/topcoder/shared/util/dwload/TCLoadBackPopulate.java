@@ -34,13 +34,19 @@ public class TCLoadBackPopulate extends TCLoad {
 			PreparedStatement getCoders = prepareStatement(GET_CODERS, TARGET_DB);
 			PreparedStatement updateRankHistory = prepareStatement(UPDATE_RANK_HISTORY, TARGET_DB);
 			
+			System.out.println("1");
+			
 			ResultSet rs = getRounds.executeQuery();
+			
+			System.out.println("2");
 			
 			// each valid round
 			while(rs.next()) {
 				int roundId = rs.getInt("round_id");
 				Date date = rs.getDate("date");
 				long time = date.getTime();
+				
+				System.out.println("Round: " + roundId);
 				
 				// each coder rated in the round
 				getCoders.setInt(1, roundId);
