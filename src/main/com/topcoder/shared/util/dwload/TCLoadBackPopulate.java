@@ -58,10 +58,12 @@ public class TCLoadBackPopulate extends TCLoad {
 					coder.rating = rating;
 					coder.lastRatedTime = time;
 				}
+				rs2.close();
 				
 				removeInactiveCoders(coders, time);
 				rankCoders(coders, roundId, updateRankHistory);
 			}
+			rs.close();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
