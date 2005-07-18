@@ -24,6 +24,8 @@ public class TCLoadBackPopulate extends TCLoad {
 	
 	private void loadRankHistoryActive() {
 		try {
+			System.out.println("0");
+			
 			Map coders = new HashMap();
 			
 			String GET_ROUNDS = "select round.round_id, round.calendar_id, calendar.date from round, calendar where round.calendar_id = calendar.calendar_id order by round.calendar_id;";
