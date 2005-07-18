@@ -81,7 +81,7 @@ public class TCLoadBackPopulate extends TCLoad {
 	}
 	
 	private void removeInactiveCoders(Map coders, long time) {
-		long diff = 1000 * 60 * 60 * 24 * 180;
+		long diff = 1000L * 60L * 60L * 24L * 180L;
 		for (Iterator i = coders.values().iterator(); i.hasNext();) {
 			Coder coder = (Coder)i.next();
 			if (time - coder.lastRatedTime > diff) {
