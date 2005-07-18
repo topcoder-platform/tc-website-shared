@@ -46,8 +46,8 @@ public class TCLoadBackPopulate extends TCLoad {
 				getCoders.setInt(1, roundId);
 				ResultSet rs2 = getCoders.executeQuery();
 				while(rs2.next()) {
-					long coderId = rs.getLong("coder_id");
-					int rating = rs.getInt("new_rating");
+					long coderId = rs2.getLong("coder_id");
+					int rating = rs2.getInt("new_rating");
 					Long key = new Long(coderId);
 					Coder coder = (Coder)coders.get(key);
 					if (coder == null) {
