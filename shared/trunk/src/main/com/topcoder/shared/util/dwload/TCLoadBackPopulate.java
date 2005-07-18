@@ -117,7 +117,7 @@ public class TCLoadBackPopulate extends TCLoad {
 		}
 	}
 	
-	private static class Coder {
+	private static class Coder implements Comparable {
 		long coderId;
 		int rating;
 		long lastRatedTime;
