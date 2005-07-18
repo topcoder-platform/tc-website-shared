@@ -68,7 +68,9 @@ public class TCLoadBackPopulate extends TCLoad {
 				}
 				rs2.close();
 				
+				System.out.println(coders.size());
 				removeInactiveCoders(coders, time);
+				System.out.println(coders.size());
 				rankCoders(coders, roundId, updateRankHistory);
 			}
 			rs.close();
