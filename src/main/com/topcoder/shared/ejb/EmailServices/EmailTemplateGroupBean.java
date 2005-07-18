@@ -4,7 +4,6 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
 
-import javax.ejb.EJBException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,15 +22,15 @@ public class EmailTemplateGroupBean extends BaseEJB {
     public void ejbCreate() {
     }
 
-    private static final Logger log = Logger.getLogger(EmailTemplateGroupBean.class);
+    private static Logger log = Logger.getLogger(EmailTemplateGroupBean.class);
 
     /**
      *
      * @param name
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public int addGroup(String name) throws EJBException {
+    public int addGroup(String name) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -44,7 +43,7 @@ public class EmailTemplateGroupBean extends BaseEJB {
         log.debug("Add template group requested (name " + name + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -96,9 +95,9 @@ public class EmailTemplateGroupBean extends BaseEJB {
      *
      * @param id
      * @param name
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void updateGroup(int id, String name) throws EJBException {
+    public void updateGroup(int id, String name) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -110,7 +109,7 @@ public class EmailTemplateGroupBean extends BaseEJB {
         log.debug("Update template group requested (id " + id + ", name " + name + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -154,9 +153,9 @@ public class EmailTemplateGroupBean extends BaseEJB {
     /**
      *
      * @param id
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void removeGroup(int id) throws EJBException {
+    public void removeGroup(int id) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -168,7 +167,7 @@ public class EmailTemplateGroupBean extends BaseEJB {
         log.debug("Remove template group requested (id " + id + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE FROM");
@@ -209,9 +208,9 @@ public class EmailTemplateGroupBean extends BaseEJB {
     /**
      *
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public Map getGroups() throws EJBException {
+    public Map getGroups() throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -224,7 +223,7 @@ public class EmailTemplateGroupBean extends BaseEJB {
         log.debug("getGroups for template groups requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -263,9 +262,9 @@ public class EmailTemplateGroupBean extends BaseEJB {
      *
      * @param id
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public String getName(int id) throws EJBException {
+    public String getName(int id) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -278,7 +277,7 @@ public class EmailTemplateGroupBean extends BaseEJB {
         log.debug("getName for template group requested (id " + id + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");

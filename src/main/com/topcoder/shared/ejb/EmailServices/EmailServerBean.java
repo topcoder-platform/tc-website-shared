@@ -4,7 +4,6 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
 
-import javax.ejb.EJBException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -27,18 +26,18 @@ public class EmailServerBean extends BaseEJB {
     public void ejbCreate() {
     }
 
-    private static final Logger log = Logger.getLogger(EmailServerBean.class);
+    private static Logger log = Logger.getLogger(EmailServerBean.class);
 
     /**
      *
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public Date getDate() throws EJBException {
+    public Date getDate() throws RemoteException {
         try {
             return new Date();
         } catch (Exception e) {
-            throw new EJBException("Failed to get date", e);
+            throw new RemoteException("Failed to get date", e);
         }
     }
 
@@ -47,9 +46,9 @@ public class EmailServerBean extends BaseEJB {
      * @param status
      * @param dateRange
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public Set getJobs(int status, int dateRange) throws EJBException {
+    public Set getJobs(int status, int dateRange) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -62,7 +61,7 @@ public class EmailServerBean extends BaseEJB {
         //log.debug("getJobs based on status=" + status);
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             java.sql.Timestamp now = new java.sql.Timestamp(new Date().getTime());
 
@@ -97,7 +96,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to get job ids";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -117,9 +116,9 @@ public class EmailServerBean extends BaseEJB {
      *
      * @param jobId
      * @param status
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void setJobStatus(int jobId, int status) throws EJBException {
+    public void setJobStatus(int jobId, int status) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -131,7 +130,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setJobStatus (jobId " + jobId + ", status " + status + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -155,7 +154,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to update job status";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -173,9 +172,9 @@ public class EmailServerBean extends BaseEJB {
      *
      * @param jobId
      * @param type
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void setJobType(int jobId, int type) throws EJBException {
+    public void setJobType(int jobId, int type) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -187,7 +186,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setJobType (jobId " + jobId + ", type " + type + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -211,7 +210,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to update job type";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -228,9 +227,9 @@ public class EmailServerBean extends BaseEJB {
     /**
      *
      * @param jobId
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void clearDetailRecords(int jobId) throws EJBException {
+    public void clearDetailRecords(int jobId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -242,7 +241,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("clearDetailRecords jobId " + jobId);
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE");
@@ -262,7 +261,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to clearDetailRecords";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -281,9 +280,9 @@ public class EmailServerBean extends BaseEJB {
      * @param jobId
      * @param data
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public int addDetailRecord(int jobId, String data) throws EJBException {
+    public int addDetailRecord(int jobId, String data) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -296,7 +295,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("addDetailRecord (jobId " + jobId + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
@@ -330,7 +329,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to update job status";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -352,9 +351,9 @@ public class EmailServerBean extends BaseEJB {
      * @param detailId
      * @param status
      * @param reason
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void setDetailStatus(int jobId, int detailId, int status, String reason) throws EJBException {
+    public void setDetailStatus(int jobId, int detailId, int status, String reason) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -366,7 +365,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setDetailStatus (jobId " + jobId + ", detailId " + detailId + ", status " + status + ":" + reason + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -394,7 +393,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to update job status";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -411,9 +410,9 @@ public class EmailServerBean extends BaseEJB {
     /**
      *
      * @param jobId
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void setJobBuilt(int jobId) throws EJBException {
+    public void setJobBuilt(int jobId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -425,7 +424,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setJobBuilt (jobId " + jobId + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -451,7 +450,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to update job type";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -468,9 +467,9 @@ public class EmailServerBean extends BaseEJB {
     /**
      *
      * @param jobId
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void archiveDetail(int jobId) throws EJBException {
+    public void archiveDetail(int jobId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -482,7 +481,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("archiveDetail (jobId " + jobId + ")");
 
         try {
-            conn = DBMS.getTransConnection();
+            conn = DBMS.getConnection("TC_EMAIL_JTS");
             conn.setAutoCommit(false);
 
             java.sql.Timestamp now = new java.sql.Timestamp(new Date().getTime());
@@ -527,7 +526,7 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to archive detail records";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            throw new RemoteException(err, dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -544,9 +543,9 @@ public class EmailServerBean extends BaseEJB {
     /**
      *
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public long getSchedulerId() throws EJBException {
+    public long getSchedulerId() throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -557,7 +556,7 @@ public class EmailServerBean extends BaseEJB {
         //log.debug("getSchedulerId requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
@@ -588,7 +587,7 @@ public class EmailServerBean extends BaseEJB {
             return 1;
         } catch (Exception dberr) {
             log.error("Failed to get schedulerId", dberr);
-            throw new EJBException("Failed to get schedulerId", dberr);
+            throw new RemoteException("Failed to get schedulerId", dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -607,9 +606,9 @@ public class EmailServerBean extends BaseEJB {
      * @param jobId
      * @param controlId
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public boolean acquireJob(int jobId, long controlId) throws EJBException {
+    public boolean acquireJob(int jobId, long controlId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -619,7 +618,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("acquireJob(" + jobId + "," + controlId + ") requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" INSERT INTO");
@@ -645,7 +644,7 @@ public class EmailServerBean extends BaseEJB {
                 return false;
             }
         } catch (Exception dberr) {
-            throw new EJBException("Error while attempting to acquireJob", dberr);
+            throw new RemoteException("Error while attempting to acquireJob", dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
@@ -663,9 +662,9 @@ public class EmailServerBean extends BaseEJB {
      * @param controlId
      * @param oldId
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public boolean acquireJob(int jobId, long controlId, long oldId) throws EJBException {
+    public boolean acquireJob(int jobId, long controlId, long oldId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -677,7 +676,7 @@ public class EmailServerBean extends BaseEJB {
         if (oldId == 0 && acquireJob(jobId, controlId)) return true;
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE ");
@@ -698,7 +697,7 @@ public class EmailServerBean extends BaseEJB {
             }
             return false;
         } catch (Exception dberr) {
-            throw new EJBException("Error while attempting to acquireJob", dberr);
+            throw new RemoteException("Error while attempting to acquireJob", dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
@@ -714,9 +713,9 @@ public class EmailServerBean extends BaseEJB {
      *
      * @param jobId
      * @return
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public long getJobControlId(int jobId) throws EJBException {
+    public long getJobControlId(int jobId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -727,7 +726,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("getJobControlId(" + jobId + ") requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT ");
@@ -744,7 +743,7 @@ public class EmailServerBean extends BaseEJB {
             }
             return 0;
         } catch (Exception dberr) {
-            throw new EJBException("Error while attempting to getJobControlId", dberr);
+            throw new RemoteException("Error while attempting to getJobControlId", dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
@@ -761,9 +760,9 @@ public class EmailServerBean extends BaseEJB {
     /**
      *
      * @param controlId
-     * @throws EJBException
+     * @throws RemoteException
      */
-    public void clearJobControlIds(long controlId) throws EJBException {
+    public void clearJobControlIds(long controlId) throws RemoteException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -773,7 +772,7 @@ public class EmailServerBean extends BaseEJB {
         //log.debug("clearJobControlIds(" + controlId + ") requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = DBMS.getConnection("TC_EMAIL");
 
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE");
@@ -785,7 +784,7 @@ public class EmailServerBean extends BaseEJB {
             ps.setLong(1, controlId);
             ps.executeUpdate();
         } catch (Exception dberr) {
-            throw new EJBException("Error while attempting to clearJobControlIds", dberr);
+            throw new RemoteException("Error while attempting to clearJobControlIds", dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
