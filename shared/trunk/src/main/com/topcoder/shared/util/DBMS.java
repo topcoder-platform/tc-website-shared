@@ -44,15 +44,38 @@ public class DBMS {
     public final static String TCS_DW_DATASOURCE_NAME = getProperty("TCS_DW_DATASOURCE_NAME", "TCS_DW");
     
 
-
+    /**
+     * @deprecated
+     */
     public final static String JDBC_DRIVER = getProperty("JDBC_DRIVER", "weblogic.jdbc.jts.Driver");
+    /**
+     * @deprecated
+     */
     public final static String POOL_DRIVER = getProperty("POOL_DRIVER", "weblogic.jdbc.pool.Driver");
     public final static String INFORMIX_DRIVER = getProperty("INFORMIX_DRIVER", "com.informix.jdbc.IfxDriver");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_POOL = getProperty("JMA_INFORMIX_POOL", "jdbc:weblogic:pool:JMAInformixPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_POOL_JTS = getProperty("JMA_INFORMIX_POOL_JTS", "jdbc:weblogic:jts:JMAInformixPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_DW_POOL = getProperty("JMA_INFORMIX_DW_POOL", "jdbc:weblogic:pool:JMAInformixDWPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_DW_POOL_JTS = getProperty("JMA_INFORMIX_DW_POOL_JTS", "jdbc:weblogic:jts:JMAInformixDWPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_POOL = getProperty("JMA_POOL", "jdbc:weblogic:pool:JMAPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_POOL_JTS = getProperty("JMA_POOL_JTS", "jdbc:weblogic:jts:JMAPool");
     public final static String JMS_FACTORY = getProperty("JMS_FACTORY", "jms.connection.jmsFactory");
     public final static String EMAIL_QUEUE = getProperty("EMAIL_QUEUE", "eMailQueue");
