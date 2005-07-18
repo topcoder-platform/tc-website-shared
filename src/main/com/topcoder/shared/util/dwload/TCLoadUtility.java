@@ -267,7 +267,7 @@ public class TCLoadUtility {
     public static void doLoad(TCLoad tcload) throws Exception {
         try {
             log.info("Creating source database connection...");
-            tcload.buildSourceDBConn();
+            System.out.println(tcload.buildSourceDBConn());
             log.info("Success!");
         } catch (SQLException sqle) {
             sErrorMsg.setLength(0);
@@ -279,7 +279,7 @@ public class TCLoadUtility {
 
         try {
             log.info("Creating target database connection...");
-            tcload.buildTargetDBConn();
+            System.out.println(tcload.buildTargetDBConn());
             log.info("Success!");
         } catch (SQLException sqle2) {
             sErrorMsg.setLength(0);
