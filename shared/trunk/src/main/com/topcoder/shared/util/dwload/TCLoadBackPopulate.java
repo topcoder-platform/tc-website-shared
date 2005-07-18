@@ -24,23 +24,20 @@ public class TCLoadBackPopulate extends TCLoad {
 	
 	private void loadRankHistoryActive() {
 		try {
-			System.out.println("0");
-			
 			Map coders = new HashMap();
 			
+			String DELETE_RECORDS = "delete from coder_rank_history where coder_rank_type_id = 2;";
 			String GET_ROUNDS = "select round.round_id, round.calendar_id, calendar.date from round, calendar where round.calendar_id = calendar.calendar_id order by round.calendar_id;";
 			String GET_CODERS = "select coder_id, new_rating from room_result where round_id = ? and rated_flag = 1;";
 			String UPDATE_RANK_HISTORY = "insert into coder_rank_history (coder_id, round_id, percentile, rank, coder_rank_type_id) values (?, ?, ?, ?, 2);";
 			
+			PreparedStatement deleteRecords = prepareStatement(DELETE_RECORDS, TARGET_DB);
 			PreparedStatement getRounds = prepareStatement(GET_ROUNDS, TARGET_DB);
 			PreparedStatement getCoders = prepareStatement(GET_CODERS, TARGET_DB);
 			PreparedStatement updateRankHistory = prepareStatement(UPDATE_RANK_HISTORY, TARGET_DB);
 			
-			System.out.println("1");
-			
+			deleteRecords.executeUpdate();
 			ResultSet rs = getRounds.executeQuery();
-			
-			System.out.println("2");
 			
 			// each valid round
 			while(rs.next()) {
@@ -68,9 +65,7 @@ public class TCLoadBackPopulate extends TCLoad {
 				}
 				rs2.close();
 				
-				System.out.println(coders.size());
 				removeInactiveCoders(coders, time);
-				System.out.println(coders.size());
 				rankCoders(coders, roundId, updateRankHistory);
 			}
 			rs.close();
@@ -112,8 +107,6 @@ public class TCLoadBackPopulate extends TCLoad {
             ps.setFloat(3, (float) 100 * ((float) (count - rank) / count));
             ps.setInt(4, rank);
             ps.executeUpdate();
-            
-//            System.out.println(rank + "\t" + roundId + "\t" + coderId);
 		}
 	}
 	
