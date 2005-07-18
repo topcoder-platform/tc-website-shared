@@ -12,6 +12,8 @@ package com.topcoder.shared.util.dwload;
  * <li>coder_rank - overall by rating</li>
  * <li>coder_rank_history - overall by rating</li>
  * </ul>
+ * 
+ * Note: This load cannot be run for old rounds
  *
  * @author Greg Paul
  * @author Christopher Hopkins [TCid: darkstalker] (chrism_hopkins@yahoo.com)
@@ -86,7 +88,9 @@ public class TCLoadRank extends TCLoad {
             log.info("got " + l.size() + " records in " + (System.currentTimeMillis()-start) + " milliseconds");
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
 
-            loadOverallRatingRankHistory(l);
+//            loadOverallRatingRankHistory(l);
+            loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, l);
+            loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, l);
 
             loadRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
 
@@ -191,13 +195,11 @@ public class TCLoadRank extends TCLoad {
         }
 
     }
-
-    /**
-     * Loads the coder_rank_history table with information about
-     * overall rating rank.
-     */
-    private void loadOverallRatingRankHistory(List list) throws Exception {
-        log.debug("loadOverallRatingRankHistory called...");
+    
+    
+    
+    private void loadRatingRankHistory(int rankType, List list) throws Exception {
+        log.debug("loadRatingRankHistory called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
         PreparedStatement psSel = null;
@@ -212,32 +214,33 @@ public class TCLoadRank extends TCLoad {
             query = new StringBuffer(100);
             query.append(" DELETE");
             query.append(" FROM coder_rank_history");
-            query.append(" WHERE coder_rank_type_id = " + OVERALL_RATING_RANK_TYPE_ID);
+            query.append(" WHERE coder_rank_type_id = " + rankType);
             query.append(" AND round_id = " + roundId);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append(" INSERT");
             query.append(" INTO coder_rank_history (coder_id, round_id, percentile, rank, coder_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, " + OVERALL_RATING_RANK_TYPE_ID + ")");
+            query.append(" VALUES (?, ?, ?, ?, " + rankType + ")");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-
-            /* if it's the most recent round that we're loading
-             * we can pull from the rating table, if not,
-             * then we have to go and build up the ratings of
-             * all the people who have competed up until the time
-             * of the given round
-             */
-            if (roundId == getMostRecentRound()) {
-                ratings = list;
-            } else {
-                ratings = getCoderRatingsForRound();
+            if (rankType == ACTIVE_RATING_RANK_TYPE_ID) {
+	            ratings = new ArrayList();
+	            for (Iterator i = list.iterator(); i.hasNext();) {
+					CoderRating rating = (CoderRating)i.next();
+					if (rating.active) {
+						ratings.add(rating);
+					}
+				}
             }
+            else {
+            	ratings = list;
+            }
+            
             coderCount = ratings.size();
             Collections.sort(ratings);
-
-            // delete all the records for the overall rating rank type
+            
+            // delete all the records for the rating rank type
             psDel.executeUpdate();
 
             int i = 0;
@@ -259,13 +262,13 @@ public class TCLoadRank extends TCLoad {
                 psIns.setFloat(3, (float) 100 * ((float) (coderCount - rank) / coderCount));
                 psIns.setInt(4, rank);
                 count += psIns.executeUpdate();
-                printLoadProgress(count, "overall rating rank history");
+                printLoadProgress(count, "rating rank history");
             }
-            log.info("Records loaded for overall rating rank history load: " + count);
+            log.info("Records loaded for rating rank history load: " + count);
 
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'coder_rank_history' table failed for overall rating rank.\n" +
+            throw new Exception("Load of 'coder_rank_history' table failed for rating rank.\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
@@ -645,88 +648,6 @@ public class TCLoadRank extends TCLoad {
         }
         return ret;
 
-    }
-
-
-
-
-
-
-
-    /**
-     * Gets the of ratings for all the active coders that have
-     * taken part in a match prior to and including the given round.
-     * @return List containing CoderRating objects in descending rating order
-     * @throws Exception if something goes wrong when querying
-     */
-    private List getCoderRatingsForRound() throws Exception {
-        log.debug("getCoderRatingsForRound called...");
-        PreparedStatement ps = null;
-        StringBuffer query = null;
-        ResultSet rs = null;
-        List ret = null;
-
-        try {
-            query = new StringBuffer(100);
-            query.append(" select rh.rating, rh.coder_id");
-            query.append(" from rating_history rh");
-            query.append(" where rh.round_id = ?");
-            query.append(" order by rh.rating desc");
-            ps = prepareStatement(query.toString(), SOURCE_DB);
-            ps.setInt(1, roundId);
-            rs = ps.executeQuery();
-            ret = new ArrayList(15000);
-            while (rs.next()) {
-                ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"), 0, false, null, null));
-            }
-        } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
-            throw new Exception("Getting ratings for round failed.\n" +
-                    sqle.getMessage());
-        } finally {
-            close(rs);
-            close(ps);
-        }
-        return ret;
-    }
-
-
-    /**
-     * Gets the most recent round in the source
-     * db.  If there are no rounds in the source
-     * db, then it returns -1.
-     * @return the most recent round's id, or -1
-     * if there are not rounds.
-     * @throws Exception if there were a problem
-     * executing a query
-     */
-    private int getMostRecentRound() throws Exception {
-        log.debug("getMostRecentRound called...");
-        PreparedStatement ps = null;
-        StringBuffer query = null;
-        ResultSet rs = null;
-        int ret = -1;
-
-        try {
-            query = new StringBuffer();
-            query.append(" SELECT round_id");
-            query.append(" FROM round");
-            query.append(" WHERE calendar_id = (SELECT MAX(calendar_id)");
-            query.append(" FROM round)");
-            ps = prepareStatement(query.toString(), SOURCE_DB);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                ret = rs.getInt("round_id");
-            }
-        } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
-            throw new Exception("Getting most recent round failed.\n" +
-                    sqle.getMessage());
-        } finally {
-            close(rs);
-            close(ps);
-        }
-        return ret;
     }
 
     private class CoderRating implements Comparable {
