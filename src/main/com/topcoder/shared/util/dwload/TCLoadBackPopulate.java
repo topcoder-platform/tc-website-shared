@@ -111,9 +111,9 @@ public class TCLoadBackPopulate extends TCLoad {
             ps.setInt(2, roundId);
             ps.setFloat(3, (float) 100 * ((float) (count - rank) / count));
             ps.setInt(4, rank);
-//            ps.executeUpdate();
+            ps.executeUpdate();
             
-            System.out.println(rank + "\t" + roundId + "\t" + coderId);
+//            System.out.println(rank + "\t" + roundId + "\t" + coderId);
 		}
 	}
 	
