@@ -160,8 +160,8 @@ public abstract class TCLoad {
      * @return The java.sql.Connection object which is a connection to that DB
      */
     protected Connection openConnection(int index) throws SQLException {
-        if (!checkArrayListIndex(index))
-            return null;
+//        if (!checkArrayListIndex(index))
+//            return null;
 
         String urlstr = (String) fDatabaseURLs.get(index);
         Connection conn = DriverManager.getConnection(urlstr);
@@ -228,8 +228,8 @@ public abstract class TCLoad {
     protected PreparedStatement prepareStatement(String sqlStr, int connIdx)
             throws SQLException {
 
-        if (!checkArrayListIndex(connIdx))
-            return null;
+//        if (!checkArrayListIndex(connIdx))
+//            return null;
 
         Connection conn = getOpenConnection(connIdx);
         if (conn == null)

@@ -46,9 +46,9 @@ public class TCLoadBackPopulate extends TCLoad {
 				getCoders.setInt(1, roundId);
 				ResultSet rs2 = getCoders.executeQuery();
 				while(rs2.next()) {
-					int coderId = rs.getInt("coder_id");
+					long coderId = rs.getLong("coder_id");
 					int rating = rs.getInt("new_rating");
-					Integer key = new Integer(coderId);
+					Long key = new Long(coderId);
 					Coder coder = (Coder)coders.get(key);
 					if (coder == null) {
 						coder = new Coder();
@@ -71,7 +71,7 @@ public class TCLoadBackPopulate extends TCLoad {
 	private void removeInactiveCoders(Map coders, long time) {
 		long diff = 1000 * 60 * 60 * 24 * 180;
 		for (Iterator i = coders.values().iterator(); i.hasNext();) {
-			Coder coder = (Coder) i.next();
+			Coder coder = (Coder)i.next();
 			if (time - coder.lastRatedTime > diff) {
 				i.remove();
 			}
@@ -86,9 +86,9 @@ public class TCLoadBackPopulate extends TCLoad {
 		int count = list.size();
 		int previousRating = Integer.MIN_VALUE;
 		for (Iterator i = list.iterator(); i.hasNext();) {
-			Coder coder = (Coder) i.next();
+			Coder coder = (Coder)i.next();
 			int rating = coder.rating;
-			int coderId = coder.coderId;
+			long coderId = coder.coderId;
 			
 			if (rating != previousRating) {
 				rank++;
@@ -106,7 +106,7 @@ public class TCLoadBackPopulate extends TCLoad {
 	}
 	
 	private static class Coder {
-		int coderId;
+		long coderId;
 		int rating;
 		long lastRatedTime;
 		
