@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author mfogleman
- *
+ * @author Michael Fogleman
  */
 public class TCLoadBackPopulate extends TCLoad {
 
