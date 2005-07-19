@@ -94,15 +94,17 @@ public class TCLoadBackPopulate extends TCLoad {
 		Collections.sort(list);
 		
 		int rank = 0;
+		int index = 0;
 		int count = list.size();
 		int previousRating = Integer.MIN_VALUE;
 		for (Iterator i = list.iterator(); i.hasNext();) {
+			index++;
 			Coder coder = (Coder)i.next();
 			int rating = coder.rating;
 			long coderId = coder.coderId;
 			
 			if (rating != previousRating) {
-				rank++;
+				rank = index;
 				previousRating = rating;
 			}
 			
