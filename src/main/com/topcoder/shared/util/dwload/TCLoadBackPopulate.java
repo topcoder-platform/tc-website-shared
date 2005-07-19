@@ -49,12 +49,14 @@ public class TCLoadBackPopulate extends TCLoad {
 				Date date = rs.getDate("date");
 				long time = date.getTime();
 				
-				System.out.println("Round: " + roundId);
+				System.out.print("Round: " + roundId + "\t");
 				
 				// each coder rated in the round
 				getCoders.setInt(1, roundId);
 				ResultSet rs2 = getCoders.executeQuery();
+				int competed = 0;
 				while(rs2.next()) {
+					competed++;
 					long coderId = rs2.getLong("coder_id");
 					int rating = rs2.getInt("new_rating");
 					Long key = new Long(coderId);
@@ -69,7 +71,9 @@ public class TCLoadBackPopulate extends TCLoad {
 				}
 				rs2.close();
 				
+				System.out.print(competed + " competed\t");
 				removeInactiveCoders(coders, time);
+				System.out.println(coders.size() + " active");
 				rankCoders(coders, roundId, updateRankHistory);
 			}
 			rs.close();
