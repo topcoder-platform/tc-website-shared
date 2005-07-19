@@ -40,6 +40,8 @@ public class TCLoadBackPopulate extends TCLoad {
 			PreparedStatement getCoders = prepareStatement(GET_CODERS, TARGET_DB);
 			PreparedStatement updateRankHistory = prepareStatement(UPDATE_RANK_HISTORY, TARGET_DB);
 			
+			System.out.println("Deleting old records, please wait...");
+			
 			deleteRecords.executeUpdate();
 			ResultSet rs = getRounds.executeQuery();
 			
@@ -101,6 +103,10 @@ public class TCLoadBackPopulate extends TCLoad {
 		int index = 0;
 		int count = list.size();
 		int previousRating = Integer.MIN_VALUE;
+		
+		int width = 50;
+		int tick = count / width;
+		
 		for (Iterator i = list.iterator(); i.hasNext();) {
 			index++;
 			Coder coder = (Coder)i.next();
@@ -117,7 +123,11 @@ public class TCLoadBackPopulate extends TCLoad {
             ps.setFloat(3, (float) 100 * ((float) (count - rank) / count));
             ps.setInt(4, rank);
             ps.executeUpdate();
+            
+            if (index % tick == 0) System.out.print('.');
 		}
+		
+		System.out.println();
 	}
 	
 	private static class Coder implements Comparable {
