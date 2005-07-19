@@ -105,6 +105,7 @@ public class TCLoadBackPopulate extends TCLoad {
 		
 		int width = 50;
 		int tick = count / width;
+		int ticks = 0;
 		
 		for (Iterator i = list.iterator(); i.hasNext();) {
 			index++;
@@ -123,7 +124,12 @@ public class TCLoadBackPopulate extends TCLoad {
             ps.setInt(4, rank);
             ps.executeUpdate();
             
-            if (index % tick == 0) System.out.print('.');
+            if (index % tick == 0) {
+            	if (ticks < width) {
+            		System.out.print('-');
+            		ticks++;
+            	}
+            }
 		}
 		
 		System.out.println();
