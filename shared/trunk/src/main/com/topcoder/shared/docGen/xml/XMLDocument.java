@@ -28,10 +28,29 @@ public final class XMLDocument extends RecordTag {
         this.styleSheet = styleSheet;
     }
 
+
+    public String getXML() {
+        return prependText+super.getXML();
+    }
+
+    public String getXML(int offSet) {
+        return prependText+super.getXML(offSet);
+    }
+
+    public String getXML(boolean filter) {
+        return prependText+super.getXML(filter);
+    }
+
+    public String getXML(boolean filter, int offSet) {
+        return prependText+super.getXML(filter, offSet);
+    }
+
+
     /**
      *
      * @param offSet
      * @return
+     * @deprecated
      */
     protected String createXML(int offSet) {
         StringBuffer preText = new StringBuffer(96);
@@ -50,6 +69,7 @@ public final class XMLDocument extends RecordTag {
     /**
      *
      * @return
+     * @deprecated
      */
     public String createXML() {
         StringBuffer preText = new StringBuffer(96);
