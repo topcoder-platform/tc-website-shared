@@ -202,7 +202,8 @@ public final class ValueTag extends Tag {
      * @return
      */
     public final String getXML() {
-        return createXML(true);
+//        return createXML(true);
+        return createXML(false);
     }
 
     /**
