@@ -6,4 +6,8 @@ abstract class Tag {
 
     abstract String getXML(int offSet);
 
+    abstract String getXML(boolean filter);
+
+    abstract String getXML(boolean filter, int offSet);
+
 }

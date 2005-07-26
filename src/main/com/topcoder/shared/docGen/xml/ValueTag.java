@@ -202,8 +202,7 @@ public final class ValueTag extends Tag {
      * @return
      */
     public final String getXML() {
-//        return createXML(true);
-        return createXML(false);
+        return createXML(true);
     }
 
     /**
@@ -234,7 +233,7 @@ public final class ValueTag extends Tag {
      * @param filterOn
      * @return
      */
-    public final String getXML(int offSet, boolean filterOn) {
+    public final String getXML(boolean filterOn,int offSet) {
         if (offSet > 0) {
             return createOffset(offSet).append(createXML(filterOn)).toString();
         } else {
