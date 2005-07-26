@@ -63,7 +63,7 @@ public class RecordTag extends Tag {
      * @return
      */
     public String getXML() {
-        return createXML();
+        return createXML(true);
     }
 
     /**
@@ -75,9 +75,9 @@ public class RecordTag extends Tag {
         String result = null;
         try {
             if (offSet > 0) {
-                result = createXML(offSet);
+                result = createXML(true, offSet);
             } else {
-                result = createXML();
+                result = createXML(true);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,12 +85,20 @@ public class RecordTag extends Tag {
         return result;
     }
 
+    public String getXML(boolean filter) {
+        return createXML(filter);
+    }
+
+    public String getXML(boolean filter, int offSet) {
+        return createXML(filter, offSet);
+    }
+
     /**
      *
      * @param offSet
      * @return
      */
-    protected String createXML(int offSet) {
+    protected String createXML(boolean filter, int offSet) {
 
         StringBuffer retVal = new StringBuffer(64);
         try {
@@ -126,7 +134,7 @@ public class RecordTag extends Tag {
      *
      * @return
      */
-    protected String createXML() {
+    protected String createXML(boolean filter) {
 
         StringBuffer retVal = new StringBuffer(64);
         try {
