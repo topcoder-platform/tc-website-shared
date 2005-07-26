@@ -8,7 +8,7 @@ package com.topcoder.shared.docGen.xml;
 public final class XMLDocument extends RecordTag {
 
     private String styleSheet;
-    private static final String prependText = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n<?cocoon-process type=\"xslt\"?>\n";
+    private static final String prependText = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<?cocoon-process type=\"xslt\"?>\n";
 
 
     /**
