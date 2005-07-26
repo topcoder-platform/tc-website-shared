@@ -101,7 +101,6 @@ public class RecordTag extends Tag {
     protected String createXML(boolean filter, int offSet) {
 
         StringBuffer retVal = new StringBuffer(1000);
-        retVal.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
         try {
             String offSetString = createOffset(offSet);
 
@@ -138,7 +137,6 @@ public class RecordTag extends Tag {
     protected String createXML(boolean filter) {
 
         StringBuffer retVal = new StringBuffer(1000);
-        retVal.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
         try {
             retVal.append("<");
             retVal.append(this.name);
