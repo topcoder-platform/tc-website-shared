@@ -415,8 +415,13 @@ public class TCLoadTCS extends TCLoad {
                     "  (select count(*) from component_inquiry where project_id = p.project_id) " +
                     "    else  (case when exists (select 1 from component_inquiry where component_id = cc.component_id and version = cv.version)  then " +
                     "            (select count(distinct user_id) from component_inquiry ci1 where component_id = cc.component_id and version = cv.version) else null end) end as num_registrations, " +
-                    "(select count(*) from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) as num_submissions, " +
-                    "(select count(*) from project_result where project_id = p.project_id and valid_submission_ind = 1) as num_valid_submissions, " +
+                    "case when exists  (select '1' from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) then " +
+                    "     (select count(*) from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) " +
+                    "else (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1) end " +
+                    "   as num_submissions,  " +
+                    "   (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1 and not  " +
+                    "exists (select * from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 1 and submitter_id = pr.user_id))  " +
+                    "    as num_valid_submissions, " +
                     "(select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score, " +
                     "(select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score, " +
                     "case when p.project_type_id = 1 then 112 else 113 end as phase_id, " +
@@ -561,8 +566,12 @@ public class TCLoadTCS extends TCLoad {
                 "select pr.project_id, pr.user_id, " +
                 "case when exists(select '1' from submission s where s.cur_version = 1 and s.project_id = pr.project_id " +
                 "and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) then 1 " +
-                "else 0 end as submit_ind, " +
-                "pr.valid_submission_ind, " +
+                "when exists(select '1' from submission s where s.cur_version = 1 and s.project_id = pr.project_id " +
+                "and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 1) then 0 "+
+                "else pr.valid_submission_ind end as submit_ind, " +
+                "case  when exists(select '1' from submission s where s.cur_version = 1 and s.project_id = pr.project_id " +
+                "and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 1) then 0 " +
+                "else pr.valid_submission_ind  end as valid_submission_ind, " +
                 "pr.raw_score, " +
                 "pr.final_score, " +
                 "case when exists (select create_time from component_inquiry where project_id = p.project_id and user_id = pr.user_id) then " +
@@ -690,18 +699,28 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement projectSelect = null;
 
         final String SUBMISSION_SELECT =
-                "select sc.project_id, " +
-                "(select submitter_id from submission where submission_type = 1 and is_removed = 0 and cur_version = 1 and submission_id = sc.submission_id) as user_id, " +
-                "author_id as reviewer_id, " +
+                "select sc.project_id,  " +
+                "s.submitter_id as user_id,  " +
+                "author_id as reviewer_id,  " +
                 "sc.raw_score as raw_score, " +
-                "score as final_score, " +
-                "(select count(distinct appeal_id) from appeal where appealer_id = (select submitter_id from submission where submission_type = 1 and is_removed = 0 and cur_version = 1 and submission_id = sc.submission_id) and cur_version = 1 " +
-                "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals, " +
-                "0 as num_successful_appeals, " +
-                " (select r_resp_id from r_user_role where login_id = sc.author_id and project_id = sc.project_id and cur_version = 1 and r_role_id = 3) as review_resp_id " +
-                "from scorecard sc " +
-                "where sc.project_id = ? and sc.scorecard_type = 2 and sc.is_completed = 1" +
-                "and sc.cur_version = 1;";
+                "score as final_score,  " +
+                "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
+                "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
+                "0 as num_successful_appeals,  " +
+                "(select r_resp_id from r_user_role where login_id = sc.author_id and project_id = sc.project_id and cur_version = 1 and r_role_id = 3) as review_resp_id,  " +
+                "scorecard_id,  " +
+                "(select distinct template_id from question_template qt, scorecard_question sq  " +
+                "where qt.q_template_v_id = sq.q_template_v_id and sq.cur_version = 1 and qt.cur_version = 1 and sq.scorecard_id = sc.scorecard_id)  as scorecard_template_id  " +
+                "from scorecard sc, submission s " +
+                "where s.cur_version = 1  " +
+                "and s.submission_id = sc.submission_id  " +
+                "and s.submission_type = 1   " +
+                "and s.is_removed = 0  " +
+                "and sc.project_id = ? " +
+                "and sc.scorecard_type = 2 " +
+                "and sc.is_completed = 1 " +
+                "and sc.cur_version = 1 ";
+
 
         final String SUBMISSION_UPDATE =
                 "update submission_review set raw_score = ?, final_score = ?, num_appeals = ?, num_successful_appeals = ?, review_resp_id = ? " +
@@ -800,14 +819,24 @@ public class TCLoadTCS extends TCLoad {
 
 
         final String SCREENING_SELECT =
-                "select pr.project_id, pr.user_id, " +
-                "(select author_id from scorecard where scorecard_type = 1 and is_completed = 1 and submission_id = " +
-                "(select submission_id from submission s where s.cur_version = 1 and s.project_id = pr.project_id and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) " +
-                "    and project_id = pr.project_id and cur_version = 1) as reviewer_id, " +
-                "(select score from scorecard where scorecard_type = 1 and is_completed = 1 and submission_id =  " +
-                "(select submission_id from submission s where s.cur_version = 1 and s.project_id = pr.project_id and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) " +
-                "    and project_id = pr.project_id and cur_version = 1) as final_score " +
-                "        from project_result pr";
+                        "select pr.project_id,  " +
+                        "pr.user_id, " +
+                        "sc.author_id as reviewer_id,  " +
+                        "sc.score as final_score,  " +
+                        "sc.scorecard_id,  " +
+                        "         (select distinct template_id from question_template qt, scorecard_question sq  " +
+                        "         where qt.q_template_v_id = sq.q_template_v_id and sq.cur_version = 1 and qt.cur_version = 1 and sq.scorecard_id = sc.scorecard_id)  as scorecard_template_id  " +
+                        "from project_result pr, submission s, scorecard sc " +
+                        "where s.cur_version = 1  " +
+                        "and s.project_id = pr.project_id  " +
+                        "and s.submitter_id = pr.user_id  " +
+                        "and s.submission_type = 1  " +
+                        "and s.is_removed = 0 " +
+                        "and sc.scorecard_type = 1  " +
+                        "and sc.is_completed = 1  " +
+                        "and sc.submission_id = s.submission_id " +
+                        "and sc.project_id = pr.project_id " +
+                        "and sc.cur_version = 1";
 
 
         final String SCREENING_UPDATE =
