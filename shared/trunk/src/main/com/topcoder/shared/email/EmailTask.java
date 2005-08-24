@@ -48,7 +48,7 @@ abstract class EmailTask implements Runnable {
         keepAlive kaThread = null;
 
         try {
-            EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+            EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
 
             // verify that the job is still scheduled for this instance...
             if (!verifyJob(server)) {

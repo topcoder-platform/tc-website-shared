@@ -4,6 +4,7 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
 
+import javax.ejb.EJBException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -21,16 +22,16 @@ public class EmailListBean extends BaseEJB {
     public void ejbCreate() {
     }
 
-    private static Logger log = Logger.getLogger(EmailListBean.class);
+    private static final Logger log = Logger.getLogger(EmailListBean.class);
 
     /**
      *
      * @param group
      * @param name
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public int createList(int group, String name) throws RemoteException {
+    public int createList(int group, String name) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -43,7 +44,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("Create list requested (group " + group + ", name " + name + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
@@ -95,9 +96,9 @@ public class EmailListBean extends BaseEJB {
      * @param listId
      * @param data
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public int addMember(int listId, String data) throws RemoteException {
+    public int addMember(int listId, String data) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -110,7 +111,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("add list member requested (list " + listId + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
@@ -161,9 +162,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param listId
      * @param memberId
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void removeMember(int listId, int memberId) throws RemoteException {
+    public void removeMember(int listId, int memberId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -175,7 +176,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("Remove list member requested (list " + listId + ", member " + memberId + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE FROM");
@@ -220,9 +221,9 @@ public class EmailListBean extends BaseEJB {
     /**
      *
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public Map getLists() throws RemoteException {
+    public Map getLists() throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -235,7 +236,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("getLists requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -273,9 +274,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param groupId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public Map getLists(int groupId) throws RemoteException {
+    public Map getLists(int groupId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -288,7 +289,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("getLists for group requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -329,9 +330,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param listId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public Set getMembers(int listId) throws RemoteException {
+    public Set getMembers(int listId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -344,7 +345,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("getMembers for list requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -383,9 +384,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param listId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public String getListName(int listId) throws RemoteException {
+    public String getListName(int listId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -398,7 +399,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("getListName requested for list " + listId);
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -436,9 +437,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param listId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public int getListGroupId(int listId) throws RemoteException {
+    public int getListGroupId(int listId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -451,7 +452,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("getListGroupId requested for list " + listId);
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -490,9 +491,9 @@ public class EmailListBean extends BaseEJB {
      * @param listId
      * @param memberId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public String getData(int listId, int memberId) throws RemoteException {
+    public String getData(int listId, int memberId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -505,7 +506,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("getData for list member requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -549,9 +550,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param listId
      * @param groupId
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void setGroupId(int listId, int groupId) throws RemoteException {
+    public void setGroupId(int listId, int groupId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -563,7 +564,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("Update group id for list requested (list " + listId + ", group " + groupId + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -609,9 +610,9 @@ public class EmailListBean extends BaseEJB {
      *
      * @param listId
      * @param name
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void setName(int listId, String name) throws RemoteException {
+    public void setName(int listId, String name) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -623,7 +624,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("Update name for list requested (list " + listId + ", name " + name + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -670,9 +671,9 @@ public class EmailListBean extends BaseEJB {
      * @param listId
      * @param memberId
      * @param data
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void setData(int listId, int memberId, String data) throws RemoteException {
+    public void setData(int listId, int memberId, String data) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -684,7 +685,7 @@ public class EmailListBean extends BaseEJB {
         log.debug("setData for list member requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");

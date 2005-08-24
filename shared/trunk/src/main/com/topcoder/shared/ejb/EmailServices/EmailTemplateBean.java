@@ -4,6 +4,7 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
 
+import javax.ejb.EJBException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class EmailTemplateBean extends BaseEJB {
     public void ejbCreate() {
     }
 
-    private static Logger log = Logger.getLogger(EmailTemplateBean.class);
+    private static final Logger log = Logger.getLogger(EmailTemplateBean.class);
 
 
     /**
@@ -32,9 +33,9 @@ public class EmailTemplateBean extends BaseEJB {
      * @param name
      * @param data
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public int createTemplate(int group, String name, String data) throws RemoteException {
+    public int createTemplate(int group, String name, String data) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -47,7 +48,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("Create template requested (group " + group + ", name " + name + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
@@ -99,9 +100,9 @@ public class EmailTemplateBean extends BaseEJB {
     /**
      *
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public Map getTemplates() throws RemoteException {
+    public Map getTemplates() throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -114,7 +115,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("getTemplates requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -158,9 +159,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param groupId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public Map getTemplates(int groupId) throws RemoteException {
+    public Map getTemplates(int groupId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -173,7 +174,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("getTemplates for group requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -220,9 +221,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public String getTemplateName(int templateId) throws RemoteException {
+    public String getTemplateName(int templateId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -235,7 +236,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("getTemplateName requested for template " + templateId);
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -279,9 +280,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public int getTemplateGroupId(int templateId) throws RemoteException {
+    public int getTemplateGroupId(int templateId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -294,7 +295,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("getTemplateGroupId requested for template " + templateId);
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -338,9 +339,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public String getData(int templateId) throws RemoteException {
+    public String getData(int templateId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -353,7 +354,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("getData for template requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -400,9 +401,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @return
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public boolean isInUse(int templateId) throws RemoteException {
+    public boolean isInUse(int templateId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -415,7 +416,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("isInUse for template requested");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT");
@@ -469,9 +470,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @param groupId
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void setGroupId(int templateId, int groupId) throws RemoteException {
+    public void setGroupId(int templateId, int groupId) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -483,7 +484,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("Update group id for template requested (template " + templateId + ", group " + groupId + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -535,9 +536,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @param name
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void setName(int templateId, String name) throws RemoteException {
+    public void setName(int templateId, String name) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -549,7 +550,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("Update name for template requested (template " + templateId + ", name " + name + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -601,9 +602,9 @@ public class EmailTemplateBean extends BaseEJB {
      *
      * @param templateId
      * @param data
-     * @throws RemoteException
+     * @throws EJBException
      */
-    public void setData(int templateId, String data) throws RemoteException {
+    public void setData(int templateId, String data) throws EJBException {
         javax.naming.Context ctx = null;
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
@@ -615,7 +616,7 @@ public class EmailTemplateBean extends BaseEJB {
         log.debug("Update data for template requested (template " + templateId + ")");
 
         try {
-            conn = DBMS.getConnection("TC_EMAIL");
+            conn = DBMS.getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");

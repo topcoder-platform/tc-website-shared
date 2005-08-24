@@ -46,10 +46,10 @@ public class EmailReportTask extends EmailTask implements Runnable {
     public void doWork() {
         boolean cancelReport = true;    // if it fails for unexpected reasons, just give up (if possible).
         try {
-            EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
-            EmailTemplate template = ((EmailTemplateHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplate")).create();
-            EmailTemplateGroup templateGroup = ((EmailTemplateGroupHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateGroup")).create();
-            EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+            EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
+            EmailTemplate template = ((EmailTemplateHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateHome")).create();
+            EmailTemplateGroup templateGroup = ((EmailTemplateGroupHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateGroupHome")).create();
+            EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
 
             // verify that the job is still scheduled for this instance.
             // if not, quit without updating anything.
@@ -105,7 +105,7 @@ public class EmailReportTask extends EmailTask implements Runnable {
         } finally {
             if (cancelReport && ctx != null) {
                 try {
-                    EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+                    EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
                     server.setJobStatus(jobId, server.INCOMPLETE);
                 } catch (Exception ignore) {
                 }
@@ -168,7 +168,7 @@ public class EmailReportTask extends EmailTask implements Runnable {
      * @throws Exception
      */
     private int getSourceId() throws Exception {
-        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
+        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
 
         Map map = job.getJobDetailResults(jobId);
         Set key = map.keySet();
@@ -190,7 +190,7 @@ public class EmailReportTask extends EmailTask implements Runnable {
         int sourceId = getSourceId();
 
         // get job status of the source job
-        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
+        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
         int status = job.getStatusId(sourceId);
 
         // if status is READY or ACTIVE, return false
@@ -210,10 +210,10 @@ public class EmailReportTask extends EmailTask implements Runnable {
      * @throws Exception
      */
     private String getReportData() throws Exception {
-        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
-        EmailTemplate template = ((EmailTemplateHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplate")).create();
-        EmailTemplateGroup templateGroup = ((EmailTemplateGroupHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateGroup")).create();
-        EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
+        EmailTemplate template = ((EmailTemplateHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateHome")).create();
+        EmailTemplateGroup templateGroup = ((EmailTemplateGroupHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateGroupHome")).create();
+        //EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
 
         // find jobId of the source email job
         int sourceId = getSourceId();

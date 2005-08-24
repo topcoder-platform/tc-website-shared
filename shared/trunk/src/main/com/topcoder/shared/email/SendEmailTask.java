@@ -63,10 +63,10 @@ public class SendEmailTask extends EmailTask implements Runnable {
     public void doWork() {
         boolean incomplete = true;
         try {
-            EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
-            EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailList")).create();
-            EmailTemplate template = ((EmailTemplateHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplate")).create();
-            EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+            EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
+            //EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailList")).create();
+            EmailTemplate template = ((EmailTemplateHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailTemplateHome")).create();
+            EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
 
             long lastCheck = new Date().getTime();
             int jobType = job.getJobTypeId(jobId);
@@ -191,7 +191,7 @@ public class SendEmailTask extends EmailTask implements Runnable {
         } finally {
             if (incomplete && ctx != null) {
                 try {
-                    EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+                    EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
                     server.setJobStatus(jobId, server.INCOMPLETE);
                 } catch (Exception ignore) {
                 }
@@ -250,7 +250,7 @@ public class SendEmailTask extends EmailTask implements Runnable {
      */
     private void parseEmail(TCSEmailMessage message, String memberXML)
             throws Exception {
-        String ret = null;
+        //String ret = null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         Reader reader = null;
         try {
@@ -302,9 +302,9 @@ public class SendEmailTask extends EmailTask implements Runnable {
      */
     private void buildDetailFromList(Context ctx, int jobId, int listId)
             throws NamingException, RemoteException, CreateException {
-        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
-        EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailList")).create();
-        EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+        //EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
+        EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailListHome")).create();
+        EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
         long lastCheck = new Date().getTime();
 
         server.clearDetailRecords(jobId);
@@ -351,9 +351,9 @@ public class SendEmailTask extends EmailTask implements Runnable {
      */
     private void buildDetailFromCommand(Context ctx, int jobId, int commandId)
             throws NamingException, RemoteException, CreateException, Exception {
-        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
-        EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailList")).create();
-        EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+        EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
+        //EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailList")).create();
+        EmailServer server = ((EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
         StringBuffer memberData = new StringBuffer(500);
         long lastCheck = new Date().getTime();
 

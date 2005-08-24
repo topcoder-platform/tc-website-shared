@@ -17,6 +17,7 @@ import java.util.Date;
  * @author Jason Evans
  * @author ademich
  * @version $Revision$
+>>>>>>> 1.11.2.1
  */
 public class DBMS {
 
@@ -42,17 +43,41 @@ public class DBMS {
     public final static String TCS_OLTP_DATASOURCE_NAME = getProperty("TCS_OLTP_DATASOURCE_NAME", "TCS_CATALOG");
     public final static String TCS_JTS_OLTP_DATASOURCE_NAME = getProperty("TCS_JTS_OLTP_DATASOURCE_NAME", "JTS_TCS_CATALOG");
     public final static String TCS_DW_DATASOURCE_NAME = getProperty("TCS_DW_DATASOURCE_NAME", "TCS_DW");
-    public final static String FORUMS_DATASOURCE_NAME = getProperty("FORUMS_DATASOURCE_NAME", "java:JiveDS"); 
+    public final static String FORUMS_DATASOURCE_NAME = getProperty("FORUMS_DATASOURCE_NAME", "java:JiveDS");
 
 
+    /**
+     * @deprecated
+     */
     public final static String JDBC_DRIVER = getProperty("JDBC_DRIVER", "weblogic.jdbc.jts.Driver");
+    /**
+     * @deprecated
+     */
     public final static String POOL_DRIVER = getProperty("POOL_DRIVER", "weblogic.jdbc.pool.Driver");
     public final static String INFORMIX_DRIVER = getProperty("INFORMIX_DRIVER", "com.informix.jdbc.IfxDriver");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_POOL = getProperty("JMA_INFORMIX_POOL", "jdbc:weblogic:pool:JMAInformixPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_POOL_JTS = getProperty("JMA_INFORMIX_POOL_JTS", "jdbc:weblogic:jts:JMAInformixPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_DW_POOL = getProperty("JMA_INFORMIX_DW_POOL", "jdbc:weblogic:pool:JMAInformixDWPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_INFORMIX_DW_POOL_JTS = getProperty("JMA_INFORMIX_DW_POOL_JTS", "jdbc:weblogic:jts:JMAInformixDWPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_POOL = getProperty("JMA_POOL", "jdbc:weblogic:pool:JMAPool");
+    /**
+     * @deprecated
+     */
     public final static String JMA_POOL_JTS = getProperty("JMA_POOL_JTS", "jdbc:weblogic:jts:JMAPool");
     public final static String JMS_FACTORY = getProperty("JMS_FACTORY", "jms.connection.jmsFactory");
     public final static String EMAIL_QUEUE = getProperty("EMAIL_QUEUE", "eMailQueue");
@@ -212,7 +237,7 @@ public class DBMS {
      * @param qconn
      * @param sequence_name
      * @return
-     * @throws Exception
+     * @throws SQLException
      * @deprecated
      */
     public static final int getTransSeqId(java.sql.Connection qconn, int sequence_name)
@@ -225,7 +250,7 @@ public class DBMS {
      *
      * @param sequence_name
      * @return
-     * @throws Exception
+     * @throws SQLException
      */
     public static final int getSeqId(int sequence_name) throws SQLException {
         Connection conn = null;
@@ -251,7 +276,7 @@ public class DBMS {
      * @param qconn
      * @param sequence
      * @return
-     * @throws Exception
+     * @throws SQLException
      */
     public static final int getSeqId(java.sql.Connection qconn, int sequence)
             throws SQLException {
@@ -328,7 +353,7 @@ public class DBMS {
      * @param qconn
      * @param query
      * @return
-     * @throws Exception
+     * @throws SQLException
      */
     private static int retVal(java.sql.Connection qconn, String query)
             throws SQLException {
@@ -372,7 +397,7 @@ public class DBMS {
      * @param column - int - The number of the column in the ResultSet that the blob should be
      *                       retrieved from.
      * @return Object - the blob object retrieved from the ResultSet
-     * @throws Exception
+     * @throws SQLException
      */
     public static Object getBlobObject(ResultSet rs, int column)
             throws SQLException {
@@ -458,7 +483,6 @@ public class DBMS {
      *
      * @param obj - Object - the large object to be serialized.
      * @return byte[] - the serialized object as a byte array
-     * @throws Exception
      */
     public static byte[] serializeBlobObject(Object obj) {
         if (obj == null)
@@ -495,7 +519,6 @@ public class DBMS {
      *
      * @param text - String - the text String to be serialized.
      * @return byte[] - the serialized text String as a byte array
-     * @throws Exception
      */
     public static byte[] serializeTextString(String text){
         if (text == null)
@@ -516,7 +539,7 @@ public class DBMS {
      * @param column - int - The number of the column in the ResultSet that the String should be
      *                       retrieved from.
      * @return String - the String retrieved from the Result Set at the column
-     * @exception Exception
+     * @exception SQLException
      **/
     public static String getTextString(ResultSet rs, int column)
             throws SQLException {

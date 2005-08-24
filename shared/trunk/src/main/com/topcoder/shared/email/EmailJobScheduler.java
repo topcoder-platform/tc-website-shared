@@ -270,7 +270,7 @@ public class EmailJobScheduler {
         ht.put(Context.PROVIDER_URL, contextProvider);
         try {
             ctx = new InitialContext(ht);
-            EmailServerHome home = (EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServer");
+            EmailServerHome home = (EmailServerHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailServerHome");
             EmailServer email = home.create();
 
             Set jobs = email.getJobs(email.ACTIVE, email.ANYRANGE);
@@ -320,7 +320,7 @@ public class EmailJobScheduler {
         try {
             ctx = new InitialContext(ht);
             EmailServer email = ((EmailServerHome) ctx.lookup(
-                    "com.topcoder.shared.ejb.EmailServices.EmailServer")).create();
+                    "com.topcoder.shared.ejb.EmailServices.EmailServerHome")).create();
 
             schedulerId = email.getSchedulerId();
 
@@ -414,7 +414,7 @@ public class EmailJobScheduler {
             throws Exception {
         try {
             EmailJob job = ((EmailJobHome) ctx.lookup(
-                    "com.topcoder.shared.ejb.EmailServices.EmailJob")).create();
+                    "com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
 
             int jobType = job.getJobTypeId(jobId);
 

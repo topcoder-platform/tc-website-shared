@@ -3,9 +3,6 @@ package com.topcoder.shared.ejb;
 import com.topcoder.shared.util.logging.Logger;
 
 import javax.ejb.*;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.sql.*;
 
 
 /**
@@ -17,10 +14,6 @@ import java.sql.*;
  */
 public abstract class BaseEJB implements SessionBean {
     private static Logger log = Logger.getLogger(BaseEJB.class);
-
-//****************************************************************************
-//                               Protected  Members
-//****************************************************************************
 
 
 //****************************************************************************
