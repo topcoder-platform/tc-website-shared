@@ -24,7 +24,7 @@ public class EmailJobScheduler {
 
     // the following are configuration variables that will be read out of the email.properties file
     private boolean configRead = false;
-    private String contextFactory = "weblogic.jndi.WLInitialContextFactory";
+    private String contextFactory = "org.jnp.interfaces.NamingContextFactory";
     private String contextProvider = "t3://172.16.20.140:8020";
     private int pollingInterval_msec = 60000;   // how often to recheck the database for new work
     private int maxWorkerThreads = 10;          // how many different tasks to run simultaneously
