@@ -195,13 +195,13 @@ public class EmailJobScheduler {
             pollingInterval_msec = newPollingInterval;
             maxEmailsPerSec = newMaxEmailsPerSec;
             jobTimeout_msec = newJobTimeout_msec;
-            log.debug("Email configuration updated.");
-            log.debug("Email context_factory: " + contextFactory);
-            log.debug("Email context_provider: " + contextProvider);
-            log.debug("Email polling_interval_msec: " + pollingInterval_msec);
-            log.debug("Email max_worker_threads: " + maxWorkerThreads);
-            log.debug("Email max_emails_per_second_per_job: " + maxEmailsPerSec);
-            log.debug("Email job_timeout_msec: " + jobTimeout_msec);
+            log.info("Email configuration updated.");
+            log.info("Email context_factory: " + contextFactory);
+            log.info("Email context_provider: " + contextProvider);
+            log.info("Email polling_interval_msec: " + pollingInterval_msec);
+            log.info("Email max_worker_threads: " + maxWorkerThreads);
+            log.info("Email max_emails_per_second_per_job: " + maxEmailsPerSec);
+            log.info("Email job_timeout_msec: " + jobTimeout_msec);
             startup();
         }
     }
