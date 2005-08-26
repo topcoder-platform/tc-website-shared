@@ -351,13 +351,13 @@ public class TCLoadTCS extends TCLoad {
                                           " where pr.user_id = ur.user_id " +
                                             " and pr.project_id = p.project_id " +
                                             " and pr.rating_ind = 1 " +
-                                            " and p.phase_id = ur.phase_id) as highest_rating " +
+                                            " and p.project_type_id+111 = ur.phase_id) as highest_rating " +
                                       " , (select min(pr.new_rating) " +
                                            " from project_result pr, project p " +
                                           " where pr.user_id = ur.user_id " +
                                             " and pr.project_id = p.project_id " +
                                             " and pr.rating_ind = 1 " +
-                                            " and p.phase_id = ur.phase_id) as lowest_rating " +
+                                            " and p.project_type_id+111 = ur.phase_id) as lowest_rating " +
                                   " from user_rating ur ";
 
             final String UPDATE = "update user_rating set rating = ?,  vol = ?, rating_no_vol = ?, num_ratings = ?, last_rated_project_id = ?, mod_date_time = CURRENT " +
