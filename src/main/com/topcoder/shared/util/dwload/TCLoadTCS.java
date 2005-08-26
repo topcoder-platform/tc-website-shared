@@ -339,12 +339,31 @@ public class TCLoadTCS extends TCLoad {
         try {
 
             long start = System.currentTimeMillis();
-            final String SELECT = "select rating, vol, rating_no_vol, num_ratings, last_rated_project_id, user_id, phase_id" +
-                    " from user_rating";
+            final String SELECT = "select ur.rating " +
+                                     "  , ur.vol " +
+                                     "  , ur.rating_no_vol " +
+                                     "  , ur.num_ratings " +
+                                     "  , ur.last_rated_project_id " +
+                                     "  , ur.user_id " +
+                                     "  , ur.phase_id " +
+                                     "  , (select max(pr.new_rating) " +
+                                           " from project_result pr, project p " +
+                                          " where pr.user_id = ur.user_id " +
+                                            " and pr.project_id = p.project_id " +
+                                            " and pr.rating_ind = 1 " +
+                                            " and p.phase_id = ur.phase_id) as highest_rating " +
+                                      " , (select min(pr.new_rating) " +
+                                           " from project_result pr, project p " +
+                                          " where pr.user_id = ur.user_id " +
+                                            " and pr.project_id = p.project_id " +
+                                            " and pr.rating_ind = 1 " +
+                                            " and p.phase_id = ur.phase_id) as lowest_rating " +
+                                  " from user_rating ur ";
+
             final String UPDATE = "update user_rating set rating = ?,  vol = ?, rating_no_vol = ?, num_ratings = ?, last_rated_project_id = ?, mod_date_time = CURRENT " +
-                    " where user_id = ? and phase_id = ? ";
-            final String INSERT = "insert into user_rating (user_id, rating, phase_id, vol, rating_no_vol, num_ratings, last_rated_project_id, mod_date_time, create_date_time) " +
-                    "values (?, ?, ?, ?, ?, ?, ?, CURRENT, CURRENT) ";
+                    " where user_id = ? and phase_id = ? and higest_rating = ? and lowest_rating = ? ";
+            final String INSERT = "insert into user_rating (user_id, rating, phase_id, vol, rating_no_vol, num_ratings, last_rated_project_id, mod_date_time, create_date_time, higest_rating, lowest_rating) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, CURRENT, CURRENT, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
@@ -366,6 +385,9 @@ public class TCLoadTCS extends TCLoad {
                 update.setObject(5, rs.getObject("last_rated_project_id"));
                 update.setLong(6, rs.getLong("user_id"));
                 update.setObject(7, rs.getObject("phase_id"));
+                update.setInt(8, rs.getInt("highest_rating"));
+                update.setInt(9, rs.getInt("lowest_rating"));
+
 
                 int retVal = update.executeUpdate();
 
@@ -379,6 +401,8 @@ public class TCLoadTCS extends TCLoad {
                     insert.setObject(5, rs.getObject("rating_no_vol"));
                     insert.setObject(6, rs.getObject("num_ratings"));
                     insert.setObject(7, rs.getObject("last_rated_project_id"));
+                    insert.setInt(8, rs.getInt("highest_rating"));
+                    insert.setInt(9, rs.getInt("lowest_rating"));
 
                     insert.executeUpdate();
                 }
