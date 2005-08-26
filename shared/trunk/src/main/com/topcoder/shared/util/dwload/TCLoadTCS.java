@@ -229,8 +229,8 @@ public class TCLoadTCS extends TCLoad {
         try {
             long start = System.currentTimeMillis();
             final String SELECT = "select user_id, amount, description, royalty_date from royalty";
-            final String UPDATE = "update royalty set amount = ?, description = ?, royalty_date = ? " +
-                    " where user_id = ? ";
+            final String UPDATE = "update royalty set amount = ?, description = ? where royalty_date = ? " +
+                    " and user_id = ? ";
             final String INSERT = "insert into royalty (user_id, amount, description, royalty_date) " +
                     "values (?, ?, ?, ?) ";
 
