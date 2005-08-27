@@ -360,8 +360,8 @@ public class TCLoadTCS extends TCLoad {
                                             " and p.project_type_id+111 = ur.phase_id) as lowest_rating " +
                                   " from user_rating ur ";
 
-            final String UPDATE = "update user_rating set rating = ?,  vol = ?, rating_no_vol = ?, num_ratings = ?, last_rated_project_id = ?, mod_date_time = CURRENT " +
-                    " where user_id = ? and phase_id = ? and highest_rating = ? and lowest_rating = ? ";
+            final String UPDATE = "update user_rating set rating = ?,  vol = ?, rating_no_vol = ?, num_ratings = ?, last_rated_project_id = ?, mod_date_time = CURRENT, highest_rating = ?, lowest_rating = ? " +
+                    " where user_id = ? and phase_id = ?";
             final String INSERT = "insert into user_rating (user_id, rating, phase_id, vol, rating_no_vol, num_ratings, last_rated_project_id, mod_date_time, create_date_time, highest_rating, lowest_rating) " +
                     "values (?, ?, ?, ?, ?, ?, ?, CURRENT, CURRENT, ?, ?) ";
 
@@ -383,10 +383,10 @@ public class TCLoadTCS extends TCLoad {
                 update.setObject(4, rs.getObject("num_ratings"));
                 //ps2.setObject(6, rs.getObject("last_component_rated"));
                 update.setObject(5, rs.getObject("last_rated_project_id"));
-                update.setLong(6, rs.getLong("user_id"));
-                update.setObject(7, rs.getObject("phase_id"));
-                update.setInt(8, rs.getInt("highest_rating"));
-                update.setInt(9, rs.getInt("lowest_rating"));
+                update.setInt(6, rs.getInt("highest_rating"));
+                update.setInt(7, rs.getInt("lowest_rating"));
+                update.setLong(8, rs.getLong("user_id"));
+                update.setObject(9, rs.getObject("phase_id"));
 
 
                 int retVal = update.executeUpdate();
