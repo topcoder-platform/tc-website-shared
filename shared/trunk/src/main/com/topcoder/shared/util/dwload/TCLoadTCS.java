@@ -362,7 +362,7 @@ public class TCLoadTCS extends TCLoad {
 
             final String UPDATE = "update user_rating set rating = ?,  vol = ?, rating_no_vol = ?, num_ratings = ?, last_rated_project_id = ?, mod_date_time = CURRENT " +
                     " where user_id = ? and phase_id = ? and higest_rating = ? and lowest_rating = ? ";
-            final String INSERT = "insert into user_rating (user_id, rating, phase_id, vol, rating_no_vol, num_ratings, last_rated_project_id, mod_date_time, create_date_time, higest_rating, lowest_rating) " +
+            final String INSERT = "insert into user_rating (user_id, rating, phase_id, vol, rating_no_vol, num_ratings, last_rated_project_id, mod_date_time, create_date_time, highest_rating, lowest_rating) " +
                     "values (?, ?, ?, ?, ?, ?, ?, CURRENT, CURRENT, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
