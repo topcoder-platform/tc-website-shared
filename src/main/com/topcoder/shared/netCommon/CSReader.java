@@ -143,6 +143,17 @@ public interface CSReader {
      * This method is suitable for reading the bytes written by the <code>writeObjectArrayArray</code> method
      * of interface <code>CSWriter</code>.
      * 
+     * @param   clazz the array class to return
+     * @return  the <code>Object[][]</code> array read. 
+     * @throws  java.io.IOException             if an I/O error has occurred.
+     */ 
+    Object[][] readObjectArrayArray(Class clazz) throws IOException;
+    
+    /**
+     * Reads in an <code>Object[][]</code> array. 
+     * This method is suitable for reading the bytes written by the <code>writeObjectArrayArray</code> method
+     * of interface <code>CSWriter</code>.
+     * 
      * @return  the <code>Object[][]</code> array read. 
      * @throws  java.io.IOException             if an I/O error has occurred.
      */ 

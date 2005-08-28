@@ -1,6 +1,7 @@
 package com.topcoder.shared.messaging;
 
-import com.topcoder.shared.util.TCContext;
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.common.TCContext;
 import com.topcoder.shared.util.logging.Logger;
 
 import javax.jms.*;
@@ -50,7 +51,7 @@ public class TopicMessagePublisher {
     public TopicMessagePublisher(String factoryName, String topicName) throws NamingException {
         this.primaryReady = false;
         this.backupReady = false;
-        this.ctx = TCContext.getContestInitial();
+        this.ctx = TCContext.getJMSContext();
         initObject(factoryName, topicName);
     }
 

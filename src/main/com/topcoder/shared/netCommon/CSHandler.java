@@ -210,8 +210,20 @@ public abstract class CSHandler implements CSReader, CSWriter {
         writeJustObjectArray(objectArray);
     }
 
+    public final Object[][] readObjectArrayArray(Class clazz) throws IOException {
+        if (isNull(OBJECT_ARRAY_ARRAY)) {
+            return null;
+        }
+        int size = readShort();
+        Object[][] r = (Object[][])Array.newInstance(clazz,new int[]{size,0});
+        for (int i = 0; i < size; i++) {
+            r[i] = readJustObjectArray(clazz);
+        }
+        return r;
+    }
+
     public final Object[][] readObjectArrayArray() throws IOException {
-        if (isNull(OBJECT_ARRAY)) {
+        if (isNull(OBJECT_ARRAY_ARRAY)) {
             return null;
         }
         int size = readShort();

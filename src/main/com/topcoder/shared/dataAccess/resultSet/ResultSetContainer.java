@@ -686,6 +686,11 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
                 return new TCStringResult(s);
 
                 // Booleans map to OTHER
+            case Types.BOOLEAN:
+                boolean r = rs.getBoolean(i + 1);
+                if (rs.wasNull())
+                    return new TCBooleanResult(null);
+                return new TCBooleanResult(r);
             case Types.OTHER:
                 if (columns[i].getSourceType().equals("boolean")) {
                     boolean rv = rs.getBoolean(i + 1);
@@ -693,10 +698,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
                         return new TCBooleanResult(null);
                     return new TCBooleanResult(rv);
                 }
-                throw new SQLException("Unsupported data type in ResultSetContainer.getItem()");
+                throw new SQLException("Unsupported data type "+columns[i].getSourceType()+" in ResultSetContainer.getItem()");
 
             default:
-                throw new SQLException("Unsupported data type in ResultSetContainer.getItem()");
+                throw new SQLException("Unsupported data type "+columns[i].getSourceType()+" in ResultSetContainer.getItem()");
 
         } // end switch statement
     }
@@ -1029,6 +1034,14 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
         public double getDoubleItem(String col) throws NullPointerException {
             return ((Number)getItem(col).getResultData()).doubleValue();
+        }
+
+        public boolean getBooleanItem(int index) throws NullPointerException {
+            return ((Boolean)getItem(index).getResultData()).booleanValue();
+        }
+
+        public boolean getBooleanItem(String col) throws NullPointerException {
+            return ((Boolean)getItem(col).getResultData()).booleanValue();
         }
 
         /**
@@ -1502,6 +1515,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         return this.getRow(iRow).getDoubleItem(iCol);
     }
 
+    public boolean getBooleanItem(int iRow, int iCol) {
+        return this.getRow(iRow).getBooleanItem(iCol);
+    }
 
     /**
      * Returns the item at the specified location
@@ -1532,6 +1548,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     public double getDoubleItem(int iRow, String sCol) {
         return this.getRow(iRow).getDoubleItem(sCol);
+    }
+
+    public boolean getBooleanItem(int iRow, String sCol) {
+        return this.getRow(iRow).getBooleanItem(sCol);
     }
 
     /**
