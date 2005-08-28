@@ -48,10 +48,10 @@ public class ProblemComponent extends BaseElement
     private String name = "";
     private Element intro = new TextElement();
     private String className = "";
-    private String methodName = "";
-    private DataType returnType = new DataType();
-    private DataType[] paramTypes = new DataType[0];
-    private String[] paramNames = new String[0];
+    private String[] methodNames = new String[0];
+    private DataType[] returnTypes = new DataType[0];
+    private DataType[][] paramTypes = new DataType[0][0];
+    private String[][] paramNames = new String[0][0];
     private Element spec = new TextElement();
     private Element[] notes = new Element[0];
     private Constraint[] constraints = new Constraint[0];
@@ -139,10 +139,10 @@ public class ProblemComponent extends BaseElement
         writer.writeString(name);
         writer.writeObject(intro);
         writer.writeString(className);
-        writer.writeString(methodName);
-        writer.writeObject(returnType);
-        writer.writeObjectArray(paramTypes);
-        writer.writeObjectArray(paramNames);
+        writer.writeObjectArray(methodNames);
+        writer.writeObjectArray(returnTypes);
+        writer.writeObjectArrayArray(paramTypes);
+        writer.writeObjectArrayArray(paramNames);
         writer.writeObject(spec);
         writer.writeObjectArray(notes);
         writer.writeObjectArray(constraints);
@@ -161,7 +161,6 @@ public class ProblemComponent extends BaseElement
      */
     public void customReadObject(CSReader reader)
             throws IOException {
-        Object[] o_paramTypes, o_paramNames, o_notes, o_constraints, o_testCases, o_webServices;
 
         unsafe = reader.readBoolean();
         valid = reader.readBoolean();
@@ -169,51 +168,20 @@ public class ProblemComponent extends BaseElement
         name = reader.readString();
         intro = (Element) reader.readObject();
         className = reader.readString();
-        methodName = reader.readString();
-        returnType = (DataType) reader.readObject();
-        o_paramTypes = reader.readObjectArray();
-        o_paramNames = reader.readObjectArray();
+        methodNames = (String[])reader.readObjectArray(String.class);
+        returnTypes =  (DataType[])reader.readObjectArray(DataType.class);
+        paramTypes = (DataType[][])reader.readObjectArrayArray(DataType.class);
+        paramNames = (String[][])reader.readObjectArrayArray(String.class);
         spec = (Element) reader.readObject();
-        o_notes = reader.readObjectArray();
-        o_constraints = reader.readObjectArray();
-        o_testCases = reader.readObjectArray();
+        notes = (Element[])reader.readObjectArray(Element.class);
+        constraints = (Constraint[])reader.readObjectArray(Constraint.class);
+        testCases = (TestCase[])reader.readObjectArray(TestCase.class);
         componentTypeID = reader.readInt();
         componentId = reader.readInt();
         problemId = reader.readInt();
         defaultSolution = reader.readString();
-        o_webServices = reader.readObjectArray();
+        webServices = (WebService[])reader.readObjectArray(WebService.class);
 
-        if (o_paramTypes == null)
-            o_paramTypes = new Object[0];
-        if (o_paramNames == null)
-            o_paramNames = new Object[0];
-        if (o_notes == null)
-            o_notes = new Object[0];
-        if (o_constraints == null)
-            o_constraints = new Object[0];
-        if (o_testCases == null)
-            o_testCases = new Object[0];
-        if (o_webServices == null)
-            o_webServices = new Object[0];
-
-        paramTypes = new DataType[o_paramTypes.length];
-        for (int i = 0; i < o_paramTypes.length; i++)
-            paramTypes[i] = (DataType) o_paramTypes[i];
-        paramNames = new String[o_paramNames.length];
-        for (int i = 0; i < o_paramNames.length; i++)
-            paramNames[i] = (String) o_paramNames[i];
-        notes = new Element[o_notes.length];
-        for (int i = 0; i < o_notes.length; i++)
-            notes[i] = (Element) o_notes[i];
-        constraints = new Constraint[o_constraints.length];
-        for (int i = 0; i < o_constraints.length; i++)
-            constraints[i] = (Constraint) o_constraints[i];
-        testCases = new TestCase[o_testCases.length];
-        for (int i = 0; i < o_testCases.length; i++)
-            testCases[i] = (TestCase) o_testCases[i];
-        webServices = new WebService[o_webServices.length];
-        for (int i = 0; i < o_webServices.length; i++)
-            webServices[i] = (WebService) o_webServices[i];
     }
 
     /**
@@ -345,14 +313,17 @@ public class ProblemComponent extends BaseElement
      * Gets the name of the method that should be defined in solutions to this problem.
      */
     public String getMethodName() {
-        return methodName;
+        return methodNames.length>0?methodNames[0]:"";
     }
 
     /**
      * Sets the name of the method that should be defined in solutions to this problem.
      */
     public void setMethodName(String methodName) {
-        this.methodName = methodName;
+        this.methodNames = new String[]{methodName};
+    }
+    public void setMethodNames(String[] methodNames) {
+        this.methodNames = methodNames;
     }
 
     /**
@@ -361,7 +332,7 @@ public class ProblemComponent extends BaseElement
      * @see DataType
      */
     public DataType getReturnType() {
-        return returnType;
+        return returnTypes.length>0?returnTypes[0]:new DataType();
     }
 
 
@@ -371,7 +342,10 @@ public class ProblemComponent extends BaseElement
      * @see DataType
      */
     public void setReturnType(DataType returnType) {
-        this.returnType = returnType;
+        this.returnTypes = new DataType[]{returnType};
+    }
+    public void setReturnTypes(DataType[] returnTypes) {
+        this.returnTypes = returnTypes;
     }
 
     /**
@@ -382,7 +356,7 @@ public class ProblemComponent extends BaseElement
      * @see DataType
      */
     public DataType[] getParamTypes() {
-        return paramTypes;
+        return paramTypes.length>0?paramTypes[0]:new DataType[0];
     }
 
     /**
@@ -393,6 +367,9 @@ public class ProblemComponent extends BaseElement
      * @see DataType
      */
     public void setParamTypes(DataType[] paramTypes) {
+        this.paramTypes = new DataType[][]{paramTypes};
+    }
+    public void setParamTypes(DataType[][] paramTypes) {
         this.paramTypes = paramTypes;
     }
 
@@ -403,7 +380,7 @@ public class ProblemComponent extends BaseElement
      *          the second value is the name of the second argument, and so on
      */
     public String[] getParamNames() {
-        return paramNames;
+        return paramNames.length>0?paramNames[0]:new String[0];
     }
 
     /**
@@ -413,6 +390,9 @@ public class ProblemComponent extends BaseElement
      *                      the second value is the name of the second argument, and so on
      */
     public void setParamNames(String[] paramNames) {
+        this.paramNames = new String[][]{paramNames};
+    }
+    public void setParamNames(String[][] paramNames) {
         this.paramNames = paramNames;
     }
 
@@ -518,19 +498,23 @@ public class ProblemComponent extends BaseElement
         buf.append(name);
         buf.append("\"><signature><class>");
         buf.append(className);
-        buf.append("</class><method>");
-        buf.append(methodName);
-        buf.append("</method><return>");
-        buf.append(returnType.toXML());
-        buf.append("</return><params>");
-        for (int i = 0; i < paramTypes.length; i++) {
-            buf.append("<param>");
-            buf.append(paramTypes[i].toXML());
-            buf.append("<name>");
-            buf.append(paramNames[i]);
-            buf.append("</name></param>");
+        buf.append("</class>");
+        for(int i = 0; i<methodNames.length; i++){
+            buf.append("<method><name>");
+            buf.append(methodNames[i]);
+            buf.append("</name><return>");
+            buf.append(returnTypes[i].toXML());
+            buf.append("</return><params>");
+            for (int j = 0; j < paramTypes[i].length; j++) {
+                buf.append("<param>");
+                buf.append(paramTypes[i][j].toXML());
+                buf.append("<name>");
+                buf.append(paramNames[i][j]);
+                buf.append("</name></param>");
+            }
+            buf.append("</params></method>");
         }
-        buf.append("</params></signature>");
+        buf.append("</signature>");
         if (intro != null)
             buf.append(handleTextElement("intro", intro));
         if (spec != null)
@@ -569,10 +553,10 @@ public class ProblemComponent extends BaseElement
         str.append(intro);
         str.append(",className=");
         str.append(className);
-        str.append(",methodName=");
-        str.append(methodName);
-        str.append(",returnType=");
-        str.append(returnType);
+        str.append(",methodNames=");
+        str.append(methodNames);
+        str.append(",returnTypes=");
+        str.append(returnTypes);
         str.append(",paramTypes=");
         str.append(paramTypes);
         str.append(",paramNames=");
@@ -677,14 +661,14 @@ public class ProblemComponent extends BaseElement
      * @return the return type for the languageID
      */
     public String getReturnType(int language) {
-        return returnType.getDescriptor(language);
+        return returnTypes[0].getDescriptor(language);
     }
 
     /**
      * @deprecated
      */
     public String getResultType() {
-        return returnType.getDescriptor(JavaLanguage.ID);
+        return returnTypes[0].getDescriptor(JavaLanguage.ID);
     }
 
     /**
@@ -693,8 +677,8 @@ public class ProblemComponent extends BaseElement
      */
     public ArrayList getArgs() {
         ArrayList ret = new ArrayList();
-        for (int i = 0; i < paramTypes.length; i++) {
-            ret.add(paramTypes[i].getDescriptor(JavaLanguage.ID));
+        for (int i = 0; i < paramTypes[0].length; i++) {
+            ret.add(paramTypes[0][i].getDescriptor(JavaLanguage.ID));
         }
         return ret;
     }
@@ -705,5 +689,17 @@ public class ProblemComponent extends BaseElement
         System.out.println("Encoded: |" + encoded + "|");
         System.out.println("After: |" + decodeXML(encoded) + "|");
 
+    }
+    public DataType[] getAllReturnTypes(){
+        return returnTypes;
+    }
+    public String[] getAllMethodNames(){
+        return methodNames;
+    }
+    public DataType[][] getAllParamTypes(){
+        return paramTypes;
+    }
+    public String[][] getAllParamNames(){
+        return paramNames;
     }
 }

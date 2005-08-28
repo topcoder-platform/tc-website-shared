@@ -16,8 +16,6 @@ import java.util.Date;
  * A class to hold constants related to the database, and some convenience methods.
  * @author Jason Evans
  * @author ademich
- * @version $Revision$
->>>>>>> 1.11.2.1
  */
 public class DBMS {
 
@@ -87,6 +85,8 @@ public class DBMS {
     public final static String TOPIC = getProperty("TOPIC", "contestTopic");
     public final static String PACTS_QUEUE = getProperty("PACTS_QUEUE", "pactsQueue");
     public final static String WEB_SERVICE_QUEUE = getProperty("WEB_SERVICE_QUEUE","webServiceGeneratorQueue");
+    public final static String LONG_RESPONSE_QUEUE = getProperty("LONG_RESPONSE_QUEUE","queue/longResponseQueue");
+    public final static String LONG_TEST_QUEUE = getProperty("LONG_TEST_QUEUE","queue/longTestQueue");
     public final static String RESPONSE_QUEUE = getProperty("RESPONSE_QUEUE","queue/screeningResponseQueue");
     public final static String REQUEST_QUEUE = getProperty("REQUEST_QUEUE","queue/screeningRequestQueue");
 

@@ -6,6 +6,7 @@ package com.topcoder.shared.problem;
 public class ProblemConstants {
 
     public static int MAIN_COMPONENT = 1;
+    public static int LONG_COMPONENT = 2;
 
     public static int SECONDARY_COMPONENT = 0;
 
@@ -15,4 +16,6 @@ public class ProblemConstants {
     public static char[] BAD_XML_CHARS =
 
             {'<', '>', '&', ':', ';', '\'', '"'};
+    public static String TESTER_IO_CLASS = "LongTest";
+    public static String WRAPPER_CLASS = "Wrapper";
 }
