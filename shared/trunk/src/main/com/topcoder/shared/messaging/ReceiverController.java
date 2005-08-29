@@ -332,7 +332,7 @@ public class ReceiverController extends Thread {
             log.debug("ERROR: Could not initialize JMS queue.");
             // Matt Murphy 4/14/02 Uncommented the line below to debug.
             // Feel free to comment it out if it gets in the way.
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         this.initInProgress = false;
