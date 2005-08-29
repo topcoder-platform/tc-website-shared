@@ -330,7 +330,7 @@ public class ProblemComponentFactory
             paramTypes[i] = new DataType[paramList.getLength()];
             paramNames[i] = new String[paramList.getLength()];
 
-            for(int j = 0; j < paramTypes.length; j++) {
+            for(int j = 0; j < paramTypes[i].length; j++) {
                 Node n = paramList.item(j);
 
                 paramTypes[i][j] = getType(getChildByName(n.getChildNodes(), TYPE));
