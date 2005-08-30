@@ -103,9 +103,9 @@ public class LongRoundResults implements Serializable {
             if(so == null)return 0;
             for(int i = 0; i<so.length; i++){
                 int abs = Math.abs(so[i])-1;
-                if(abs == CODER_SORT){
+                if(abs == CODER_SORT-1){
                     return (so[i]>0?1:-1)*handle.compareTo(r.handle);
-                }else if(abs == TOTAL_SORT){
+                }else if(abs == TOTAL_SORT-1){
                     if(score != r.score){
                         return (so[i]>0?-1:1)*(score - r.score) > 0 ? 1 : -1;
                     }
