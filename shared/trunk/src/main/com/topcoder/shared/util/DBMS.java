@@ -26,7 +26,7 @@ public class DBMS {
     public static int DB = getIntProperty("DB", INFORMIX);
 
     public final static String DW_DATASOURCE_NAME = getProperty("DW_DATASOURCE_NAME", "DW");
-    public final static String OLTP_DATASOURCE_NAME = getProperty("OLTP_DATASOURCE_NAME", "java;OLTP");
+    public final static String OLTP_DATASOURCE_NAME = getProperty("OLTP_DATASOURCE_NAME", "java:OLTP");
     public final static String JTS_OLTP_DATASOURCE_NAME = getProperty("JTS_OLTP_DATASOURCE_NAME", "JTS_OLTP");
     public final static String CONTEST_ADMIN_DATASOURCE = getProperty("CONTEST_ADMIN_DATASOURCE", "OLTP");
     public final static String CORP_JTS_OLTP_DATASOURCE_NAME = getProperty("CORP_JTS_OLTP_DATASOURCE_NAME", "JTS_CORP_DS");
