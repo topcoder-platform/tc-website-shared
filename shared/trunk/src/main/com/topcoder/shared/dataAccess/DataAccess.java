@@ -3,6 +3,7 @@ package com.topcoder.shared.dataAccess;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.Map;
 
@@ -15,7 +16,8 @@ import java.util.Map;
  */
 public class DataAccess implements DataAccessInt {
     private static Logger log = Logger.getLogger(DataAccess.class);
-    protected String dataSource;
+    protected String dataSourceName;
+    protected DataSource dataSource;
 
     /**
      * Default Constructor
@@ -25,9 +27,13 @@ public class DataAccess implements DataAccessInt {
 
     /**
      * Construtor that takes a data source to be used.
-     * @param dataSource
+     * @param dataSourceName
      */
-    public DataAccess(String dataSource) {
+    public DataAccess(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+    }
+
+    public DataAccess(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -43,8 +49,13 @@ public class DataAccess implements DataAccessInt {
      * the data from the EJB.
      */
     public Map getData(RequestInt request) throws Exception {
-        Connection conn = DBMS.getConnection(dataSource);
+        Connection conn = null;
         try {
+            if (dataSource!=null) {
+                conn = dataSource.getConnection();
+            } else {
+                conn = DBMS.getConnection(dataSourceName);
+            }
             log.debug(conn.getMetaData().getURL());
             DataRetrieverInt dr = getDataRetriever(conn);
             Map map = dr.executeCommand(request.getProperties());
@@ -62,17 +73,17 @@ public class DataAccess implements DataAccessInt {
         }
     }
     /**
-     * @param dataSource
+     * @param dataSourceName
      */
-    public void setDataSource(String dataSource) {
-        this.dataSource = dataSource;
+    public void setDataSource(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
     }
 
     /**
      * @return this object's data source
      */
     public String getDataSource() {
-        return dataSource;
+        return dataSourceName;
     }
 
     protected DataRetrieverInt getDataRetriever(Connection conn) {

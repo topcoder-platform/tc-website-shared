@@ -6,6 +6,7 @@ import com.topcoder.shared.ejb.EmailServices.*;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.EmailEngine;
 import com.topcoder.shared.util.TCSEmailMessage;
+import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 import com.topcoder.shared.util.logging.Logger;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -102,7 +103,7 @@ public class SendEmailTask extends EmailTask implements Runnable {
                 if (listId != 0) {
                     buildDetailFromList(ctx, jobId, listId);
                 } else if (commandId != 0) {
-                    buildDetailFromCommand(ctx, jobId, commandId);
+                    buildDetailFromCommand(ctx, jobId);
                 }
             }
 
@@ -261,7 +262,7 @@ public class SendEmailTask extends EmailTask implements Runnable {
 
             NodeList nodes = document.getElementsByTagName("member");
             nodes = ((Element) (nodes.item(0))).getElementsByTagName("email_address");
-            String emailAddress = ((Text) (((Element) (nodes.item(0))).getFirstChild())).getData();
+            String emailAddress = ((Text) (((nodes.item(0))).getFirstChild())).getData();
             message.setToAddress(emailAddress, TCSEmailMessage.TO);
         } catch (SAXException sxe) {
             // Error generated during parsing
@@ -343,13 +344,12 @@ public class SendEmailTask extends EmailTask implements Runnable {
      * the source for future attempts.
      * @param ctx
      * @param jobId
-     * @param commandId
      * @throws NamingException
      * @throws RemoteException
      * @throws CreateException
      * @throws Exception
      */
-    private void buildDetailFromCommand(Context ctx, int jobId, int commandId)
+    private void buildDetailFromCommand(Context ctx, int jobId)
             throws NamingException, RemoteException, CreateException, Exception {
         EmailJob job = ((EmailJobHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailJobHome")).create();
         //EmailList list = ((EmailListHome) ctx.lookup("com.topcoder.shared.ejb.EmailServices.EmailList")).create();
@@ -369,12 +369,12 @@ public class SendEmailTask extends EmailTask implements Runnable {
         for (; inputKeyItr.hasNext();) {
             Object inputObj = inputKeyItr.next();
             int inputId = ((Integer) inputObj).intValue();
-            m.put(job.getCommandParamName(inputId), (String) inputs.get(inputObj));
+            m.put(job.getCommandParamName(inputId), inputs.get(inputObj));
         }
 
         Map listMap = null;
         RequestInt dataRequest = new Request(m);
-        DataAccessInt dai = new DataAccess(DBMS.OLTP_DATASOURCE_NAME);
+        DataAccessInt dai = new DataAccess(new InformixSimpleDataSource(DBMS.INFORMIX_CONNECT_STRING));
         try {
             listMap = dai.getData(dataRequest);
         } catch (Exception ignore) {
