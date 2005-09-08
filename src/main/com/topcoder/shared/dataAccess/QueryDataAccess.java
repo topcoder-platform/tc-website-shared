@@ -21,10 +21,10 @@ public class QueryDataAccess extends DataAccess {
 
     /**
      * Construtor that takes a data source to be used.
-     * @param dataSource
+     * @param dataSourceName
      */
-    public QueryDataAccess(String dataSource) {
-        this.dataSource = dataSource;
+    public QueryDataAccess(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
     }
 
     protected DataRetrieverInt getDataRetriever(Connection conn) {
