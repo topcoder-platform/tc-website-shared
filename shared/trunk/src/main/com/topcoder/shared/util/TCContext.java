@@ -64,6 +64,7 @@ public class TCContext {
             prop.load(in);
             env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, prop.getProperty("JNDI_FACTORY"));
             env.put(javax.naming.Context.PROVIDER_URL, prop.getProperty("PACTS_HOST_URL"));
+            env.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
         } catch (java.io.FileNotFoundException exception1) {
             log.error("Error locating properties file for Pacts context");
         } catch (java.io.IOException exception2) {
@@ -86,6 +87,8 @@ public class TCContext {
         Hashtable env = new Hashtable();
         env.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
         env.put(Context.PROVIDER_URL, providerUrl);
+        //todo comment this in when we're all on jboss.
+        //env.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
         return new InitialContext(env);
     }
 
