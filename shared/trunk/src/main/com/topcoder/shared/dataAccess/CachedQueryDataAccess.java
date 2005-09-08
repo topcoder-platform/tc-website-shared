@@ -28,22 +28,22 @@ public class CachedQueryDataAccess extends CachedDataAccess {
 
     /**
      * Construtor that takes a data source to be used.
-     * @param dataSource
+     * @param dataSourceName
      */
-    public CachedQueryDataAccess(String dataSource) {
+    public CachedQueryDataAccess(String dataSourceName) {
         this(DataAccessConstants.DEFAULT_EXPIRE_TIME);
-        this.dataSource = dataSource;
+        this.dataSourceName = dataSourceName;
     }
 
     /**
      * Construtor that takes the timeout for the object should it need to
      * be cached, and a data source.
      * @param expireTime
-     * @param dataSource
+     * @param dataSourceName
      */
-    public CachedQueryDataAccess(long expireTime, String dataSource) {
+    public CachedQueryDataAccess(long expireTime, String dataSourceName) {
         this(expireTime);
-        this.dataSource = dataSource;
+        this.dataSourceName = dataSourceName;
     }
 
     protected DataRetrieverInt getDataRetriever(Connection conn) {

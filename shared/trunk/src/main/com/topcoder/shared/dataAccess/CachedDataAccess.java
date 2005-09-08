@@ -43,22 +43,22 @@ public class CachedDataAccess extends DataAccess {
 
     /**
      * Construtor that takes a data source to be used.
-     * @param dataSource
+     * @param dataSourceName
      */
-    public CachedDataAccess(String dataSource) {
+    public CachedDataAccess(String dataSourceName) {
         this(DataAccessConstants.DEFAULT_EXPIRE_TIME);
-        this.dataSource = dataSource;
+        this.dataSourceName = dataSourceName;
     }
 
     /**
      * Construtor that takes the timeout for the object should it need to
      * be cached, and a data source.
      * @param expireTime
-     * @param dataSource
+     * @param dataSourceName
      */
-    public CachedDataAccess(long expireTime, String dataSource) {
+    public CachedDataAccess(long expireTime, String dataSourceName) {
         this(expireTime);
-        this.dataSource = dataSource;
+        this.dataSourceName = dataSourceName;
     }
 
     /**
@@ -89,7 +89,7 @@ public class CachedDataAccess extends DataAccess {
             }
             /* if it was not found in the cache */
             if (map == null) {
-                conn = DBMS.getConnection(dataSource);
+                conn = DBMS.getConnection(dataSourceName);
                 dr = getDataRetriever(conn);
                 map = dr.executeCommand(request.getProperties());
                 /* attempt to add this object to the cache */
