@@ -211,7 +211,8 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             String err = "Failed to update job type";
             log.error(err, dberr);
-            throw new EJBException(err, dberr);
+            //throw new EJBException(err, dberr);
+            throw new EJBException(dberr);
         } finally {
             // Since the connections are pooled, make sure to close them in finally blocks
             try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
