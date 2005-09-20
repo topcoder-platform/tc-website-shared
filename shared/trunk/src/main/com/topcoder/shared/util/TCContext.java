@@ -49,12 +49,18 @@ public class TCContext {
         return getContext(ApplicationServer.JNDI_FACTORY, ApplicationServer.CONTEST_HOST_URL);
     }
 
+    public static InitialContext getJMSContext() throws NamingException {
+        return getContext(ApplicationServer.JNDI_FACTORY, ApplicationServer.JMS_HOST_URL);
+    }
+
+
     /**
      * Instatiates a context specifically for the Pacts Message Queue
      * This doesn't seem to make sense because Sample.properties doesn't seem to work anywhere.
      * @return
      * @throws NamingException
      */
+/*
     public static final InitialContext getPactsInitial()
             throws NamingException {
         Hashtable env = new Hashtable();
@@ -74,6 +80,7 @@ public class TCContext {
         }
         return new InitialContext(env);
     }
+*/
 
     /**
      *
