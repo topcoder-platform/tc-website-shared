@@ -32,11 +32,15 @@ public class DecimalValue extends DataValue {
             reader.skipWhitespace();
             i = reader.read();
         }
+        
+        int previousI = 0;
 
-        while (i != -1 && (Character.isDigit((char)i) || i=='.' || i=='e' || i=='E')){
+        while (i != -1 && (Character.isDigit((char)i) || i=='.' || i=='e' || i=='E' || ((previousI == 'e' || previousI == 'E') && (i =='-' || i =='+') ))) {
+            previousI = i;
             sb.append((char) i);
             i = reader.read();
             valid = true;
+            
         }
         reader.unread(i);
 
