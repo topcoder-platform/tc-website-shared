@@ -285,11 +285,11 @@ public class TCLoadTCS extends TCLoad {
 
         try {
             long start = System.currentTimeMillis();
-            final String SELECT = "select user_id, rating from user_reliability";
-            final String INSERT = "insert into user_reliability (user_id, rating, modify_date, create_date) " +
-                    "values (?, ?, CURRENT, CURRENT) ";
+            final String SELECT = "select user_id, rating, phase_id from user_reliability";
+            final String INSERT = "insert into user_reliability (user_id, rating, phase_id) " +
+                    "values (?, ?, ?) ";
             final String UPDATE = "update user_reliability set rating = ?, modify_date = CURRENT " +
-                    " where user_id = ? ";
+                    " where user_id = ? and phase_id = ?";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             update = prepareStatement(UPDATE, TARGET_DB);
@@ -302,8 +302,9 @@ public class TCLoadTCS extends TCLoad {
                 //log.debug("PROCESSING USER " + rs.getInt("user_id"));
 
                 update.clearParameters();
-                update.setObject(1, rs.getObject("rating"));
+                update.setDouble(1, rs.getDouble("rating"));
                 update.setLong(2, rs.getLong("user_id"));
+                update.setLong(3, rs.getLong("phase_id"));
 
                 int retVal = update.executeUpdate();
 
@@ -311,7 +312,8 @@ public class TCLoadTCS extends TCLoad {
                     //need to insert
                     insert.clearParameters();
                     insert.setLong(1, rs.getLong("user_id"));
-                    insert.setObject(2, rs.getObject("rating"));
+                    insert.setLong(2, rs.getLong("phase_id"));
+                    insert.setDouble(3, rs.getDouble("rating"));
 
                     insert.executeUpdate();
                 }
