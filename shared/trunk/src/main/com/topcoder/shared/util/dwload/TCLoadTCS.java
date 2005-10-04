@@ -312,8 +312,8 @@ public class TCLoadTCS extends TCLoad {
                     //need to insert
                     insert.clearParameters();
                     insert.setLong(1, rs.getLong("user_id"));
-                    insert.setLong(2, rs.getLong("phase_id"));
-                    insert.setDouble(3, rs.getDouble("rating"));
+                    insert.setDouble(2, rs.getDouble("rating"));
+                    insert.setLong(3, rs.getLong("phase_id"));
 
                     insert.executeUpdate();
                 }
