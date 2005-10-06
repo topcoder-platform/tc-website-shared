@@ -44,12 +44,12 @@ public final class TCResourceBundle {
         }
         return ret;
     }
- 
+
     /**
-     * 
-     * @param key 
-     * @param defaultValue 
-     * @return 
+     *
+     * @param key
+     * @param defaultValue
+     * @return
      */
     public int getIntProperty(String key, int defaultValue) {
         String str = getProperty(key, Integer.toString(defaultValue));
@@ -75,11 +75,11 @@ public final class TCResourceBundle {
      * @throws MissingResourceException
      */
     public String getProperty(String key) throws MissingResourceException {
-        return bundle.getString(key);
+        return bundle.getString(key).trim();
     }
 
     /**
-     * 
+     *
      * @param key
      * @return
      * @throws MissingResourceException
@@ -91,7 +91,7 @@ public final class TCResourceBundle {
 
     /**
      * Type-safe getter for double properties.
-     * 
+     *
      * @param key The property's key.
      * @return The property's value as a double.
      * @throws java.util.MissingResourceException If the key isn't found.
@@ -100,7 +100,7 @@ public final class TCResourceBundle {
         String str = getProperty(key);
         return Double.parseDouble(str.trim());
     }
-    
+
     /**
      *
      * @param message
