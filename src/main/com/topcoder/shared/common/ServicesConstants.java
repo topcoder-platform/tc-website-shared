@@ -46,6 +46,10 @@ public final class ServicesConstants {
     public static final String LONG_DOTNET_IO = BASE + "/src/csharp/LongTesterIO.cs";
     public static final String DOTNET_SECURITY = DOTNET_BIN + "/CSSecurityCheck.exe";
     public static final String DOTNET_SANDBOX = DOTNET_BIN + "/LongWrapper.exe";
+    
+    /** Long contest wrappers */
+    public static final String LONG_CONTEST_MPSQAS_WRAPPER = BASE + "/wrappers/lcontest/LongContestMPSQASWrapper.java";
+    public static final String LONG_CONTEST_USER_WRAPPER = BASE + "/wrappers/lcontest/LongContestUserWrapper.java";
 
     /** argparser.h C++ header file */
     public static final String WRAPPER = BASE + "/cpp/wrapper.cc";
