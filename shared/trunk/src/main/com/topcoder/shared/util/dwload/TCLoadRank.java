@@ -12,7 +12,7 @@ package com.topcoder.shared.util.dwload;
  * <li>coder_rank - overall by rating</li>
  * <li>coder_rank_history - overall by rating</li>
  * </ul>
- * 
+ *
  * Note: This load cannot be run for old rounds
  *
  * @author Greg Paul
@@ -89,6 +89,8 @@ public class TCLoadRank extends TCLoad {
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
 
 //            loadOverallRatingRankHistory(l);
+            //beware, this stuff can't be run be run on old rounds because of teh active flag.  you'll need to
+            //run the full backpopulate load to rebuild this stuff.
             loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, l);
             loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, l);
 
@@ -195,9 +197,9 @@ public class TCLoadRank extends TCLoad {
         }
 
     }
-    
-    
-    
+
+
+
     private void loadRatingRankHistory(int rankType, List list) throws Exception {
         log.debug("loadRatingRankHistory called...");
         StringBuffer query = null;
@@ -236,10 +238,10 @@ public class TCLoadRank extends TCLoad {
             else {
             	ratings = list;
             }
-            
+
             coderCount = ratings.size();
             Collections.sort(ratings);
-            
+
             // delete all the records for the rating rank type
             psDel.executeUpdate();
 
