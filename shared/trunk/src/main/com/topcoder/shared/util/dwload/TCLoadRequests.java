@@ -13,13 +13,11 @@ package com.topcoder.shared.util.dwload;
  *****************************************************************************/
 
 import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.TCContext;
+import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.util.idgenerator.IdGenerator;
 import com.topcoder.util.idgenerator.sql.SimpleDB;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
@@ -30,7 +28,6 @@ public class TCLoadRequests extends TCLoad {
     protected java.sql.Timestamp fLastWebLogTime = null;
     private HashMap urlMap = new HashMap();
     private static final int WEB_REQUEST_LOAD = 5;
-    private static final int REQUEST_LOAD = 3;
     private static final String[] CODER_ID_KEYS = {"cr", "uid", "mid"};
     private static final String[] ROUND_ID_KEYS = {"rd", "RoundId"};
     //since t is after c, it'll choose c over t if they're both in the query string
@@ -355,11 +352,11 @@ public class TCLoadRequests extends TCLoad {
             ret = ((Long) sessionMap.get(sessionId)).longValue();
         } else {
             //look it up and see if it's in the db
-            InitialContext ctx = TCContext.getInitial();
+
             if (!IdGenerator.isInitialized()) {
                 IdGenerator.init(
                         new SimpleDB(),
-                        (DataSource) ctx.lookup(DBMS.OLTP_DATASOURCE_NAME),
+                        new InformixSimpleDataSource(DBMS.INFORMIX_CONNECT_STRING),
                         "sequence_object",
                         "name",
                         "current_value",
