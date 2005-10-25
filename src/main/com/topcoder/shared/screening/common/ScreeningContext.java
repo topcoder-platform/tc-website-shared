@@ -1,9 +1,12 @@
 package com.topcoder.shared.screening.common;
 
 import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import com.topcoder.shared.util.DBMS;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,7 +25,8 @@ public final class ScreeningContext {
     }
 
     public static Context getJMSContext() throws NamingException {
-        return getContext(ScreeningApplicationServer.JMS_JNDI_FACTORY, ScreeningApplicationServer.JMS_SERVER_URL);
+//        return getContext(ScreeningApplicationServer.JMS_JNDI_FACTORY, ScreeningApplicationServer.JMS_SERVER_URL);
+        return getContext(DBMS.JMS_FACTORY, ScreeningApplicationServer.JMS_SERVER_URL);
     }
 
     public static Context getContext(String initialContextFactory, String providerUrl) throws NamingException {
