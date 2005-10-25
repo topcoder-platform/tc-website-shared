@@ -10,10 +10,6 @@ import com.topcoder.shared.util.SimpleResourceBundle;
  * To change this template use Options | File Templates.
  */
 public final class ScreeningApplicationServer {
-	
-	static {
-		System.out.println("ScreeningApplicationServer static init");
-	}
 
     private ScreeningApplicationServer() {
     }
