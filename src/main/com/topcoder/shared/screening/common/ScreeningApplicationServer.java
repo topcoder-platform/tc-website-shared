@@ -22,7 +22,7 @@ public final class ScreeningApplicationServer {
     //private final static String DEFAULT_JNDI_FACTORY = "weblogic.jndi.WLInitialContextFactory";
     final static String EJB_JNDI_FACTORY = getProperty("EJB_JNDI_FACTORY");
     final static String JMS_JNDI_FACTORY = getProperty("JMS_JNDI_FACTORY");
-    public final static String JMS_FACTORY = "ConnectionFactory";
+    public final static String JMS_FACTORY = getProperty("JMS_JNDI_FACTORY");
     public final static String SCREENING_SERVICES = "com.topcoder.server.screening.ejb.ScreeningServicesHome";
     public final static String SCREENING_PROBLEM_SERVICES = "jma.ProblemServicesHome";
     public final static String TESTER_COMPILER_SERVICES = "com.topcoder.server.screening.ejb.ScreeningTesterCompilerServicesHome";
