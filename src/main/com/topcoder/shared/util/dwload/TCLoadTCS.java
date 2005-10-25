@@ -15,6 +15,8 @@ import com.topcoder.shared.util.logging.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.sql.Statement;
 import java.util.*;
 
 public class TCLoadTCS extends TCLoad {
@@ -22,6 +24,10 @@ public class TCLoadTCS extends TCLoad {
 
     private static final int OVERALL_RATING_RANK_TYPE_ID = 1;
     private static final int ACTIVE_RATING_RANK_TYPE_ID = 2;
+
+    protected java.sql.Timestamp fStartTime = null;
+    protected java.sql.Timestamp fLastLogTime = null;
+    private int TCS_LOG_TYPE = 4;
 
 
     public TCLoadTCS() {
@@ -49,6 +55,11 @@ public class TCLoadTCS extends TCLoad {
                 close(ps);
             }
 
+            fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
+            getLastUpdateTime();
+
+
+
             doLoadReviewResp();
             doLoadEvent();
             doLoadUserEvent();
@@ -60,6 +71,9 @@ public class TCLoadTCS extends TCLoad {
             doLoadProjects();
 
             doLoadProjectResults();
+
+            doLoadScorecardTemplate();
+
             doLoadSubmissionReview();
             doLoadSubmissionScreening();
 
@@ -70,6 +84,20 @@ public class TCLoadTCS extends TCLoad {
             doLoadUserReliability();
 
             doLoadRoyalty();
+
+            doLoadEvaluationLU();
+
+            doLoadScorecardQuestion();
+
+            doLoadScorecardResponse();
+
+            doLoadTestcaseResponse();
+
+            doLoadSubjectiveResponse();
+
+            doLoadAppeal();
+            doLoadTestcaseAppeal();
+
 
             List list = getCurrentRatings();
             doLoadRank(112, ACTIVE_RATING_RANK_TYPE_ID, list);
@@ -123,6 +151,8 @@ public class TCLoadTCS extends TCLoad {
 
             doClearCache();
 
+            setLastUpdateTime();
+
             log.info("SUCCESS: TCS load ran successfully.");
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
@@ -151,6 +181,72 @@ public class TCLoadTCS extends TCLoad {
                     break;
                 }
             }
+        }
+    }
+
+    private void getLastUpdateTime() throws Exception {
+        Statement stmt = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        query = new StringBuffer(100);
+        query.append("select timestamp from update_log where log_id = ");
+        query.append("(select max(log_id) from update_log where log_type_id = " + TCS_LOG_TYPE + ")");
+
+        try {
+            stmt = createStatement(TARGET_DB);
+            rs = stmt.executeQuery(query.toString());
+            if (rs.next()) {
+                fLastLogTime = rs.getTimestamp(1);
+                log.info("Date is " + fLastLogTime.toString());
+            } else {
+                // A little misleading here as we really didn't hit a SQL
+                // exception but all we are doing outside this method is
+                // catchin and setting the reason for failure to be the
+                // message of the exception.
+                throw new SQLException("Last log time not found in " +
+                        "update_log table.");
+            }
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Failed to retrieve last log time.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(stmt);
+        }
+    }
+
+    private void setLastUpdateTime() throws Exception {
+        PreparedStatement psUpd = null;
+        StringBuffer query = null;
+
+        try {
+            int retVal = 0;
+            query = new StringBuffer(100);
+            query.append("INSERT INTO update_log ");
+            query.append("      (log_id ");        // 1
+            query.append("       ,calendar_id ");  // 2
+            query.append("       ,timestamp ");   // 3
+            query.append("       ,log_type_id) ");   // 4
+            query.append("VALUES (0, ?, ?, " + TCS_LOG_TYPE + ")");
+            psUpd = prepareStatement(query.toString(), TARGET_DB);
+
+            int calendar_id = lookupCalendarId(fStartTime, TARGET_DB);
+            psUpd.setInt(1, calendar_id);
+            psUpd.setTimestamp(2, fStartTime);
+
+            retVal = psUpd.executeUpdate();
+            if (retVal != 1) {
+                throw new SQLException("SetLastUpdateTime " +
+                        " modified " + retVal + " rows, not one.");
+            }
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Failed to set last log time.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(psUpd);
         }
     }
 
@@ -228,13 +324,16 @@ public class TCLoadTCS extends TCLoad {
         ResultSet rs = null;
         try {
             long start = System.currentTimeMillis();
-            final String SELECT = "select user_id, amount, description, royalty_date from royalty";
+            final String SELECT = "select user_id, amount, description, royalty_date from royalty " +
+                                  "where modify_date > ?";
             final String UPDATE = "update royalty set amount = ?, description = ? where royalty_date = ? " +
                     " and user_id = ? ";
             final String INSERT = "insert into royalty (user_id, amount, description, royalty_date) " +
                     "values (?, ?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
             rs = select.executeQuery();
@@ -292,6 +391,8 @@ public class TCLoadTCS extends TCLoad {
                     " where user_id = ? and phase_id = ?";
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
             rs = select.executeQuery();
@@ -360,7 +461,8 @@ public class TCLoadTCS extends TCLoad {
                                             " and pr.project_id = p.project_id " +
                                             " and pr.rating_ind = 1 " +
                                             " and p.project_type_id+111 = ur.phase_id) as lowest_rating " +
-                                  " from user_rating ur ";
+                                  " from user_rating ur " +
+                                  " where ur.mod_date_time > ?";
 
             final String UPDATE = "update user_rating set rating = ?,  vol = ?, rating_no_vol = ?, num_ratings = ?, last_rated_project_id = ?, mod_date_time = CURRENT, highest_rating = ?, lowest_rating = ? " +
                     " where user_id = ? and phase_id = ?";
@@ -368,6 +470,8 @@ public class TCLoadTCS extends TCLoad {
                     "values (?, ?, ?, ?, ?, ?, ?, CURRENT, CURRENT, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+
             insert = prepareStatement(INSERT, TARGET_DB);
             update = prepareStatement(UPDATE, TARGET_DB);
             rs = select.executeQuery();
@@ -445,7 +549,7 @@ public class TCLoadTCS extends TCLoad {
                     "     (select count(*) from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) " +
                     "else (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1) end " +
                     "   as num_submissions,  " +
-                    "   (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1 and not  " +
+                    "  (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1 and not  " +
                     "exists (select * from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 1 and submitter_id = pr.user_id))  " +
                     "    as num_valid_submissions, " +
                     "(select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score, " +
@@ -477,7 +581,8 @@ public class TCLoadTCS extends TCLoad {
                     "and pi.cur_version = 1 " +
                     "and pi.phase_instance_id = p.phase_instance_id " +
                     "and rp.review_phase_id = pi.phase_id " +
-                    "and ps.project_stat_id = p.project_stat_id";
+                    "and ps.project_stat_id = p.project_stat_id " +
+                    "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pi.modify_date > ?)";
 
             final String UPDATE = "update project set component_name = ?,  num_registrations = ?, " +
                     "num_submissions = ?, num_valid_submissions = ?, avg_raw_score = ?, avg_final_score = ?, " +
@@ -492,6 +597,10 @@ public class TCLoadTCS extends TCLoad {
                     "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+            select.setTimestamp(2, fLastLogTime);
+            select.setTimestamp(3, fLastLogTime);
+            select.setTimestamp(4, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
@@ -616,7 +725,8 @@ public class TCLoadTCS extends TCLoad {
                 "where p.project_id = pr.project_id " +
                 "and p.cur_version = 1  " +
                 "and cv.comp_vers_id = p.comp_vers_id " +
-                "and cc.component_id = cv.component_id";
+                "and cc.component_id = cv.component_id " +
+                "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ?)";
 
         final String RESULT_UPDATE =
                 "update project_result set submit_ind = ?, valid_submission_ind = ?, raw_score = ?, final_score = ?, inquire_timestamp = ?, " +
@@ -632,6 +742,9 @@ public class TCLoadTCS extends TCLoad {
             long start = System.currentTimeMillis();
 
             resultSelect = prepareStatement(RESULT_SELECT, SOURCE_DB);
+            resultSelect.setTimestamp(1, fLastLogTime);
+            resultSelect.setTimestamp(2, fLastLogTime);
+            resultSelect.setTimestamp(3, fLastLogTime);
             resultUpdate = prepareStatement(RESULT_UPDATE, TARGET_DB);
             resultInsert = prepareStatement(RESULT_INSERT, TARGET_DB);
 
@@ -745,16 +858,17 @@ public class TCLoadTCS extends TCLoad {
                 "and sc.project_id = ? " +
                 "and sc.scorecard_type = 2 " +
                 "and sc.is_completed = 1 " +
-                "and sc.cur_version = 1 ";
+                "and sc.cur_version = 1 " +
+                "and (sc.modify_date > ? OR s.modify_date > ?)";
 
 
         final String SUBMISSION_UPDATE =
-                "update submission_review set raw_score = ?, final_score = ?, num_appeals = ?, num_successful_appeals = ?, review_resp_id = ? " +
+                "update submission_review set raw_score = ?, final_score = ?, num_appeals = ?, num_successful_appeals = ?, review_resp_id = ?,  scorecard_id = ?, scorecard_template_id = ? " +
                 "where project_id = ? and user_id = ? and reviewer_id = ?";
 
         final String SUBMISSION_INSERT =
-                "insert into submission_review (project_id, user_id, reviewer_id, raw_score, final_score, num_appeals," +
-                "num_successful_appeals, review_resp_id) values (?, ?, ?, ?, ?, ?, ?, ?)";
+                "insert into submission_review (project_id, user_id, reviewer_id, raw_score, final_score, num_appeals, " +
+                "num_successful_appeals, review_resp_id, scorecard_id, scorecard_template_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
         try {
@@ -774,6 +888,8 @@ public class TCLoadTCS extends TCLoad {
             while (projects.next()) {
                 submissionSelect.clearParameters();
                 submissionSelect.setLong(1, projects.getLong("project_id"));
+                submissionSelect.setTimestamp(2, fLastLogTime);
+                submissionSelect.setTimestamp(3, fLastLogTime);
                 //log.debug("before submission select");
                 submissionInfo = submissionSelect.executeQuery();
                 //log.debug("after submission select");
@@ -787,9 +903,11 @@ public class TCLoadTCS extends TCLoad {
                     submissionUpdate.setObject(3, submissionInfo.getObject("num_appeals"));
                     submissionUpdate.setObject(4, submissionInfo.getObject("num_successful_appeals"));
                     submissionUpdate.setObject(5, submissionInfo.getObject("review_resp_id"));
-                    submissionUpdate.setLong(6, submissionInfo.getLong("project_id"));
-                    submissionUpdate.setLong(7, submissionInfo.getLong("user_id"));
-                    submissionUpdate.setLong(8, submissionInfo.getLong("reviewer_id"));
+                    submissionUpdate.setObject(6, submissionInfo.getObject("scorecard_id"));
+                    submissionUpdate.setObject(7, submissionInfo.getObject("scorecard_template_id"));
+                    submissionUpdate.setLong(8, submissionInfo.getLong("project_id"));
+                    submissionUpdate.setLong(9, submissionInfo.getLong("user_id"));
+                    submissionUpdate.setLong(10, submissionInfo.getLong("reviewer_id"));
 
 
                     //log.debug("before submission update");
@@ -807,6 +925,8 @@ public class TCLoadTCS extends TCLoad {
                         submissionInsert.setObject(6, submissionInfo.getObject("num_appeals"));
                         submissionInsert.setObject(7, submissionInfo.getObject("num_successful_appeals"));
                         submissionInsert.setObject(8, submissionInfo.getObject("review_resp_id"));
+                        submissionInsert.setObject(9, submissionInfo.getObject("scorecard_id"));
+                        submissionInsert.setObject(10, submissionInfo.getObject("scorecard_template_id"));
 
                         //log.debug("before submission insert");
                         submissionInsert.executeUpdate();
@@ -823,7 +943,7 @@ public class TCLoadTCS extends TCLoad {
 
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'project_result / project' table failed.\n" +
+            throw new Exception("Load of 'submission review' table failed.\n" +
                     sqle.getMessage());
         } finally {
             close(projects);
@@ -862,21 +982,24 @@ public class TCLoadTCS extends TCLoad {
                         "and sc.is_completed = 1  " +
                         "and sc.submission_id = s.submission_id " +
                         "and sc.project_id = pr.project_id " +
-                        "and sc.cur_version = 1";
+                        "and sc.cur_version = 1 " +
+                        "and (pr.modify_date > ? OR sc.modify_date > ?)";
 
 
         final String SCREENING_UPDATE =
-                "update submission_screening set reviewer_id = ?, final_score = ? " +
+                "update submission_screening set reviewer_id = ?, final_score = ?, scorecard_id = ?, scorecard_template_id = ? " +
                 "where project_id = ? and user_id = ?";
 
         final String SCREENING_INSERT =
-                "insert into submission_screening (project_id, user_id, reviewer_id, final_score) " +
-                "values (?, ?, ?, ?)";
+                "insert into submission_screening (project_id, user_id, reviewer_id, final_score, scorecard_id, scorecard_template_id) " +
+                "values (?, ?, ?, ?, ?, ?)";
 
         try {
             long start = System.currentTimeMillis();
 
             screeningSelect = prepareStatement(SCREENING_SELECT, SOURCE_DB);
+            screeningSelect.setTimestamp(1, fLastLogTime);
+            screeningSelect.setTimestamp(2, fLastLogTime);
             screeningUpdate = prepareStatement(SCREENING_UPDATE, TARGET_DB);
             screeningInsert = prepareStatement(SCREENING_INSERT, TARGET_DB);
 
@@ -892,8 +1015,10 @@ public class TCLoadTCS extends TCLoad {
 
                 screeningUpdate.setObject(1, screenings.getObject("reviewer_id"));
                 screeningUpdate.setObject(2, screenings.getObject("final_score"));
-                screeningUpdate.setLong(3, project_id);
-                screeningUpdate.setLong(4, screenings.getLong("user_id"));
+                screeningUpdate.setObject(3, screenings.getObject("scorecard_id"));
+                screeningUpdate.setObject(4, screenings.getObject("scorecard_template_id"));
+                screeningUpdate.setLong(5, project_id);
+                screeningUpdate.setLong(6, screenings.getLong("user_id"));
 
                 int retVal = screeningUpdate.executeUpdate();
 
@@ -905,6 +1030,8 @@ public class TCLoadTCS extends TCLoad {
                     screeningInsert.setLong(2, screenings.getLong("user_id"));
                     screeningInsert.setObject(3, screenings.getObject("reviewer_id"));
                     screeningInsert.setObject(4, screenings.getObject("final_score"));
+                    screeningInsert.setObject(5, screenings.getObject("scorecard_id"));
+                    screeningInsert.setObject(6, screenings.getObject("scorecard_template_id"));
 
                     screeningInsert.executeUpdate();
 
@@ -926,18 +1053,21 @@ public class TCLoadTCS extends TCLoad {
         }
     }
 
+
     public void doLoadContestProject() throws Exception {
         log.info("load contest project");
         //load contest_project_xref
         long start = System.currentTimeMillis();
-        final String DELETE = "delete from contest_project_xref where project_id = ?";
+
         final String SELECT = "select contest_id, project_id  " +
                 "from contest_project_xref " +
-                "where project_id = ?";
+                "where project_id = ? and create_date > ?";
+
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
                 "values (?, ?)";
 
-        PreparedStatement delete = null;
+
+        PreparedStatement update = null;
         PreparedStatement select = null;
         PreparedStatement insert = null;
         PreparedStatement projectSelect = null;
@@ -946,29 +1076,28 @@ public class TCLoadTCS extends TCLoad {
 
         long projectId = 0;
         try {
-            delete = prepareStatement(DELETE, TARGET_DB);
             select = prepareStatement(SELECT, SOURCE_DB);
             projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
+
             insert = prepareStatement(INSERT, TARGET_DB);
 
             projects = projectSelect.executeQuery();
             int count = 0;
             while (projects.next()) {
                 projectId = projects.getLong("project_id");
-                delete.clearParameters();
-                delete.setLong(1, projectId);
-                delete.executeUpdate();
-
                 select.clearParameters();
                 select.setLong(1, projectId);
+                select.setTimestamp(2, fLastLogTime);
 
                 rs = select.executeQuery();
                 while (rs.next()) {
-                    count++;
+
                     insert.clearParameters();
                     insert.setLong(1, rs.getLong("contest_id"));
                     insert.setLong(2, projectId);
                     insert.executeUpdate();
+                    count++;
+
                 }
 
             }
@@ -980,7 +1109,7 @@ public class TCLoadTCS extends TCLoad {
         } finally {
             close(rs);
             close(projects);
-            close(delete);
+            close(update);
             close(select);
             close(insert);
             close(projectSelect);
@@ -1006,13 +1135,15 @@ public class TCLoadTCS extends TCLoad {
                     "c.event_id  " +
                     "from contest c, " +
                     "contest_type_lu ct " +
-                    "where ct.contest_type_id = c.contest_type_id";
+                    "where ct.contest_type_id = c.contest_type_id " +
+                    "and (c.modify_date > ?)";
             final String UPDATE = "update contest set contest_name = ?,  contest_start_timestamp = ?, contest_end_timestamp = ?, contest_type_id = ?, contest_type_desc = ?, phase_id = ?, event_id = ? " +
                     " where contest_id = ? ";
             final String INSERT = "insert into contest (contest_id, contest_name, contest_start_timestamp, contest_end_timestamp, contest_type_id, contest_type_desc, phase_id, event_id) " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
             rs = select.executeQuery();
@@ -1088,7 +1219,8 @@ public class TCLoadTCS extends TCLoad {
                     "contest_prize cp, " +
                     "prize_type_lu pt " +
                     "where cp.contest_prize_id = ucp.contest_prize_id " +
-                    "and pt.prize_type_id = cp.prize_type_id;";
+                    "and pt.prize_type_id = cp.prize_type_id " +
+                    "and (cp.modify_date > ?) ";
             final String INSERT = "insert into user_contest_prize (contest_id, user_id, prize_type_id, " +
                     "prize_description, place, prize_amount, prize_payment) " +
                     "values (?, ?, ?, ?, ?, ?, ?) ";
@@ -1099,6 +1231,7 @@ public class TCLoadTCS extends TCLoad {
 
             //load prizes
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
             insert = prepareStatement(INSERT, TARGET_DB);
             update = prepareStatement(UPDATE, TARGET_DB);
             rs = select.executeQuery();
@@ -1159,7 +1292,7 @@ public class TCLoadTCS extends TCLoad {
         try {
             long start = System.currentTimeMillis();
             final String SELECT = "select e.event_name, e.event_id " +
-                    "from event e ";
+                    "from event e where modify_date > ?";
             final String UPDATE = "update event set event_name = ? " +
                     " where event_id = ? ";
 
@@ -1168,6 +1301,7 @@ public class TCLoadTCS extends TCLoad {
 
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
             rs = select.executeQuery();
@@ -1221,7 +1355,7 @@ public class TCLoadTCS extends TCLoad {
 
             long start = System.currentTimeMillis();
             final String SELECT = "select create_date, event_id, user_id " +
-                    "from user_event_xref ";
+                    "from user_event_xref where modify_date > ?";
             final String UPDATE = "update user_event_xref set create_date = ? " +
                     " where event_id = ? and user_id = ?";
 
@@ -1229,6 +1363,7 @@ public class TCLoadTCS extends TCLoad {
                     "values (?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
             rs = select.executeQuery();
@@ -1429,7 +1564,7 @@ public class TCLoadTCS extends TCLoad {
         }
 
         public String toString() {
-            return new String(coderId + ":" + rating + ":" + schoolId + ":" + active + ":" + phaseId);
+            return coderId + ":" + rating + ":" + schoolId + ":" + active + ":" + phaseId;
         }
     }
 
@@ -1513,7 +1648,6 @@ public class TCLoadTCS extends TCLoad {
         }
 
     }
-
 
     /**
      * Loads the school_coder_rank table with information about
@@ -1620,7 +1754,6 @@ public class TCLoadTCS extends TCLoad {
 
     }
 
-
     private void loadCountryRatingRank(int phaseId, int rankTypeId, List list) throws Exception {
         log.debug("loadCountryRatingRank called...");
         StringBuffer query = null;
@@ -1720,6 +1853,843 @@ public class TCLoadTCS extends TCLoad {
             close(psDel);
         }
 
+    }
+
+
+    public void doLoadScorecardTemplate() throws Exception {
+        log.info("load scorecard template");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+
+
+        final String SELECT = "select template_id as scorecard_template_id, " +
+                                           "scorecard_type as scorecard_type_id, " +
+                                           "template_name as scorecard_type_desc  " +
+                                           "from scorecard_template where modify_date > ?";
+
+
+        final String UPDATE =
+                "update scorecard_template set scorecard_type_id=?, scorecard_type_desc=? where scorecard_template_id = ?";
+
+        final String INSERT =
+                "insert into scorecard_template (scorecard_type_id, scorecard_type_desc, scorecard_template_id) values (?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+
+            int count = 0;
+
+            rs = select.executeQuery();
+
+            while (rs.next()) {
+
+                update.clearParameters();
+
+                update.setObject(1, rs.getObject("scorecard_type_id"));
+                update.setObject(2, rs.getObject("scorecard_type_desc"));
+                update.setLong(3, rs.getLong("scorecard_template_id"));
+
+                int retVal = update.executeUpdate();
+
+                if (retVal == 0) {
+                    insert.clearParameters();
+
+                    insert.setObject(1, rs.getObject("scorecard_type_id"));
+                    insert.setObject(2, rs.getObject("scorecard_type_desc"));
+                    insert.setLong(3, rs.getLong("scorecard_template_id"));
+
+                    insert.executeUpdate();
+                }
+                count++;
+
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'scorecard_template' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+
+
+    public void doLoadEvaluationLU() throws Exception {
+        log.info("load evaluation_lu");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+
+
+        final String SELECT = "select evaluation_id, " +
+                           "evaluation_name as evaluation_desc, " +
+                           "value as evaluation_value, " +
+                           "evaluation_type_id, " +
+                           "(select eval_type_name from evaluation_type where evaluation_type_id = e.evaluation_type_id) as evaluation_type_desc " +
+                            "from evaluation e ";
+
+        final String UPDATE =
+                "update evaluation_lu set evaluation_desc=?,evaluation_value=?,evaluation_type_id=?, evaluation_type_desc=? where evaluation_id = ?";
+
+        final String INSERT =
+                "insert into evaluation_lu (evaluation_desc, evaluation_value, evaluation_type_id,evaluation_type_desc,  evaluation_id) values (?, ?, ?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+
+            int count = 0;
+
+            rs = select.executeQuery();
+
+            while (rs.next()) {
+
+                update.clearParameters();
+
+                update.setObject(1, rs.getObject("evaluation_desc"));
+                update.setObject(2, rs.getObject("evaluation_value"));
+                update.setObject(3, rs.getObject("evaluation_type_id"));
+                update.setObject(4, rs.getObject("evaluation_type_desc"));
+                update.setLong(5, rs.getLong("evaluation_id"));
+
+                int retVal = update.executeUpdate();
+
+                if (retVal == 0) {
+                    insert.clearParameters();
+
+                    insert.setObject(1, rs.getObject("evaluation_desc"));
+                    insert.setObject(2, rs.getObject("evaluation_value"));
+                    insert.setObject(3, rs.getObject("evaluation_type_id"));
+                    insert.setObject(4, rs.getObject("evaluation_type_desc"));
+                    insert.setLong(5, rs.getLong("evaluation_id"));
+
+                    insert.executeUpdate();
+                }
+                count++;
+
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'evaluation_lu' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+
+
+    public void doLoadScorecardQuestion() throws Exception {
+        log.info("load scorecard_question");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+
+
+        final String SELECT = "select  qt.q_template_v_id as scorecard_question_id, " +
+                "qt.template_id as scorecard_template_id, " +
+                "qt.question_text, " +
+                "qt.question_weight, " +
+                "qt.section_id, " +
+                "ss.section_name as section_desc, " +
+                "ss.section_weight, " +
+                "ss.group_id as section_group_id, " +
+                "sg.group_name as section_group_desc,  " +
+                "round (sg.group_seq_loc) || \".\" || round(ss.section_seq_loc) || \".\" || round(qt.question_seq_loc)  as question_desc  " +
+                "from question_template qt, scorecard_section ss, sc_section_group sg  " +
+                "where qt.cur_version = 1  " +
+                "and ss.section_id = qt.section_id  " +
+                "and sg.group_id = ss.group_id  " +
+                "and exists (select q_template_v_id from scorecard_question where qt.q_template_v_id = q_template_v_id) " +
+                "and (qt.modify_date > ?) " +
+                "order by scorecard_template_id, sg.group_seq_loc, ss.section_seq_loc, qt.question_seq_loc  ";
+
+
+
+        final String UPDATE =
+                 "update scorecard_question set scorecard_template_id=?, question_text=?,question_weight=?, section_id=?,section_desc=?, " +
+                 "section_weight=?, section_group_id=?, section_group_desc=?, question_desc=?, sort=?, question_header = ? " +
+                 "where scorecard_question_id = ?";
+
+        final String INSERT =
+                "insert into scorecard_question (scorecard_template_id, question_text,question_weight, section_id, section_desc, "+
+                "section_weight, section_group_id, section_group_desc, question_desc, sort, question_header, scorecard_question_id)" +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+
+            int count = 0;
+
+            rs = select.executeQuery();
+
+            long prevTemplate = -1;
+            int sort=0;
+
+            while (rs.next()) {
+
+                if (rs.getLong("scorecard_template_id") != prevTemplate) {
+                    sort = 0;
+                    prevTemplate = rs.getLong("scorecard_template_id");
+                } else {
+                    sort++;
+                }
+
+                String questionHeader = (String)rs.getObject("question_text");
+                if (questionHeader != null) {
+/*                    int p1 = questionHeader.indexOf(". ");
+                    int p2 = questionHeader.indexOf('\n');
+
+                    int posic = questionHeader.length();
+                    if (p1 >= 0 && p1 < posic) posic = p1 + 1;
+                    if (p2 >= 0 && p2 < posic) posic = p2;
+
+                    questionHeader = questionHeader.substring(0, posic);
+                    */
+                    int posic = questionHeader.indexOf('\n');
+                    if (posic >= 0) {
+                        questionHeader = questionHeader.substring(0, posic);
+                    }
+
+                }
+
+                update.clearParameters();
+
+                update.setObject(1, rs.getObject("scorecard_template_id"));
+                update.setObject(2, rs.getObject("question_text"));
+                update.setObject(3, rs.getObject("question_weight"));
+                update.setObject(4, rs.getObject("section_id"));
+                update.setObject(5, rs.getObject("section_desc"));
+                update.setObject(6, rs.getObject("section_weight"));
+                update.setObject(7, rs.getObject("section_group_id"));
+                update.setObject(8, rs.getObject("section_group_desc"));
+                update.setObject(9, rs.getObject("question_desc"));
+                update.setInt   (10, sort);
+                update.setObject(11, questionHeader);
+                update.setLong  (12, rs.getLong("scorecard_question_id"));
+
+                int retVal = update.executeUpdate();
+
+                if (retVal == 0) {
+                    insert.clearParameters();
+
+                    insert.setObject(1, rs.getObject("scorecard_template_id"));
+                    insert.setObject(2, rs.getObject("question_text"));
+                    insert.setObject(3, rs.getObject("question_weight"));
+                    insert.setObject(4, rs.getObject("section_id"));
+                    insert.setObject(5, rs.getObject("section_desc"));
+                    insert.setObject(6, rs.getObject("section_weight"));
+                    insert.setObject(7, rs.getObject("section_group_id"));
+                    insert.setObject(8, rs.getObject("section_group_desc"));
+                    insert.setObject(9, rs.getObject("question_desc"));
+                    insert.setInt   (10, sort);
+                    insert.setObject(11, questionHeader);
+                    insert.setLong  (12, rs.getLong("scorecard_question_id"));
+
+                    insert.executeUpdate();
+                }
+                count++;
+
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'scorecard_question' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+
+    public void doLoadScorecardResponse() throws Exception {
+        log.info("load scorecard_response");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+        ResultSet projects = null;
+        PreparedStatement projectSelect = null;
+
+
+        final String SELECT = "select sq.q_template_v_id  as scorecard_question_id, " +
+//"select (select q_template_v_id from question_template qt where qt.q_template_v_id = sq.q_template_v_id and cur_version=1) as scorecard_question_id, " +
+                       "s.scorecard_id, " +
+                      "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
+                      "s.author_id as reviewer_id, " +
+                      "s.project_id, " +
+                      "sq.evaluation_id " +
+                      "from scorecard_question sq, scorecard s " +
+                      "where s.scorecard_id = sq.scorecard_id " +
+                      "and s.cur_version = 1 " +
+                      "and sq.cur_version = 1 " +
+                      "and project_id = ?" +
+                      "and (sq.modify_date > ? OR s.modify_date > ?)";
+
+        final String UPDATE =
+                "update scorecard_response set user_id=?, reviewer_id=?, project_id=?, evaluation_id=? where scorecard_question_id = ? and scorecard_id = ?";
+
+        final String INSERT =
+                "insert into scorecard_response (user_id, reviewer_id, project_id, evaluation_id, scorecard_question_id, scorecard_id) values (?, ?, ?, ?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+            projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
+
+            projects = projectSelect.executeQuery();
+
+            int count = 0;
+
+            while (projects.next()) {
+                select.clearParameters();
+                select.setLong(1, projects.getLong("project_id"));
+                select.setTimestamp(2, fLastLogTime);
+                select.setTimestamp(3, fLastLogTime);
+
+                rs = select.executeQuery();
+
+                while (rs.next()) {
+                    update.clearParameters();
+
+                    update.setObject(1, rs.getObject("user_id"));
+                    update.setObject(2, rs.getObject("reviewer_id"));
+                    update.setObject(3, rs.getObject("project_id"));
+                    update.setObject(4, rs.getObject("evaluation_id"));
+                    update.setLong(5, rs.getLong("scorecard_question_id"));
+                    update.setLong(6, rs.getLong("scorecard_id"));
+
+                    int retVal = update.executeUpdate();
+
+                    if (retVal == 0) {
+                        insert.clearParameters();
+
+                        insert.setObject(1, rs.getObject("user_id"));
+                        insert.setObject(2, rs.getObject("reviewer_id"));
+                        insert.setObject(3, rs.getObject("project_id"));
+                        insert.setObject(4, rs.getObject("evaluation_id"));
+                        insert.setLong(5, rs.getLong("scorecard_question_id"));
+                        insert.setLong(6, rs.getLong("scorecard_id"));
+
+                        insert.executeUpdate();
+                    }
+
+                    count++;
+
+                }
+                close(rs);
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'scorecard_response' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+    public void doLoadTestcaseResponse() throws Exception {
+        log.info("load testcase_response");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+
+
+        final String SELECT =
+                      //"select (select q_template_id from question_template qt where qt.q_template_v_id = sq.q_template_v_id and cur_version=1)  as scorecard_question_id, " +
+                      "select sq.q_template_v_id as scorecard_question_id, " +
+                      "       s.scorecard_id, " +
+                      "       (select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
+                      "       s.author_id as reviewer_id, " +
+                      "       s.project_id, " +
+                      "       tq.total_tests as num_tests, " +
+                      "       tq.total_pass as num_passed " +
+                      "from testcase_question tq, scorecard s, scorecard_question sq " +
+                      "where s.scorecard_id = sq.scorecard_id " +
+                      "and sq.question_id = tq.question_id " +
+                      "and sq.cur_version = 1 " +
+                      "and s.cur_version = 1  " +
+                      "and tq.cur_version = 1 " +
+                      "and (tq.modify_date > ? OR sq.modify_date > ? OR s.modify_date > ?)";
+
+        final String UPDATE =
+                "update testcase_response set user_id=?, reviewer_id=?, project_id=?, num_tests=?, num_passed=? where scorecard_question_id = ? and scorecard_id = ?";
+
+        final String INSERT =
+                "insert into testcase_response (user_id, reviewer_id, project_id, num_tests, num_passed, scorecard_question_id, scorecard_id) values (?, ?, ?, ?, ?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            select.setTimestamp(1, fLastLogTime);
+            select.setTimestamp(2, fLastLogTime);
+            select.setTimestamp(3, fLastLogTime);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+
+            int count = 0;
+
+            rs = select.executeQuery();
+
+            while (rs.next())  {
+
+                update.clearParameters();
+
+                update.setObject(1, rs.getObject("user_id"));
+                update.setObject(2, rs.getObject("reviewer_id"));
+                update.setObject(3, rs.getObject("project_id"));
+                update.setObject(4, rs.getObject("num_tests"));
+                update.setObject(5, rs.getObject("num_passed"));
+                update.setLong(6, rs.getLong("scorecard_question_id"));
+                update.setLong(7, rs.getLong("scorecard_id"));
+
+                int retVal = update.executeUpdate();
+
+                if (retVal == 0) {
+                    insert.clearParameters();
+
+                    insert.setObject(1, rs.getObject("user_id"));
+                    insert.setObject(2, rs.getObject("reviewer_id"));
+                    insert.setObject(3, rs.getObject("project_id"));
+                    insert.setObject(4, rs.getObject("num_tests"));
+                    insert.setObject(5, rs.getObject("num_passed"));
+                    insert.setLong(6, rs.getLong("scorecard_question_id"));
+                    insert.setLong(7, rs.getLong("scorecard_id"));
+
+                    insert.executeUpdate();
+                }
+                count++;
+
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'testcase_response' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+
+
+    public void doLoadSubjectiveResponse() throws Exception {
+        log.info("load subjective_response");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+        ResultSet projects = null;
+        PreparedStatement projectSelect = null;
+
+
+        final String SELECT =
+                       //"select (select q_template_id from question_template qt where qt.q_template_v_id = sq.q_template_v_id and cur_version=1) as scorecard_question_id, " +
+                        "select sq.q_template_v_id as scorecard_question_id, " +
+                        "s.scorecard_id, " +
+                        "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
+                        "s.author_id as reviewer_id, " +
+                        "s.project_id, " +
+                        "sr.response_text, " +
+                        "sr.response_type_id, " +
+                        "(select response_type_name from response_type where sr.response_type_id = response_type_id) as response_type_desc " +
+                        "from subjective_resp sr, scorecard s, scorecard_question sq " +
+                        "where s.scorecard_id = sq.scorecard_id " +
+                        "and sq.question_id = sr.question_id " +
+                        "and s.cur_version = 1 " +
+                        "and sr.cur_version = 1 " +
+                        "and sq.cur_version = 1 "+
+                        "and project_id = ? " +
+                        "and (sr.modify_date>? OR s.modify_date>? OR sq.modify_date>?) " +
+                        "order by scorecard_question_id, scorecard_id, subjective_resp_id";
+        final String UPDATE =
+                "update subjective_response set user_id=?, reviewer_id=?, project_id=?, response_text=?, response_type_id=?,response_type_desc=? where  sort=? and scorecard_question_id = ? and scorecard_id = ?";
+
+        final String INSERT =
+                "insert into subjective_response (user_id, reviewer_id, project_id, response_text, response_type_id, response_type_desc, sort, scorecard_question_id, scorecard_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+            projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
+
+            int count = 0;
+
+            long prevScorecardQuestion = -1;
+            long prevScorecard = -1;
+            int sort=0;
+
+
+            projects = projectSelect.executeQuery();
+
+            while (projects.next()) {
+                select.clearParameters();
+                select.setLong(1, projects.getLong("project_id"));
+                select.setTimestamp(2, fLastLogTime);
+                select.setTimestamp(3, fLastLogTime);
+                select.setTimestamp(4, fLastLogTime);
+
+                rs = select.executeQuery();
+
+                while (rs.next()) {
+                    if ((rs.getLong("scorecard_question_id") != prevScorecardQuestion) || (rs.getLong("scorecard_id") != prevScorecard)) {
+                        sort = 0;
+                        prevScorecardQuestion = rs.getLong("scorecard_question_id");
+                        prevScorecard = rs.getLong("scorecard_id");
+                    } else {
+                        sort++;
+                    }
+
+
+                    update.clearParameters();
+
+                    update.setObject(1, rs.getObject("user_id"));
+                    update.setObject(2, rs.getObject("reviewer_id"));
+                    update.setObject(3, rs.getObject("project_id"));
+                    update.setObject(4, rs.getObject("response_text"));
+                    update.setObject(5, rs.getObject("response_type_id"));
+                    update.setObject(6, rs.getObject("response_type_desc"));
+                    update.setInt(7, sort);
+                    update.setLong(8, rs.getLong("scorecard_question_id"));
+                    update.setLong(9, rs.getLong("scorecard_id"));
+
+                    int retVal = update.executeUpdate();
+
+                    if (retVal == 0) {
+                        insert.clearParameters();
+
+                        insert.setObject(1, rs.getObject("user_id"));
+                        insert.setObject(2, rs.getObject("reviewer_id"));
+                        insert.setObject(3, rs.getObject("project_id"));
+                        insert.setObject(4, rs.getObject("response_text"));
+                        insert.setObject(5, rs.getObject("response_type_id"));
+                        insert.setObject(6, rs.getObject("response_type_desc"));
+                        insert.setInt(7, sort);
+                        insert.setLong(8, rs.getLong("scorecard_question_id"));
+                        insert.setLong(9, rs.getLong("scorecard_id"));
+
+                        insert.executeUpdate();
+                    }
+                    count++;
+
+                }
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'subjective_response' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+
+    public void doLoadAppeal() throws Exception {
+        log.info("load Appeal");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+        ResultSet projects = null;
+        PreparedStatement projectSelect = null;
+
+
+        final String SELECT = "select a.appeal_id, " +
+                            "sq.q_template_v_id as scorecard_question_id, " +
+                            "s.scorecard_id, " +
+                            "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
+                            "s.author_id as reviewer_id, " +
+                            "s.project_id, " +
+                            "sq.evaluation_id as final_evaluation_id, " +
+                            "a. appeal_text, " +
+                            "a.appeal_response, " +
+                            "a.raw_evaluation_id " +
+                            "from appeal a, scorecard s, scorecard_question sq " +
+                            "where s.scorecard_id = sq.scorecard_id " +
+                            "and sq.question_id = a.question_id " +
+                            "and sq.cur_version = 1 " +
+                            "and s.cur_version = 1  " +
+                            "and a.cur_version = 1 " +
+                            "and a.is_resolved = 1 " +
+                            "and sq.evaluation_id is not null " +
+                            "and project_id = ? " +
+                            "and (a.modify_date>? OR s.modify_date>? OR sq.modify_date>?)";
+
+        final String UPDATE =
+                "update appeal set scorecard_question_id = ?, scorecard_id = ?, user_id=?, reviewer_id=?, project_id=?, " +
+                "raw_evaluation_id=?, final_evaluation_id=?, appeal_text=?, appeal_response=? where appeal_id=?";
+
+        final String INSERT =
+                "insert into appeal (scorecard_question_id, scorecard_id, user_id, reviewer_id, project_id, " +
+                "raw_evaluation_id, final_evaluation_id, appeal_text, appeal_response, appeal_id) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+            projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
+
+            int count = 0;
+
+            projects = projectSelect.executeQuery();
+
+            while (projects.next()) {
+                select.clearParameters();
+                select.setLong(1, projects.getLong("project_id"));
+                select.setTimestamp(2, fLastLogTime);
+                select.setTimestamp(3, fLastLogTime);
+                select.setTimestamp(4, fLastLogTime);
+
+                rs = select.executeQuery();
+
+                while (rs.next()) {
+
+                    update.clearParameters();
+
+                    update.setLong(1, rs.getLong("scorecard_question_id"));
+                    update.setLong(2, rs.getLong("scorecard_id"));
+                    update.setObject(3, rs.getObject("user_id"));
+                    update.setObject(4, rs.getObject("reviewer_id"));
+                    update.setObject(5, rs.getObject("project_id"));
+                    update.setObject(6,rs.getObject("raw_evaluation_id"));
+                    update.setObject(7, rs.getObject("final_evaluation_id"));
+                    update.setObject(8, rs.getObject("appeal_text"));
+                    update.setObject(9, rs.getObject("appeal_response"));
+                    update.setLong(10, rs.getLong("appeal_id"));
+
+                    int retVal = update.executeUpdate();
+
+                    if (retVal == 0) {
+                        insert.clearParameters();
+
+                        insert.setLong(1, rs.getLong("scorecard_question_id"));
+                        insert.setLong(2, rs.getLong("scorecard_id"));
+                        insert.setObject(3, rs.getObject("user_id"));
+                        insert.setObject(4, rs.getObject("reviewer_id"));
+                        insert.setObject(5, rs.getObject("project_id"));
+                        insert.setObject(6, rs.getObject("raw_evaluation_id"));
+                        insert.setObject(7, rs.getObject("final_evaluation_id"));
+                        insert.setObject(8, rs.getObject("appeal_text"));
+                        insert.setObject(9, rs.getObject("appeal_response"));
+                        insert.setLong(10, rs.getLong("appeal_id"));
+
+                        insert.executeUpdate();
+                    }
+                    count++;
+
+                }
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'appeal' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+    public void doLoadTestcaseAppeal() throws Exception {
+        log.info("load Testcase Appeal");
+        ResultSet rs = null;
+
+        PreparedStatement select = null;
+        PreparedStatement update = null;
+        PreparedStatement insert = null;
+        ResultSet projects = null;
+        PreparedStatement projectSelect = null;
+
+
+        final String SELECT = "select a.appeal_id, "+
+                            "sq.q_template_v_id as scorecard_question_id, "+
+                            "s.scorecard_id, "+
+                            "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, "+
+                            "s.author_id as reviewer_id, "+
+                            "s.project_id, "+
+                            "tq.total_tests as final_num_tests, "+
+                            "tq.total_pass as final_num_passed, "+
+                            "a.appeal_text, "+
+                            "a.appeal_response, " +
+                            "a.raw_total_tests, " +
+                            "a.raw_total_pass " +
+                            "from appeal a, scorecard s, testcase_question tq, scorecard_question sq "+
+                            "where   s.scorecard_id = sq.scorecard_id  "+
+                            "and sq.question_id = tq.question_id  "+
+                            "and tq.question_id = a.question_id "+
+                            "and tq.cur_version = 1 "+
+                            "and s.cur_version = 1  "+
+                            "and a.cur_version = 1 "+
+                            "and a.is_resolved = 1 "+
+                            "and project_id = ? " +
+                            "and (a.modify_date>? OR s.modify_date>? OR tq.modify_date>? OR sq.modify_date>?)";
+
+
+        final String UPDATE =
+                "update testcase_appeal set scorecard_question_id = ?, scorecard_id = ?, user_id=?, reviewer_id=?, project_id=?, " +
+                "raw_num_passed=?, raw_num_tests=?, final_num_passed=?, final_num_tests=?, appeal_text=?, appeal_response=? where appeal_id=?";
+
+        final String INSERT =
+                "insert into testcase_appeal (scorecard_question_id, scorecard_id, user_id, reviewer_id, project_id, " +
+                "raw_num_passed, raw_num_tests, final_num_passed, final_num_tests, appeal_text, appeal_response, appeal_id) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try {
+            long start = System.currentTimeMillis();
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+            projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
+
+            int count = 0;
+
+            projects = projectSelect.executeQuery();
+
+            while (projects.next()) {
+                select.clearParameters();
+                select.setLong(1, projects.getLong("project_id"));
+                select.setTimestamp(2, fLastLogTime);
+                select.setTimestamp(3, fLastLogTime);
+                select.setTimestamp(4, fLastLogTime);
+                select.setTimestamp(5, fLastLogTime);
+
+                rs = select.executeQuery();
+
+                while (rs.next()) {
+
+                    update.clearParameters();
+
+                    update.setLong(1, rs.getLong("scorecard_question_id"));
+                    update.setLong(2, rs.getLong("scorecard_id"));
+                    update.setObject(3, rs.getObject("user_id"));
+                    update.setObject(4, rs.getObject("reviewer_id"));
+                    update.setObject(5, rs.getObject("project_id"));
+                    update.setObject(6, rs.getObject("raw_total_pass"));
+                    update.setObject(7, rs.getObject("raw_total_tests"));
+                    update.setObject(8, rs.getObject("final_num_passed"));
+                    update.setObject(9, rs.getObject("final_num_tests"));
+                    update.setObject(10, rs.getObject("appeal_text"));
+                    update.setObject(11, rs.getObject("appeal_response"));
+                    update.setLong(12, rs.getLong("appeal_id"));
+
+                    int retVal = update.executeUpdate();
+
+                    if (retVal == 0) {
+                        insert.clearParameters();
+
+                        insert.setLong(1, rs.getLong("scorecard_question_id"));
+                        insert.setLong(2, rs.getLong("scorecard_id"));
+                        insert.setObject(3, rs.getObject("user_id"));
+                        insert.setObject(4, rs.getObject("reviewer_id"));
+                        insert.setObject(5, rs.getObject("project_id"));
+                        insert.setObject(6, rs.getObject("raw_total_pass"));
+                        insert.setObject(7, rs.getObject("raw_total_tests"));
+                        insert.setObject(8, rs.getObject("final_num_passed"));
+                        insert.setObject(9, rs.getObject("final_num_tests"));
+                        insert.setObject(10, rs.getObject("appeal_text"));
+                        insert.setObject(11, rs.getObject("appeal_response"));
+                        insert.setLong(12, rs.getLong("appeal_id"));
+
+                        insert.executeUpdate();
+                    }
+                    count++;
+
+                }
+            }
+
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'testcase_appeal' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(insert);
+            close(update);
+            close(select);
+        }
     }
 
 
