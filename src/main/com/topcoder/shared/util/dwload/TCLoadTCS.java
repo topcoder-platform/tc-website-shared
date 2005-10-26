@@ -1061,7 +1061,7 @@ public class TCLoadTCS extends TCLoad {
 
         final String SELECT = "select contest_id, project_id  " +
                 "from contest_project_xref " +
-                "where project_id = ? and create_date > ?";
+                "where project_id = ? and modify_date > ?";
 
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
                 "values (?, ?)";
