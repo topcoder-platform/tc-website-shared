@@ -387,7 +387,7 @@ public class TCLoadTCS extends TCLoad {
             final String SELECT = "select user_id, rating, phase_id from user_reliability";
             final String INSERT = "insert into user_reliability (user_id, rating, phase_id) " +
                     "values (?, ?, ?) ";
-            final String UPDATE = "update user_reliability set rating = ?, modify_date = CURRENT " +
+            final String UPDATE = "update user_reliability set rating = ?" +
                     " where user_id = ? and phase_id = ?";
 
             select = prepareStatement(SELECT, SOURCE_DB);
