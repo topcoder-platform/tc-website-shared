@@ -2181,7 +2181,7 @@ public class TCLoadTCS extends TCLoad {
         final String INSERT =
                 "insert into scorecard_response (user_id, reviewer_id, project_id, evaluation_id, scorecard_question_id, scorecard_id) values (?, ?, ?, ?, ?, ?)";
 
-
+        long questionId = 0;
         try {
             long start = System.currentTimeMillis();
 
@@ -2204,12 +2204,13 @@ public class TCLoadTCS extends TCLoad {
 
                 while (rs.next()) {
                     update.clearParameters();
+                    questionId = rs.getLong("scorecard_question_id");
 
                     update.setObject(1, rs.getObject("user_id"));
                     update.setObject(2, rs.getObject("reviewer_id"));
                     update.setObject(3, rs.getObject("project_id"));
                     update.setObject(4, rs.getObject("evaluation_id"));
-                    update.setLong(5, rs.getLong("scorecard_question_id"));
+                    update.setLong(5, questionId);
                     update.setLong(6, rs.getLong("scorecard_id"));
 
                     int retVal = update.executeUpdate();
@@ -2221,7 +2222,7 @@ public class TCLoadTCS extends TCLoad {
                         insert.setObject(2, rs.getObject("reviewer_id"));
                         insert.setObject(3, rs.getObject("project_id"));
                         insert.setObject(4, rs.getObject("evaluation_id"));
-                        insert.setLong(5, rs.getLong("scorecard_question_id"));
+                        insert.setLong(5, questionId);
                         insert.setLong(6, rs.getLong("scorecard_id"));
 
                         insert.executeUpdate();
@@ -2238,7 +2239,7 @@ public class TCLoadTCS extends TCLoad {
 
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'scorecard_response' table failed.\n" +
+            throw new Exception("Load of 'scorecard_response' table failed for question " + questionId + " .\n" +
                     sqle.getMessage());
         } finally {
             close(insert);
