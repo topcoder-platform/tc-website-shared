@@ -1065,9 +1065,10 @@ public class TCLoadTCS extends TCLoad {
 
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
                 "values (?, ?)";
+        final String DELETE = "delete from contest_project_xref where contest_id = ? and project_id = ?";
 
 
-        PreparedStatement update = null;
+        PreparedStatement delete = null;
         PreparedStatement select = null;
         PreparedStatement insert = null;
         PreparedStatement projectSelect = null;
@@ -1080,6 +1081,7 @@ public class TCLoadTCS extends TCLoad {
             projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
 
             insert = prepareStatement(INSERT, TARGET_DB);
+            delete = prepareStatement(DELETE, TARGET_DB);
 
             projects = projectSelect.executeQuery();
             int count = 0;
@@ -1091,11 +1093,17 @@ public class TCLoadTCS extends TCLoad {
 
                 rs = select.executeQuery();
                 while (rs.next()) {
-
                     insert.clearParameters();
                     insert.setLong(1, rs.getLong("contest_id"));
                     insert.setLong(2, projectId);
-                    insert.executeUpdate();
+                    try {
+                        insert.executeUpdate();
+                    } catch (SQLException e) {
+                        delete.setLong(1, rs.getLong("contest_id"));
+                        delete.setLong(2, projectId);
+                        delete.executeUpdate();
+                        insert.executeUpdate();
+                    }
                     count++;
 
                 }
@@ -1109,7 +1117,7 @@ public class TCLoadTCS extends TCLoad {
         } finally {
             close(rs);
             close(projects);
-            close(update);
+            close(delete);
             close(select);
             close(insert);
             close(projectSelect);
