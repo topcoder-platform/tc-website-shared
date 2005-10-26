@@ -384,7 +384,7 @@ public class TCLoadTCS extends TCLoad {
 
         try {
             long start = System.currentTimeMillis();
-            final String SELECT = "select user_id, rating, phase_id from user_reliability";
+            final String SELECT = "select user_id, rating, phase_id from user_reliability where modify_date > ? ";
             final String INSERT = "insert into user_reliability (user_id, rating, phase_id) " +
                     "values (?, ?, ?) ";
             final String UPDATE = "update user_reliability set rating = ?" +
