@@ -2032,7 +2032,8 @@ public class TCLoadTCS extends TCLoad {
                 "ss.section_weight, " +
                 "ss.group_id as section_group_id, " +
                 "sg.group_name as section_group_desc,  " +
-                "round (sg.group_seq_loc) || \".\" || round(ss.section_seq_loc) || \".\" || round(qt.question_seq_loc)  as question_desc  " +
+                "round (sg.group_seq_loc) || \".\" || round(ss.section_seq_loc) || \".\" || round(qt.question_seq_loc)  as question_desc,  " +
+                "sg.group_seq_loc, ss.section_seq_loc, qt.question_seq_loc  "+
                 "from question_template qt, scorecard_section ss, sc_section_group sg  " +
                 "where qt.cur_version = 1  " +
                 "and ss.section_id = qt.section_id  " +
@@ -2362,7 +2363,8 @@ public class TCLoadTCS extends TCLoad {
                         "s.project_id, " +
                         "sr.response_text, " +
                         "sr.response_type_id, " +
-                        "(select response_type_name from response_type where sr.response_type_id = response_type_id) as response_type_desc " +
+                        "(select response_type_name from response_type where sr.response_type_id = response_type_id) as response_type_desc, " +
+                        " subjective_resp_id" +
                         "from subjective_resp sr, scorecard s, scorecard_question sq " +
                         "where s.scorecard_id = sq.scorecard_id " +
                         "and sq.question_id = sr.question_id " +
