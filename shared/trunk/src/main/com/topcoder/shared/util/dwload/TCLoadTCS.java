@@ -2243,6 +2243,7 @@ public class TCLoadTCS extends TCLoad {
             throw new Exception("Load of 'scorecard_response' table failed for question " + questionId + " .\n" +
                     sqle.getMessage());
         } finally {
+            close(projects);
             close(insert);
             close(update);
             close(select);
