@@ -2365,7 +2365,7 @@ public class TCLoadTCS extends TCLoad {
                         "sr.response_text, " +
                         "sr.response_type_id, " +
                         "(select response_type_name from response_type where sr.response_type_id = response_type_id) as response_type_desc, " +
-                        " subjective_resp_id" +
+                        " subjective_resp_id " +
                         "from subjective_resp sr, scorecard s, scorecard_question sq " +
                         "where s.scorecard_id = sq.scorecard_id " +
                         "and sq.question_id = sr.question_id " +
