@@ -845,21 +845,26 @@ public class TCLoadTCS extends TCLoad {
                 "score as final_score,  " +
                 "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
                 "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
+                //todo populate this
                 "0 as num_successful_appeals,  " +
-                "(select r_resp_id from r_user_role where login_id = sc.author_id and project_id = sc.project_id and cur_version = 1 and r_role_id = 3) as review_resp_id,  " +
+                "rur.r_resp_id as review_resp_id,  " +
                 "scorecard_id,  " +
                 "(select distinct template_id from question_template qt, scorecard_question sq  " +
                 "where qt.q_template_v_id = sq.q_template_v_id and sq.cur_version = 1 and qt.cur_version = 1 and sq.scorecard_id = sc.scorecard_id)  as scorecard_template_id  " +
-                "from scorecard sc, submission s " +
+                "from scorecard sc, submission s, r_user_role rur " +
                 "where s.cur_version = 1  " +
                 "and s.submission_id = sc.submission_id  " +
+                "and rur.project_id = sc.project_id " +
+                "and rur.cur_version = 1 " +
+                "and rur.login_id = sc.author_id " +
+                "and rur.r_role_id = 3 " +
                 "and s.submission_type = 1   " +
                 "and s.is_removed = 0  " +
                 "and sc.project_id = ? " +
                 "and sc.scorecard_type = 2 " +
                 "and sc.is_completed = 1 " +
                 "and sc.cur_version = 1 " +
-                "and (sc.modify_date > ? OR s.modify_date > ?)";
+                "and (sc.modify_date > ? OR s.modify_date > ? OR rur.modify_date > ?)";
 
 
         final String SUBMISSION_UPDATE =
@@ -890,6 +895,7 @@ public class TCLoadTCS extends TCLoad {
                 submissionSelect.setLong(1, projects.getLong("project_id"));
                 submissionSelect.setTimestamp(2, fLastLogTime);
                 submissionSelect.setTimestamp(3, fLastLogTime);
+                submissionSelect.setTimestamp(4, fLastLogTime);
                 //log.debug("before submission select");
                 submissionInfo = submissionSelect.executeQuery();
                 //log.debug("after submission select");
