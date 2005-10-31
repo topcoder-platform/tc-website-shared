@@ -732,7 +732,7 @@ public class TCLoadTCS extends TCLoad {
                 "and p.cur_version = 1  " +
                 "and cv.comp_vers_id = p.comp_vers_id " +
                 "and cc.component_id = cv.component_id " +
-                "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ?)";
+                "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pr.modify_date > ?)";
 
         final String RESULT_UPDATE =
                 "update project_result set submit_ind = ?, valid_submission_ind = ?, raw_score = ?, final_score = ?, inquire_timestamp = ?, " +
@@ -751,6 +751,7 @@ public class TCLoadTCS extends TCLoad {
             resultSelect.setTimestamp(1, fLastLogTime);
             resultSelect.setTimestamp(2, fLastLogTime);
             resultSelect.setTimestamp(3, fLastLogTime);
+            resultSelect.setTimestamp(4, fLastLogTime);
             resultUpdate = prepareStatement(RESULT_UPDATE, TARGET_DB);
             resultInsert = prepareStatement(RESULT_INSERT, TARGET_DB);
 
