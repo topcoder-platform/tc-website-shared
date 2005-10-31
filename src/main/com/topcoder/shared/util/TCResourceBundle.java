@@ -4,6 +4,7 @@ import com.topcoder.shared.util.logging.Logger;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Locale;
 
 /**
  * @author unknown
@@ -20,18 +21,23 @@ public final class TCResourceBundle {
      * @param baseName
      */
     public TCResourceBundle(String baseName) {
+        this(baseName, Locale.US);
+    }
+
+    public TCResourceBundle(String baseName, Locale locale) {
         try {
-            bundle = ResourceBundle.getBundle(baseName);
+            bundle = ResourceBundle.getBundle(baseName, locale);
         } catch (MissingResourceException e) {
-            error("", e);
+            log.error(e);
         }
+
     }
 
     /**
      *
      * @param key
      * @param defaultValue
-     * @return
+     * @return  String
      */
     public String getProperty(String key, String defaultValue) {
         String ret = null;
@@ -49,7 +55,7 @@ public final class TCResourceBundle {
      *
      * @param key
      * @param defaultValue
-     * @return
+     * @return String
      */
     public int getIntProperty(String key, int defaultValue) {
         String str = getProperty(key, Integer.toString(defaultValue));
@@ -101,12 +107,4 @@ public final class TCResourceBundle {
         return Double.parseDouble(str.trim());
     }
 
-    /**
-     *
-     * @param message
-     * @param t
-     */
-    private static void error(Object message, Throwable t) {
-        log.error(message, t);
-    }
 }
