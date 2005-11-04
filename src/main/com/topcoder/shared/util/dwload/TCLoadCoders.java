@@ -1516,7 +1516,7 @@ public class TCLoadCoders extends TCLoad {
             rs = executeQuery(psSel, "loadAchievements");
 
             while (rs.next()) {
-                int coder_id = rs.getInt("coder_id");
+                int coder_id = rs.getInt("user_id");
 
                 psIns.setInt(1, coder_id);
                 psIns.setDate(2, rs.getDate("achievement_date"));
