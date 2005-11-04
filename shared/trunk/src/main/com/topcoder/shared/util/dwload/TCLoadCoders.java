@@ -89,6 +89,8 @@ public class TCLoadCoders extends TCLoad {
 
             loadCurrentSchool();
 
+            loadAchievements();
+
             clearCache(coders);
 
             setLastUpdateTime();
@@ -108,11 +110,11 @@ public class TCLoadCoders extends TCLoad {
         int count = 0;
         ArrayList list = client.getKeys();
         boolean found = false;
-        for (int i=0; i<list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             found = false;
-            for (int j=0; j<coders.size()&&!found; j++) {
-                tempKey = (String)list.get(i);
-                if (tempKey.indexOf(coders.get(j).toString())>=0) {
+            for (int j = 0; j < coders.size() && !found; j++) {
+                tempKey = (String) list.get(i);
+                if (tempKey.indexOf(coders.get(j).toString()) >= 0) {
                     client.remove(tempKey);
                     count++;
                     found = true;
@@ -1475,6 +1477,73 @@ public class TCLoadCoders extends TCLoad {
             close(psSel);
             close(psIns);
             close(psUpd);
+        }
+    }
+
+    private void loadAchievements() throws Exception {
+        int count = 0;
+        int retVal = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append(" select ua.achievement_date ");
+            query.append(" , ua.description ");
+            query.append(" , ua.user_id ");
+            query.append(" , ua.achievement_type_id ");
+            query.append(" , t.achievement_type_desc ");
+            query.append(" from user_achievement ua, common_oltp:achievement_type_lu t ");
+            query.append(" where ua.achievement_type_id = t.achievement_type_id ");
+            query.append(" and ua.create_date > ? ");
+
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel.setTimestamp(1, fLastLogTime);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO user_achievement");
+            query.append(" (coder_id ");
+            query.append(" ,achievement_date ");
+            query.append(" ,achievement_type_id ");
+            query.append(" ,description ");
+            query.append(" ,achievement_type_desc) ");
+            query.append("VALUES (");
+            query.append("?,?,?,?,?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            rs = executeQuery(psSel, "loadAchievements");
+
+            while (rs.next()) {
+                int coder_id = rs.getInt("coder_id");
+
+                psIns.setInt(1, coder_id);
+                psIns.setDate(2, rs.getDate("achievement_date"));
+                psIns.setInt(3, rs.getInt("achievement_type_id"));
+                psIns.setString(4, rs.getString("description"));
+                psIns.setString(5, rs.getString("achievement_type_desc"));
+                retVal = psIns.executeUpdate();
+
+
+                count = count + retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadCoder: Load achievement for coder " + coder_id +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                printLoadProgress(count, "user_achievement");
+            }
+
+            log.info("user_achievement records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'user_achievement' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
         }
     }
 
