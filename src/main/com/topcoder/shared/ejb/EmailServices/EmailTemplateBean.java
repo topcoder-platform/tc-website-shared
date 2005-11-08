@@ -626,7 +626,7 @@ public class EmailTemplateBean extends BaseEJB {
             sqlStmt.append(" WHERE");
             sqlStmt.append(" email_template_id = ?");
             ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setBytes(1, data.getBytes());
+            ps.setString(1, data);
             ps.setInt(2, templateId);
             rows = ps.executeUpdate();
             if (rows == 0) {
