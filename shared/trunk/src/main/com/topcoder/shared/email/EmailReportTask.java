@@ -146,6 +146,7 @@ public class EmailReportTask extends EmailTask implements Runnable {
             // Generate the transformer.
             Transformer transformer = tFactory.newTransformer(templateSource);
             // Perform the transformation, sending the output to the response.
+            transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
             StringWriter msg = new StringWriter();
             Result xmlResult = new StreamResult(msg);
             transformer.transform(memberSource, xmlResult);
