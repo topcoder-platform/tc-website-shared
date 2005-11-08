@@ -91,7 +91,7 @@ public class EmailEngine {
         Address[] ret = new Address[0];
         javax.mail.Session eMailSession = null;
         Transport eMailTransport = null;
-        javax.mail.Message eMailMessage = null;
+        javax.mail.internet.MimeMessage eMailMessage = null;
         Properties props = new Properties();
         props.put("mail.smtp.host", host);
         props.put("mail.transport.protocol", SMTP_HOST_TYPE);
@@ -112,7 +112,8 @@ public class EmailEngine {
             eMailMessage.setSubject(subject);
             Date sentDate = new Date();
             eMailMessage.setSentDate(sentDate);
-            eMailMessage.setContent(data, "text/plain");
+            //eMailMessage.setContent(data, "text/plain");
+            eMailMessage.setText(data, "utf-8");
             eMailTransport.send(eMailMessage);
         } catch (NoSuchProviderException e) {
             log.error("SMTP transport type not accepted", e);
