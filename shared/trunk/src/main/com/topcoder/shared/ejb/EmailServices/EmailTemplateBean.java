@@ -74,7 +74,8 @@ public class EmailTemplateBean extends BaseEJB {
             ps.setInt(1, id);
             ps.setString(2, name);
             ps.setInt(3, group);
-            ps.setBytes(4, data.getBytes());
+//            ps.setBytes(4, data.getBytes());
+            ps.setString(4, data);
             rows = ps.executeUpdate();
             if (rows != 1) {
                 throw new Exception("insert command affected " + rows + " rows.");
@@ -367,9 +368,8 @@ public class EmailTemplateBean extends BaseEJB {
             ps.setInt(1, templateId);
             rs = ps.executeQuery();
             if (rs.next()) {
-                byte[] bytes = rs.getBytes(1);
-                if (bytes != null)
-                    ret = new String(bytes);
+                if (rs.getString(1) != null)
+                    ret = rs.getString(1);
             }
             rs.close();
         } catch (Exception dberr) {
