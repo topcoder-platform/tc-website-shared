@@ -223,6 +223,7 @@ public class SendEmailTask extends EmailTask implements Runnable {
             Source templateSource = new StreamSource(templateReader);
             // Generate the transformer.
             Transformer transformer = tFactory.newTransformer(templateSource);
+            transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
             // Perform the transformation, sending the output to the response.
             StringWriter msg = new StringWriter();
             Result xmlResult = new StreamResult(msg);
