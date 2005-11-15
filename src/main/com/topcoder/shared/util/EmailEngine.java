@@ -109,7 +109,7 @@ public class EmailEngine {
             if (bcc != null)
                 eMailMessage.setRecipients(javax.mail.Message.RecipientType.BCC, bcc);
             eMailMessage.setFrom(from);
-            eMailMessage.setSubject(subject);
+            eMailMessage.setSubject(subject, "utf-8");
             Date sentDate = new Date();
             eMailMessage.setSentDate(sentDate);
             //eMailMessage.setContent(data, "text/plain");
