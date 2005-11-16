@@ -5,6 +5,7 @@ import com.topcoder.shared.util.logging.Logger;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Locale;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author unknown
@@ -43,7 +44,7 @@ public final class TCResourceBundle {
         String ret = null;
         try {
             ret = getProperty(key);
-            //log.debug("setting " + key + " = " + ret);
+            //log.debug("setting " + key + " = " + ret);z
         } catch (MissingResourceException e) {
             ret = defaultValue;
             log.debug("key not found, setting default " + key + " = " + ret);
@@ -81,7 +82,14 @@ public final class TCResourceBundle {
      * @throws MissingResourceException
      */
     public String getProperty(String key) throws MissingResourceException {
-        return bundle.getString(key).trim();
+        String ret = bundle.getString(key).trim();
+        try {
+            ret = new String(ret.getBytes(), "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            //ignore and just return the value we got. this shouldn't happen
+            log.warn(e.getMessage());
+        }
+        return ret;
     }
 
     /**
