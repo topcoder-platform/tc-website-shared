@@ -114,6 +114,7 @@ public class EmailEngine {
             eMailMessage.setSentDate(sentDate);
             //eMailMessage.setContent(data, "text/plain");
             eMailMessage.setText(data, "utf-8");
+            eMailMessage.setHeader("Content-Transfer-Encoding", "base64");
             eMailTransport.send(eMailMessage);
         } catch (NoSuchProviderException e) {
             log.error("SMTP transport type not accepted", e);
