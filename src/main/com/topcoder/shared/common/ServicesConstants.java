@@ -50,6 +50,7 @@ public final class ServicesConstants {
     /** Long contest wrappers */
     public static final String LONG_CONTEST_MPSQAS_WRAPPER = BASE + "/wrapper/lcontest/LongContestMPSQASWrapper.java";
     public static final String LONG_CONTEST_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.java";
+    public static final String LONG_CONTEST_CPP_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.cpp";
 
     /** argparser.h C++ header file */
     public static final String WRAPPER = BASE + "/cpp/wrapper.cc";
