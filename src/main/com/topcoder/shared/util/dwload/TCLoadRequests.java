@@ -582,6 +582,7 @@ public class TCLoadRequests extends TCLoad {
                         if (temp != null) {
                             ret = Long.parseLong(((String) paramMap.get(CODER_ID_KEYS[i])));
                             if (ret > 999999999 || ret < 1) {
+                                ret = -1;
                                 throw new RuntimeException("Invalid coder id in request");
                             }
                             found = true;
@@ -608,6 +609,7 @@ public class TCLoadRequests extends TCLoad {
                         if (temp != null) {
                             ret = Long.parseLong(((String) paramMap.get(ROUND_ID_KEYS[i])));
                             if (ret > 999999999 || ret < 1) {
+                                ret = -1;
                                 throw new RuntimeException("Invalid round id in request");
                             }
                             found = true;
