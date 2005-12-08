@@ -250,14 +250,22 @@ public class TCLoadRequests extends TCLoad {
 
             createUrlPs.clearParameters();
             createUrlPs.setString(1, url.getUrl());
-            if (url.hasCoderId())
-                createUrlPs.setLong(2, url.getCoderId());
-            else
+            if (url.hasCoderId()) {
+                long coderId = url.getCoderId();
+                if (coderId>0) {
+                    createUrlPs.setLong(2, coderId);
+                }
+            } else {
                 createUrlPs.setNull(2, Types.DECIMAL);
-            if (url.hasRoundId())
-                createUrlPs.setLong(3, url.getRoundId());
-            else
+            }
+            if (url.hasRoundId()) {
+                long roundId = url.getRoundId();
+                if (roundId>0) {
+                    createUrlPs.setLong(3, roundId);
+                }
+            } else {
                 createUrlPs.setNull(3, Types.DECIMAL);
+            }
             createUrlPs.setString(4, url.getPageName());
 
             int ret = createUrlPs.executeUpdate();
@@ -285,7 +293,7 @@ public class TCLoadRequests extends TCLoad {
      * if we have seen it before.  If not, check
      * the database.  If not in the database, return -1
      * @param url
-     * @return
+     * @return long
      */
     private long getUrlId(URL url) throws Exception {
         //log.debug("called getUrlId " + url.getUrl());
