@@ -58,6 +58,9 @@ public class TCLoadRequests extends TCLoad {
             " where timestamp > ?" +
             "   and timestamp <= ?";
 
+    private final static String CLEAN =
+            " delete from site_hit where timestamp > ?";
+
     private final static String ADD_SITE_HIT =
             " insert into site_hit (coder_id, url_id, timestamp, session_id, calendar_id)" +
             " values (?, ?, ?, ?, ?)";
@@ -177,6 +180,7 @@ public class TCLoadRequests extends TCLoad {
         //log.debug("called loadWebRequests()");
         PreparedStatement psSel = null;
         PreparedStatement psDel = null;
+        PreparedStatement psClean = null;
 
         ResultSet rs = null;
         int count = 0;
@@ -186,6 +190,10 @@ public class TCLoadRequests extends TCLoad {
             psSel = prepareStatement(REQUEST_LIST, SOURCE_DB);
             psSel.setTimestamp(1, fLastWebLogTime);
             psSel.setTimestamp(2, fStartTime);
+
+            psClean = prepareStatement(CLEAN, TARGET_DB);
+            psClean.setTimestamp(1, fStartTime);
+            psClean.executeUpdate();
 
             rs = psSel.executeQuery();
             URL url = null;
@@ -235,6 +243,7 @@ public class TCLoadRequests extends TCLoad {
         } finally {
             close(rs);
             close(psSel);
+            close(psClean);
         }
     }
 
