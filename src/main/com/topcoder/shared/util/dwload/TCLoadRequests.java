@@ -189,7 +189,8 @@ public class TCLoadRequests extends TCLoad {
         try {
             psClean = prepareStatement(CLEAN, TARGET_DB);
             psClean.setTimestamp(1, fStartTime);
-            psClean.executeUpdate();
+            long deleted = psClean.executeUpdate();
+            log.info("deleted " + deleted + " rows from site hit that shouldn't exist yet");
 
             psSel = prepareStatement(REQUEST_LIST, SOURCE_DB);
             psSel.setTimestamp(1, fLastWebLogTime);
