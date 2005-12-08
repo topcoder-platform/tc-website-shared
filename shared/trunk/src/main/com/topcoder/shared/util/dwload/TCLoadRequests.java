@@ -187,13 +187,13 @@ public class TCLoadRequests extends TCLoad {
         int retVal = 0;
 
         try {
-            psSel = prepareStatement(REQUEST_LIST, SOURCE_DB);
-            psSel.setTimestamp(1, fLastWebLogTime);
-            psSel.setTimestamp(2, fStartTime);
-
             psClean = prepareStatement(CLEAN, TARGET_DB);
             psClean.setTimestamp(1, fStartTime);
             psClean.executeUpdate();
+
+            psSel = prepareStatement(REQUEST_LIST, SOURCE_DB);
+            psSel.setTimestamp(1, fLastWebLogTime);
+            psSel.setTimestamp(2, fStartTime);
 
             rs = psSel.executeQuery();
             URL url = null;
