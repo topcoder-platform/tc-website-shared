@@ -264,6 +264,8 @@ public class TCLoadRequests extends TCLoad {
                 long coderId = url.getCoderId();
                 if (coderId>0) {
                     createUrlPs.setLong(2, coderId);
+                } else {
+                    createUrlPs.setNull(2, Types.DECIMAL);
                 }
             } else {
                 createUrlPs.setNull(2, Types.DECIMAL);
@@ -271,6 +273,8 @@ public class TCLoadRequests extends TCLoad {
             if (url.hasRoundId()) {
                 long roundId = url.getRoundId();
                 if (roundId>0) {
+                    createUrlPs.setLong(3, roundId);
+                } else {
                     createUrlPs.setLong(3, roundId);
                 }
             } else {
