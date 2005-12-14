@@ -317,11 +317,12 @@ public class ProblemComponentFactory
         DataType[][] paramTypes = new DataType[methodList.getLength()][];
         String[][] paramNames= new String[methodList.getLength()][];
 
-
-        for(int i=0 ; i<returnTypes.length; i++){
+        trace.debug("we're working with " + returnTypes.length + " return types");
+        for(int i = 0; i<returnTypes.length; i++){
             NodeList m = methodList.item(i).getChildNodes();
             methodNames[i] = getText(getChildByName(m,SIGNATURE_METHOD_NAME));
             returnTypes[i] = getNestedType(getChildByName(m,SIGNATURE_RETURN));
+            trace.debug("added return type " + returnTypes[i] + " at index " + i);
 
             Node params = getChildByName(m, SIGNATURE_PARAMS);
 
