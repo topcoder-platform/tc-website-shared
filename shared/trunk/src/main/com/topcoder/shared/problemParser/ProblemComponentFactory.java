@@ -318,7 +318,7 @@ public class ProblemComponentFactory
         String[][] paramNames= new String[methodList.getLength()][];
 
 
-        for(int i=(returnTypes.length>1)?1:0 ; i<returnTypes.length; i++){
+        for(int i=0 ; i<returnTypes.length; i++){
             NodeList m = methodList.item(i).getChildNodes();
             methodNames[i] = getText(getChildByName(m,SIGNATURE_METHOD_NAME));
             returnTypes[i] = getNestedType(getChildByName(m,SIGNATURE_RETURN));
