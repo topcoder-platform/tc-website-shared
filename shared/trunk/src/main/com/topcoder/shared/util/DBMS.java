@@ -78,12 +78,12 @@ public class DBMS {
      */
     public final static String JMA_POOL_JTS = getProperty("JMA_POOL_JTS", "jdbc:weblogic:jts:JMAPool");
     public final static String JMS_FACTORY = getProperty("JMS_FACTORY", "jms.connection.jmsFactory");
-    public final static String EMAIL_QUEUE = getProperty("EMAIL_QUEUE", "eMailQueue");
-    public final static String COMPILE_QUEUE = getProperty("COMPILE_QUEUE", "compileQueue");
-    public final static String TESTING_QUEUE = getProperty("TESTING_QUEUE", "testingQueue");
+    public final static String EMAIL_QUEUE = getProperty("EMAIL_QUEUE", "queue/eMailQueue");
+    public final static String COMPILE_QUEUE = getProperty("COMPILE_QUEUE", "queue/compileQueue");
+    public final static String TESTING_QUEUE = getProperty("TESTING_QUEUE", "queue/testingQueue");
     public final static String REFERENCE_TESTING_QUEUE = getProperty("REFERENCE_TESTING_QUEUE", "referenceTestingQueue");
     public final static String TOPIC = getProperty("TOPIC", "contestTopic");
-    public final static String PACTS_QUEUE = getProperty("PACTS_QUEUE", "pactsQueue");
+    public final static String PACTS_QUEUE = getProperty("PACTS_QUEUE", "queue/pactsQueue");
     public final static String WEB_SERVICE_QUEUE = getProperty("WEB_SERVICE_QUEUE","webServiceGeneratorQueue");
     public final static String LONG_RESPONSE_QUEUE = getProperty("LONG_RESPONSE_QUEUE","queue/longResponseQueue");
     public final static String LONG_TEST_QUEUE = getProperty("LONG_TEST_QUEUE","queue/longTestQueue");
