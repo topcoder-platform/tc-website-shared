@@ -423,6 +423,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,str.received ");          // 10
             query.append("       ,str.succeeded ");         // 11
             query.append("       ,str.message ");           // 12
+            query.append("       ,str.score");              //13
             query.append("  FROM system_test_result str, component comp ");
             query.append(" WHERE str.round_id = ?");
             query.append(" AND comp.component_id = str.component_id");
@@ -446,10 +447,11 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,viewable ");          // 9
             query.append("       ,received ");          // 10
             query.append("       ,succeeded ");         // 11
-            query.append("       ,message) ");          // 12
+            query.append("       ,message ");           // 12
+            query.append("       ,score)");             //13
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?)");                   // 12 total values
+            query.append("?,?,?)");                 // 13 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -490,6 +492,7 @@ public class TCLoadLong extends TCLoad {
                 setBytes(psIns, 10, getBlobObject(rs, 10));  // received
                 psIns.setInt(11, rs.getInt(11));  // succeeded
                 psIns.setString(12, rs.getString(12));  // message
+                psIns.setFloat(13, rs.getFloat(13));  //score
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
