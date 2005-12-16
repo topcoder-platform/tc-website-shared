@@ -770,6 +770,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     private void initializeMetaData(ResultSetContainer rs) {
         columns = new ResultColumn[rs.columns.length];
         System.arraycopy(rs.columns, 0, columns, 0, rs.columns.length);
+        for (int i=0; i<columns.length; i++) {
+            columnNameMap.put(rs.getColumnName(i), new Integer(i));
+        }
     }
 
     /********************************************************************/
@@ -1067,7 +1070,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          *
          * @param index
-         * @return
+         * @return String
          */
         public String getStringItem(int index) {
             Object ret = getItem(index).getResultData();
@@ -1077,7 +1080,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          *
          * @param col
-         * @return
+         * @return String
          */
         public String getStringItem(String col) {
             Object ret = getItem(col).getResultData();
@@ -1169,7 +1172,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param o
-     * @return
+     * @return boolean
      */
     public boolean add(Object o) {
         throw new UnsupportedOperationException();
@@ -1178,7 +1181,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param c
-     * @return
+     * @return boolean
      */
     public boolean addAll(Collection c) {
         throw new UnsupportedOperationException();
@@ -1188,7 +1191,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param index
      * @param c
-     * @return
+     * @return boolean
      */
     public boolean addAll(int index, Collection c) {
         throw new UnsupportedOperationException();
@@ -1302,7 +1305,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param index
-     * @return
+     * @return Object
      */
     public Object remove(int index) {
         throw new UnsupportedOperationException();
@@ -1311,7 +1314,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param o
-     * @return
+     * @return boolean
      */
     public boolean remove(Object o) {
         throw new UnsupportedOperationException();
@@ -1320,7 +1323,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param c
-     * @return
+     * @return boolean
      */
     public boolean removeAll(Collection c) {
         throw new UnsupportedOperationException();
@@ -1329,7 +1332,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param c
-     * @return
+     * @return boolean
      */
     public boolean retainAll(Collection c) {
         throw new UnsupportedOperationException();
@@ -1339,7 +1342,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
      * @param index
      * @param element
-     * @return
+     * @return Object
      */
     public Object set(int index, Object element) {
         throw new UnsupportedOperationException();
@@ -1374,6 +1377,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         ResultSetContainer rsc = new ResultSetContainer();
         rsc.columns = this.columns;
         rsc.columnNameMap = this.columnNameMap;
+        rsc.dataBefore = fromIndex>0;
+        rsc.dataAfter = toIndex<data.size();
         rsc.data = new ArrayList(this.data.subList(fromIndex, toIndex));
         return rsc;
     }
@@ -1577,7 +1582,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Gets the 1 based index of the first row in the container with respect to what
      * the full set might be.  If > 1, this means that a
      * start rank > 1 was provided to the contructor
-     * @return
+     * @return int
      */
     public int getStartRow() {
         return startRow;
@@ -1587,7 +1592,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Gets the 1 based infex of the last row in the container with respect to what
      * the full set might be.  If an end rank was provided in the contructor
      * that what will be returned, otherwise, it'll be the size of the data set.
-     * @return
+     * @return int
      */
     public int getEndRow() {
         return endRow;
