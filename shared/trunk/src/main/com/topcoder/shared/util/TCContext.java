@@ -2,9 +2,10 @@ package com.topcoder.shared.util;
 
 import com.topcoder.shared.util.logging.Logger;
 
-import javax.naming.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.util.Hashtable;
-import java.util.Properties;
 
 
 /**
@@ -99,5 +100,14 @@ public class TCContext {
         return new InitialContext(env);
     }
 
+    public static void close(Context ctx) {
+        if (ctx != null) {
+            try {
+                ctx.close();
+            } catch (Exception e) {
+                log.error("couldn't close context");
+            }
+        }
+    }
 }
 
