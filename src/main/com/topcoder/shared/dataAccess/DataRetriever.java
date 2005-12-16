@@ -262,15 +262,17 @@ public class DataRetriever implements DataRetrieverInt {
         query = new StringBuffer(300);
         query.append("SELECT text FROM query WHERE query_id=");
         query.append(specialQueryId);
-        ps = conn.prepareStatement(query.toString());
-        rs = ps.executeQuery();
-        if (!rs.next())
-            throw new Exception("Query text for query ID " + specialQueryId + " missing from DB");
-        String specialQuery = DBMS.getTextString(rs, 1);
-        rs.close();
-        rs = null;
-        ps.close();
-        ps = null;
+        String specialQuery = null;
+        try {
+            ps = conn.prepareStatement(query.toString());
+            rs = ps.executeQuery();
+            if (!rs.next())
+                throw new Exception("Query text for query ID " + specialQueryId + " missing from DB");
+            specialQuery = DBMS.getTextString(rs, 1);
+        } finally {
+            closeObject(rs);
+            closeObject(ps);
+        }
 
         int i,j;
         // For default input queries, all inputs are required to avoid circularity hassles.
@@ -291,29 +293,30 @@ public class DataRetriever implements DataRetrieverInt {
             specialQuery = StringUtilities.replace(specialQuery, oldStr, inputValue);
         }
 
-        // Save query for exception handling
-        query = new StringBuffer(specialQuery);
-        ps = conn.prepareStatement(specialQuery);
-        rs = ps.executeQuery();
-        if (!rs.next())
-            throw new Exception("Default input query " + defaultQueryId +
-                    " did not return a value");
-        input = rs.getString(1);
-        rs.close();
-        rs = null;
-        ps.close();
-        ps = null;
+        try {
+            // Save query for exception handling
+            query = new StringBuffer(specialQuery);
+            ps = conn.prepareStatement(specialQuery);
+            rs = ps.executeQuery();
+            if (!rs.next())
+                throw new Exception("Default input query " + defaultQueryId +
+                        " did not return a value");
+            input = rs.getString(1);
 
-        // If input is still null, we're hosed - this indicates
-        // some problem with the DW data or the default input
-        // query.
-        if (input == null)
-            throw new Exception("Default input query " + defaultQueryId +
-                    " did not return a value");
+            // If input is still null, we're hosed - this indicates
+            // some problem with the DW data or the default input
+            // query.
+            if (input == null)
+                throw new Exception("Default input query " + defaultQueryId +
+                        " did not return a value");
 
-        // Save this result to avoid query rerunning
-        inputs.put(defaultQueryId, input);
-        return input;
+            // Save this result to avoid query rerunning
+            inputs.put(defaultQueryId, input);
+            return input;
+        } finally {
+            closeObject(rs);
+            closeObject(ps);
+        }
     }
 
     /**
@@ -378,10 +381,6 @@ public class DataRetriever implements DataRetrieverInt {
                 if (isRanking == 1)
                     querySortMap.put(tempId, new Integer(rs.getInt(5)));
             }
-            rs.close();
-            rs = null;
-            ps.close();
-            ps = null;
             queryIdList = new int[rowcount];
             for (i = 0; i < rowcount; i++) {
                 queryIdList[i] = ((Integer) qid.get(i)).intValue();
@@ -389,6 +388,9 @@ public class DataRetriever implements DataRetrieverInt {
         } catch (Exception e) {
             handleException(e, query.toString(), inputs);
             throw new Exception("Invalid command: " + commandDesc);
+        } finally {
+            closeObject(rs);
+            closeObject(ps);
         }
 
         // Now get the inputs of the queries
@@ -423,10 +425,6 @@ public class DataRetriever implements DataRetrieverInt {
             // time.
             ResultSetContainer rsc = new ResultSetContainer(rs);
 
-            rs.close();
-            rs = null;
-            ps.close();
-            ps = null;
             rowcount = rsc.getRowCount();
 
             for (i = 0; i < rowcount; i++) {
@@ -524,6 +522,9 @@ public class DataRetriever implements DataRetrieverInt {
         } catch (Exception e) {
             handleException(e, query.toString(), inputs);
             throw e;
+        } finally {
+            closeObject(rs);
+            closeObject(ps);
         }
 
         // At this point we've built all queries to run.
@@ -564,10 +565,6 @@ public class DataRetriever implements DataRetrieverInt {
                     rsc = new ResultSetContainer(rs, startRow, endRow, false);
                 else
                     rsc = new ResultSetContainer(rs, startRow, endRow, ranklistCol.intValue(), false);
-                rs.close();
-                rs = null;
-                ps.close();
-                ps = null;
 
                 // Sort if necessary
                 if (sortCalled && queryName.equals(sortQueryName)) {
@@ -584,6 +581,9 @@ public class DataRetriever implements DataRetrieverInt {
         } catch (Exception e) {
             handleException(e, queryText, inputs);
             throw new Exception("Error while retrieving query data:" + queryText);
+        } finally {
+            closeObject(rs);
+            closeObject(ps);
         }
 
         // Done!
