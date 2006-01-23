@@ -41,7 +41,8 @@ public class ProblemComponent extends BaseElement
         implements Element, Serializable, Cloneable, CustomSerializable {
     static String SECTION_HEADER = "h3";
     static String CODE = "<code>";
-
+    public static int DEFAULT_MEM_LIMIT = 64;
+    
     private boolean unsafe = true;
     private boolean valid = true;
     private ArrayList messages = new ArrayList();
@@ -61,6 +62,7 @@ public class ProblemComponent extends BaseElement
     private int problemId = -1;
     private String defaultSolution = "";
     private WebService[] webServices = new WebService[0];
+    private int memLimitMB = DEFAULT_MEM_LIMIT; 
 
     public ProblemComponent() {
     }
@@ -152,6 +154,7 @@ public class ProblemComponent extends BaseElement
         writer.writeInt(problemId);
         writer.writeString(defaultSolution);
         writer.writeObjectArray(webServices);
+        writer.writeInt(memLimitMB);
     }
 
     /**
@@ -169,7 +172,7 @@ public class ProblemComponent extends BaseElement
         intro = (Element) reader.readObject();
         className = reader.readString();
         methodNames = (String[])reader.readObjectArray(String.class);
-        returnTypes =  (DataType[])reader.readObjectArray(DataType.class);
+        returnTypes = (DataType[])reader.readObjectArray(DataType.class);
         paramTypes = (DataType[][])reader.readObjectArrayArray(DataType.class);
         paramNames = (String[][])reader.readObjectArrayArray(String.class);
         spec = (Element) reader.readObject();
@@ -181,7 +184,7 @@ public class ProblemComponent extends BaseElement
         problemId = reader.readInt();
         defaultSolution = reader.readString();
         webServices = (WebService[])reader.readObjectArray(WebService.class);
-
+        memLimitMB = reader.readInt();
     }
 
     /**
@@ -315,6 +318,9 @@ public class ProblemComponent extends BaseElement
     public String getMethodName() {
         return methodNames.length>0?methodNames[0]:"";
     }
+    public String getMethodName(int idx) {
+        return methodNames.length>idx?methodNames[idx]:"";
+    }
 
     /**
      * Sets the name of the method that should be defined in solutions to this problem.
@@ -358,6 +364,9 @@ public class ProblemComponent extends BaseElement
     public DataType[] getParamTypes() {
         return paramTypes.length>0?paramTypes[0]:new DataType[0];
     }
+    public DataType[] getParamTypes(int idx) {
+        return paramTypes.length>idx?paramTypes[idx]:new DataType[0];
+    }
 
     /**
      * Sets the data type of all of the arguments to the method that should be defined in solutions to this problem.
@@ -381,6 +390,9 @@ public class ProblemComponent extends BaseElement
      */
     public String[] getParamNames() {
         return paramNames.length>0?paramNames[0]:new String[0];
+    }
+    public String[] getParamNames(int idx) {
+        return paramNames.length>idx?paramNames[idx]:new String[0];
     }
 
     /**
@@ -472,6 +484,26 @@ public class ProblemComponent extends BaseElement
     }
 
     /**
+     * Sets the memory limit (in MB)
+     * @param memLimitMB
+     */
+    public void setMemLimitMB(int memLimitMB) {
+        if (memLimitMB <= 0) {
+            this.memLimitMB = DEFAULT_MEM_LIMIT;
+        } else {
+            this.memLimitMB = memLimitMB;
+        }
+    }
+
+    /**
+     * Gets the memory limit (in MB)
+     * @return
+     */
+    public int getMemLimitMB() {
+        return memLimitMB;
+    }
+    
+    /**
      *
      * @param name
      * @param elem
@@ -530,7 +562,9 @@ public class ProblemComponent extends BaseElement
         for (int i = 0; i < testCases.length; i++) {
             buf.append(testCases[i].toXML());
         }
-        buf.append("</test-cases></problem>");
+        buf.append("</test-cases><memlimit>");
+        buf.append(memLimitMB);
+        buf.append("</memlimit></problem>");
         return buf.toString();
     }
 
@@ -561,6 +595,8 @@ public class ProblemComponent extends BaseElement
         str.append(paramTypes);
         str.append(",paramNames=");
         str.append(paramNames);
+        str.append(",memLimitMB=");
+        str.append(memLimitMB);
         str.append(",spec=");
         str.append(spec);
         str.append(",notes=");
