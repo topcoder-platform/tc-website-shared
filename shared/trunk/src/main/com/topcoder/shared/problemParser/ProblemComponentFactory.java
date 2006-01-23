@@ -50,6 +50,7 @@ public class ProblemComponentFactory
     static final String SIGNATURE_METHOD_NAME = "name";
     static final String SIGNATURE_PARAM = "param";
     static final String SIGNATURE_PARAM_NAME = "name";
+    static final String MEM_LIMIT = "memlimit";
 
     Node doc, root;
     NodeList sections;
@@ -101,6 +102,7 @@ public class ProblemComponentFactory
             parseNotes();
             parseConstraints();
             parseTestCases();
+            parseMemLimit();
             
             if(!unsafe)
                 removeNonExampleTestCases();
@@ -401,6 +403,21 @@ public class ProblemComponentFactory
         for(int i = 0; i < testCases.length; i++)
             testCases[i] = TestCaseFactory.build(nl.item(i));
         stmt.setTestCases(testCases);
+    }
+    
+    void parseMemLimit()
+    {
+        Node node = getChildByName(sections, MEM_LIMIT);
+        if (node != null) {
+            try {
+                int memLimit = Integer.parseInt(getText(node));
+                removeTextChildren(node);
+                stmt.setMemLimitMB(memLimit);
+            } catch (Exception e) {
+                stmt.addMessage(new ProblemMessage(ProblemMessage.ERROR, "Non-numeric memory limit: "+getText(node)));
+                stmt.setValid(false);
+            }
+        }
     }
 
 /*
