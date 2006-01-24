@@ -66,6 +66,7 @@ public final class ServicesConstants {
     public static final String ALARM = BASE + "/cpp/timeout/timeout";
     
     public static final String RUN = BASE + "/cpp/run.sh";
+    public static final String RUN_JAVA = BASE + "/cpp/runjava.sh";
 
     /** The package name of the contest solutions directory */
     //public static String SOLUTIONS_PACKAGE = "cpp.solutions.";
