@@ -91,6 +91,6 @@ public final class ServicesConstants {
     public static final int MAX_LONG_SUBMISSIONS = bundle.getInt("MAX_LONG_SUBMISSIONS");
     public static final int LONG_SUBMISSION_INTERVAL = bundle.getInt("LONG_SUBMISSION_INTERVAL");
     
-    public static final boolean ALLOW_THREADING = System.getProperty("ALLOW_THREADING") == null ? false : System.getProperty("ALLOWING_THREADING").equals("true");
+    public static final boolean ALLOW_THREADING = System.getProperty("ALLOW_THREADING") == null ? false : System.getProperty("ALLOW_THREADING").equals("true");
 
 }
