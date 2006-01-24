@@ -41,7 +41,7 @@ public final class ServicesConstants {
 
     public static final String LONG_SUBMISSIONS = BASE + "/submissions/long/";
 
-    public static final String APPS_CLASSES = BASE + "/build/classes";
+    public static final String APPS_CLASSES = BASE + "/build/classes.jar";
     public static final String DOTNET_BIN = BASE + "/build/dotNet";
     public static final String LONG_DOTNET_IO = BASE + "/src/csharp/LongTesterIO.cs";
     public static final String DOTNET_SECURITY = DOTNET_BIN + "/CSSecurityCheck.exe";
