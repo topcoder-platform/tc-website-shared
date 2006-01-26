@@ -1,6 +1,7 @@
 package com.topcoder.shared.dataAccess;
 
 import java.util.*;
+import java.security.MessageDigest;
 
 /**
  * This class provides a way to build a request for data
@@ -182,7 +183,7 @@ public class QueryRequest implements RequestInt {
     /**
      * Generate a string from this object sutable for using
      * as a key for some key/value pair construct.
-     * @return
+     * @return the String
      */
     public String getCacheKey() {
         Map.Entry me = null;
@@ -200,7 +201,7 @@ public class QueryRequest implements RequestInt {
                     me1 = (Map.Entry) qIt.next();
                     sb.append(me1.getKey().toString());
                     sb.append("=");
-                    sb.append(me1.getValue().hashCode());  //it's a whole query, so use the hashcode to save space
+                    sb.append(md5((String)me1.getValue()));  //it's a whole query, so use the md5 sum to save space
                     sb.append("|");
                 }
             } else {
@@ -213,5 +214,18 @@ public class QueryRequest implements RequestInt {
         return sb.toString();
     }
 
+    private String md5(String s) {
+        String ret = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(s.getBytes());
+            byte[] bytes = md.digest();
+            ret = new String(bytes);
+        } catch (Exception e) {
+            //we'll just ignore it, i'm confident md5 exists
+        }
+        return ret;
+
+    }
 
 }
