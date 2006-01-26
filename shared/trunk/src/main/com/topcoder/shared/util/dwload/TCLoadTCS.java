@@ -15,7 +15,6 @@ import com.topcoder.shared.util.logging.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.sql.Statement;
 import java.util.*;
 
@@ -2051,7 +2050,8 @@ public class TCLoadTCS extends TCLoad {
                 "where qt.cur_version = 1  " +
                 "and ss.section_id = qt.section_id  " +
                 "and sg.group_id = ss.group_id  " +
-                "and exists (select q_template_v_id from scorecard_question where qt.q_template_v_id = q_template_v_id) " +
+                //we can't make this join because then if we load before a review fills out a new scorecard, we'll never get the new questions over
+                //"and exists (select q_template_v_id from scorecard_question where qt.q_template_v_id = q_template_v_id) " +
                 "and (qt.modify_date > ?) " +
                 "order by scorecard_template_id, sg.group_seq_loc, ss.section_seq_loc, qt.question_seq_loc  ";
 
