@@ -331,6 +331,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,stc.args ");             // 3
             query.append("       ,stc.expected_result ");  // 4
             query.append("       ,CURRENT ");              // 5
+            query.append("       ,stc.example_flag ");
             query.append("  FROM system_test_case stc, component comp ");
             query.append(" WHERE comp.component_id in (SELECT component_id FROM round_component WHERE round_id = ?)");
             query.append(" AND comp.component_id = stc.component_id");
@@ -342,9 +343,10 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,problem_id ");       // 2
             query.append("       ,args ");             // 3
             query.append("       ,expected_result ");  // 4
-            query.append("       ,modify_date) ");     // 5
+            query.append("       ,modify_date ");     // 5
+            query.append("       ,example_flag)");    //6
             query.append("VALUES ( ");
-            query.append("?,?,?,?,?)");  // 5 total values
+            query.append("?,?,?,?,?,6)");  // 5 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -372,6 +374,7 @@ public class TCLoadLong extends TCLoad {
                 setBytes(psIns, 3, getBlobObject(rs, 3));  // args
                 setBytes(psIns, 4, getBlobObject(rs, 4));  // expected_result
                 psIns.setTimestamp(5, rs.getTimestamp(5));  // modify_date
+                psIns.setInt(6, rs.getInt("example_flag"));
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
