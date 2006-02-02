@@ -93,5 +93,7 @@ public final class ServicesConstants {
     public static final int LONG_SUBMISSION_INTERVAL = bundle.getInt("LONG_SUBMISSION_INTERVAL");
     
     public static final boolean ALLOW_THREADING = System.getProperty("ALLOW_THREADING") == null ? false : System.getProperty("ALLOW_THREADING").equals("true");
+    
+    public static final int MARATHON_PORT_NUMBER = System.getProperty("MARATHON_PORT_NUMBER") == null ? 8000 : Integer.parseInt(System.getProperty("MARATHON_PORT_NUMBER"));
 
 }
