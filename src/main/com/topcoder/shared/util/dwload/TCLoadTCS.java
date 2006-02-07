@@ -1071,9 +1071,10 @@ public class TCLoadTCS extends TCLoad {
         //load contest_project_xref
         long start = System.currentTimeMillis();
 
-        final String SELECT = "select contest_id, project_id  " +
-                "from contest_project_xref " +
-                "where project_id = ? and create_date > ?";
+        final String SELECT = "select x.contest_id, x.project_id  " +
+                "from contest_project_xref x, project p" +
+                "where x.project_id = ? and p.project_id = x.project_id" +
+                " and p.cur_version = 1 and (p.modify_date > ? or x.create_date > ?)";
 
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
                 "values (?, ?)";
