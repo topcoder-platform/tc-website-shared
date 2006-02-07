@@ -11,6 +11,7 @@ public class AdminSubmitRequest extends BaseLongContestRequest {
     private long roundID;
     private long contestID;
     private int serverID;
+    private int languageID;
     private String code;
 
     /**
