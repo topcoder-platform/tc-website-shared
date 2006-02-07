@@ -167,7 +167,7 @@ public class TCLoadTCS extends TCLoad {
     public void doClearCache() throws Exception {
         CacheClient cc = CacheClientFactory.createCacheClient();
 
-        String tempKey = null;
+        String tempKey;
 
         String[] keys = new String[]{"tccc05_", "usdc_", "component_history", "tcs_ratings_history",
                 "member_profile", "Coder_Dev_Data", "Coder_Des_Data", "Component_",
@@ -192,7 +192,7 @@ public class TCLoadTCS extends TCLoad {
     private void getLastUpdateTime() throws Exception {
         Statement stmt = null;
         ResultSet rs = null;
-        StringBuffer query = null;
+        StringBuffer query;
 
         query = new StringBuffer(100);
         query.append("select timestamp from update_log where log_id = ");
@@ -224,17 +224,17 @@ public class TCLoadTCS extends TCLoad {
 
     private void setLastUpdateTime() throws Exception {
         PreparedStatement psUpd = null;
-        StringBuffer query = null;
+        StringBuffer query;
 
         try {
-            int retVal = 0;
+            int retVal;
             query = new StringBuffer(100);
             query.append("INSERT INTO update_log ");
             query.append("      (log_id ");        // 1
             query.append("       ,calendar_id ");  // 2
             query.append("       ,timestamp ");   // 3
             query.append("       ,log_type_id) ");   // 4
-            query.append("VALUES (0, ?, ?, " + TCS_LOG_TYPE + ")");
+            query.append("VALUES (0, ?, ?, ").append(TCS_LOG_TYPE).append(")");
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             int calendar_id = lookupCalendarId(fStartTime, TARGET_DB);
@@ -258,7 +258,7 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadReviewResp() throws Exception {
         log.info("load review resp");
-        ResultSet reviewResp = null;
+        ResultSet reviewResp;
 
         PreparedStatement reviewRespSelect = null;
         PreparedStatement reviewRespUpdate = null;
@@ -1103,6 +1103,7 @@ public class TCLoadTCS extends TCLoad {
                 select.clearParameters();
                 select.setLong(1, projectId);
                 select.setTimestamp(2, fLastLogTime);
+                select.setTimestamp(3, fLastLogTime);
 
                 rs = select.executeQuery();
                 while (rs.next()) {
@@ -1434,7 +1435,7 @@ public class TCLoadTCS extends TCLoad {
      * @throws Exception if something goes wrong when querying
      */
     private List getCurrentRatings() throws Exception {
-        StringBuffer query = null;
+        StringBuffer query;
         PreparedStatement psSel = null;
         ResultSet rs = null;
         List ret = null;
@@ -1639,8 +1640,8 @@ public class TCLoadTCS extends TCLoad {
             int rating = 0;
             int rank = 0;
             int size = ratings.size();
-            int tempRating = 0;
-            long tempCoderId = 0;
+            int tempRating;
+            long tempCoderId;
             for (int j = 0; j < size; j++) {
                 i++;
                 tempRating = ((CoderRating) ratings.get(j)).getRating();
@@ -1704,9 +1705,9 @@ public class TCLoadTCS extends TCLoad {
             psDel.executeUpdate();
 
             HashMap schools = new HashMap();
-            Long tempId = null;
-            List tempList = null;
-            CoderRating temp = null;
+            Long tempId;
+            List tempList;
+            CoderRating temp;
             /**
              * iterate through our big list and pluck out only those where:
              * the phase lines up
@@ -1782,8 +1783,8 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement psIns = null;
         ResultSet rs = null;
         int count = 0;
-        int coderCount = 0;
-        List ratings = null;
+        int coderCount;
+        List ratings;
 
         try {
             long start = System.currentTimeMillis();
@@ -1841,8 +1842,8 @@ public class TCLoadTCS extends TCLoad {
                 int rating = 0;
                 int rank = 0;
                 int size = ratings.size();
-                int tempRating = 0;
-                long tempCoderId = 0;
+                int tempRating;
+                long tempCoderId;
                 for (int j = 0; j < size; j++) {
                     i++;
                     tempRating = ((CoderRating) ratings.get(j)).getRating();
@@ -1952,7 +1953,7 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadEvaluationLU() throws Exception {
         log.info("load evaluation_lu");
-        ResultSet rs = null;
+        ResultSet rs;
 
         PreparedStatement select = null;
         PreparedStatement update = null;
@@ -2029,7 +2030,7 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadScorecardQuestion() throws Exception {
         log.info("load scorecard_question");
-        ResultSet rs = null;
+        ResultSet rs;
 
         PreparedStatement select = null;
         PreparedStatement update = null;
@@ -2173,7 +2174,7 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement update = null;
         PreparedStatement insert = null;
         ResultSet projects = null;
-        PreparedStatement projectSelect = null;
+        PreparedStatement projectSelect;
 
 
         final String SELECT = "select sq.q_template_v_id  as scorecard_question_id, " +
@@ -2266,7 +2267,7 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadTestcaseResponse() throws Exception {
         log.info("load testcase_response");
-        ResultSet rs = null;
+        ResultSet rs;
 
         PreparedStatement select = null;
         PreparedStatement update = null;
@@ -2360,13 +2361,13 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadSubjectiveResponse() throws Exception {
         log.info("load subjective_response");
-        ResultSet rs = null;
+        ResultSet rs;
 
         PreparedStatement select = null;
         PreparedStatement update = null;
         PreparedStatement insert = null;
-        ResultSet projects = null;
-        PreparedStatement projectSelect = null;
+        ResultSet projects;
+        PreparedStatement projectSelect;
 
 
         final String SELECT =
@@ -2483,13 +2484,13 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadAppeal() throws Exception {
         log.info("load Appeal");
-        ResultSet rs = null;
+        ResultSet rs;
 
         PreparedStatement select = null;
         PreparedStatement update = null;
         PreparedStatement insert = null;
-        ResultSet projects = null;
-        PreparedStatement projectSelect = null;
+        ResultSet projects;
+        PreparedStatement projectSelect;
 
 
         final String SELECT = "select a.appeal_id, " +
@@ -2598,13 +2599,13 @@ public class TCLoadTCS extends TCLoad {
 
     public void doLoadTestcaseAppeal() throws Exception {
         log.info("load Testcase Appeal");
-        ResultSet rs = null;
+        ResultSet rs;
 
         PreparedStatement select = null;
         PreparedStatement update = null;
         PreparedStatement insert = null;
-        ResultSet projects = null;
-        PreparedStatement projectSelect = null;
+        ResultSet projects;
+        PreparedStatement projectSelect;
 
 
         final String SELECT = "select a.appeal_id, "+
