@@ -1,7 +1,8 @@
 package com.topcoder.shared.messaging.messages;
 
 public class LongCompileRequest extends BaseLongContestRequest {
-    private int coderID, componentID, roundID, contestID, languageID, serverID;
+    private long coderID, componentID, roundID, contestID;
+    private int languageID, serverID;
     private String code;
 
     /**
@@ -13,8 +14,8 @@ public class LongCompileRequest extends BaseLongContestRequest {
      * @param serverID
      * @param code
      */
-    public LongCompileRequest(int coderID, int componentID, int roundID,
-                              int contestID, int languageID, int serverID, String code) {
+    public LongCompileRequest(long coderID, long componentID, long roundID,
+                              long contestID, int languageID, int serverID, String code) {
         super();
         this.coderID = coderID;
         this.componentID = componentID;
@@ -33,19 +34,19 @@ public class LongCompileRequest extends BaseLongContestRequest {
     /**
      * @return Returns the coderID.
      */
-    public int getCoderID() {
+    public long getCoderID() {
         return coderID;
     }
     /**
      * @return Returns the componentID.
      */
-    public int getComponentID() {
+    public long getComponentID() {
         return componentID;
     }
     /**
      * @return Returns the contestID.
      */
-    public int getContestID() {
+    public long getContestID() {
         return contestID;
     }
     /**
@@ -57,7 +58,7 @@ public class LongCompileRequest extends BaseLongContestRequest {
     /**
      * @return Returns the roundID.
      */
-    public int getRoundID() {
+    public long getRoundID() {
         return roundID;
     }
     /**
