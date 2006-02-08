@@ -62,7 +62,7 @@ public class AdminSubmitRequest extends BaseLongContestRequest {
     /**
      * @return Returns the languageID.
      */
-    public long getLanguageID() {
+    public int getLanguageID() {
         return languageID;
     }
     /**
