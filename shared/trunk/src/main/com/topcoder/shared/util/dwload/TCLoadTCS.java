@@ -574,6 +574,14 @@ public class TCLoadTCS extends TCLoad {
                     "case when cc.root_category_id in (5801778,5801779) then 1 else 0 end as custom_ind, " +
                     "cv.version as version_id, " +
                     "cv.version_text as version_text " +
+                    "case " +
+                    "  when exists (select 1 from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
+                    "       then (select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
+                    "  when exists (select 1 from project_result where project_id = p.project_id) " +
+                    "       then (select max(create_date) from project_result " +
+                    "                    where project_id = p.project_id " +
+                    "                    group by project_id) " +
+                    "end as rating_date" +
                     "from project p, " +
                     "comp_versions cv, " +
                     "comp_catalog cc," +
@@ -593,13 +601,15 @@ public class TCLoadTCS extends TCLoad {
                     "num_submissions = ?, num_valid_submissions = ?, avg_raw_score = ?, avg_final_score = ?, " +
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
-                    "status_id = ?, status_desc = ?, level_id = ?, custom_ind = ?, version_id = ?, version_text = ? where project_id = ? ";
+                    "status_id = ?, status_desc = ?, level_id = ?, custom_ind = ?, version_id = ?, version_text = ?, " +
+                    "rating_date = ? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
-                    "review_phase_id, review_phase_name, status_id, status_desc, level_id, custom_ind, version_id, version_text) " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+                    "review_phase_id, review_phase_name, status_id, status_desc, level_id, custom_ind, version_id, " +
+                    "version_text, rating_date) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
@@ -640,7 +650,8 @@ public class TCLoadTCS extends TCLoad {
                 update.setInt(20, rs.getInt("custom_ind"));
                 update.setInt(21, (int) rs.getLong("version_id"));
                 update.setString(22, rs.getString("version_text"));
-                update.setLong(23, rs.getLong("project_id"));
+                update.setDate(23, rs.getDate("rating_date"));
+                update.setLong(24, rs.getLong("project_id"));
 
                 int retVal = update.executeUpdate();
 
@@ -670,6 +681,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setInt(21, rs.getInt("custom_ind"));
                     insert.setInt(22, (int) rs.getLong("version_id"));
                     insert.setString(23, rs.getString("version_text"));
+                    insert.setDate(24, rs.getDate("rating_date"));
 
                     insert.executeUpdate();
                 }
