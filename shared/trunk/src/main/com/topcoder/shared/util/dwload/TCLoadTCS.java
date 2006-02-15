@@ -594,8 +594,9 @@ public class TCLoadTCS extends TCLoad {
                     "and pi.cur_version = 1 " +
                     "and pi.phase_instance_id = p.phase_instance_id " +
                     "and rp.review_phase_id = pi.phase_id " +
-                    "and ps.project_stat_id = p.project_stat_id " +
-                    "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pi.modify_date > ?)";
+                    "and ps.project_stat_id = p.project_stat_id "
+                    + "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pi.modify_date > ?)"
+                    ;
 
             final String UPDATE = "update project set component_name = ?,  num_registrations = ?, " +
                     "num_submissions = ?, num_valid_submissions = ?, avg_raw_score = ?, avg_final_score = ?, " +
