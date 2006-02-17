@@ -346,7 +346,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,modify_date ");     // 5
             query.append("       ,example_flag)");    //6
             query.append("VALUES ( ");
-            query.append("?,?,?,?,?,6)");  // 5 total values
+            query.append("?,?,?,?,?,?)");  // 6 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
