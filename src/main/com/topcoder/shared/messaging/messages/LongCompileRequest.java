@@ -4,6 +4,7 @@ public class LongCompileRequest extends BaseLongContestRequest {
     private long coderID, componentID, roundID, contestID;
     private int languageID, serverID;
     private String code;
+    private boolean example;
 
     /**
      * @param coderID
@@ -15,7 +16,8 @@ public class LongCompileRequest extends BaseLongContestRequest {
      * @param code
      */
     public LongCompileRequest(long coderID, long componentID, long roundID,
-                              long contestID, int languageID, int serverID, String code) {
+                              long contestID, int languageID, int serverID, String code,
+                              boolean example) {
         super();
         this.coderID = coderID;
         this.componentID = componentID;
@@ -24,6 +26,7 @@ public class LongCompileRequest extends BaseLongContestRequest {
         this.languageID = languageID;
         this.serverID = serverID;
         this.code = code;
+        this.example = example;
     }
     /**
      * @return Returns the code.
@@ -66,5 +69,9 @@ public class LongCompileRequest extends BaseLongContestRequest {
      */
     public int getServerID() {
         return serverID;
+    }
+    
+    public boolean isExample() {
+        return example;
     }
 }
