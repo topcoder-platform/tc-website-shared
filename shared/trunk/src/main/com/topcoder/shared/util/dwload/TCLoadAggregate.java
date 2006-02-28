@@ -368,6 +368,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,AVG(final_points) ");                    // 14
             query.append("       ,STDEV(final_points) ");                  // 15
             query.append("       ,SUM(defense_points) ");                  // 16
+            query.append("       ,COUNT(*) ");                             // 17
             query.append("  FROM room_result ");
             if (!FULL_LOAD) {   //if it's not a full load, just load up the problems from this round
                 query.append(" WHERE round_id =" + fRoundId);
@@ -393,10 +394,11 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,challenge_attempts_received ");     // 13
             query.append("       ,average_points ");                  // 14
             query.append("       ,point_standard_deviation ");        // 15
-            query.append("       ,defense_points) ");                 // 16
+            query.append("       ,defense_points  ");                 // 16
+            query.append("       ,num_coders)  ");                    // 17
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?,?,?,?)");          // 16 total values
+            query.append("?,?,?,?,?,?,?)");        // 17 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -434,6 +436,7 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(14, rs.getFloat(14));  // average_points
                 psIns.setFloat(15, rs.getFloat(15));  // point_standard_deviation
                 psIns.setFloat(16, rs.getFloat(16));  // defense_points
+                psIns.setInt(17, rs.getInt(17));  // num_coders
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
