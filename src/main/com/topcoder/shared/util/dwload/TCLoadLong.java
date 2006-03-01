@@ -121,7 +121,7 @@ public class TCLoadLong extends TCLoad {
             a = new ArrayList();
 
 
-            a.add(new String("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)"));
+            a.add(new String("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM problem WHERE round_id = ?)"));
             a.add(new String("DELETE FROM long_system_test_result WHERE round_id = ?"));
             a.add(new String("DELETE FROM long_problem_submission WHERE round_id = ?"));
             a.add(new String("DELETE FROM problem_category_xref where problem_id in (select problem_id from problem where round_id = ?)"));
@@ -219,7 +219,7 @@ public class TCLoadLong extends TCLoad {
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
-            query.append("INSERT INTO problem_submission ");
+            query.append("INSERT INTO long_problem_submission ");
             query.append("      (round_id ");            // 1
             query.append("       ,coder_id ");           // 2
             query.append("       ,problem_id ");         // 3
@@ -240,7 +240,7 @@ public class TCLoadLong extends TCLoad {
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("DELETE FROM problem_submission ");
+            query.append("DELETE FROM long_problem_submission ");
             query.append(" WHERE round_id = ? ");
             query.append("   AND coder_id = ? ");
             query.append("   AND problem_id = ?");
