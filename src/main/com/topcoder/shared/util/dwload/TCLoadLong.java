@@ -959,7 +959,7 @@ public class TCLoadLong extends TCLoad {
                     psUpd.setInt(5, 0);                   // failed (default is 0)
                     psUpd.setInt(6, rs.getInt("round_type_id"));        // round_type_id
                     psUpd.setInt(7, rs.getInt("invitational"));        // invitational
-                    psUpd.setString(8, rs.getString("note"));     // notes
+                    psUpd.setString(8, rs.getString("notes"));     // notes
                     psUpd.setString(9, rs.getString(10));    // round_type_desc
                     psUpd.setString(10, rs.getString("short_name"));   // shortname
                     psUpd.setInt(11, rs.getInt("forum_id"));   // forum_id
@@ -982,7 +982,7 @@ public class TCLoadLong extends TCLoad {
                     psIns.setInt(6, 0);                   // failed (default is 0)
                     psIns.setInt(7, rs.getInt("round_type_id"));        // round_type_id
                     psIns.setInt(8, rs.getInt("invitational"));        // invitational
-                    psIns.setString(9, rs.getString("note"));     // notes
+                    psIns.setString(9, rs.getString("notes"));     // notes
                     psIns.setString(10, rs.getString(10));    // round_type_desc
                     psIns.setString(11, rs.getString("short_name"));  // short name
                     psIns.setString(12, rs.getString("forum_id"));  // forum_id
