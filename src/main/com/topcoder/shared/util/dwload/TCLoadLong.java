@@ -206,7 +206,7 @@ public class TCLoadLong extends TCLoad {
             query.append(" ,s.submission_number");     //14
             query.append(" FROM long_component_state cs ");
             query.append("     , outer long_submission s");
-            query.append("     , outer long_compilation");
+            query.append("     , outer long_compilation c");
             query.append(" WHERE cs.round_id = ?");
             query.append("  and cs.long_component_state_id = c.long_component_state_id");
             query.append("   and cs.long_component_state_id = s.long_component_state_id");
