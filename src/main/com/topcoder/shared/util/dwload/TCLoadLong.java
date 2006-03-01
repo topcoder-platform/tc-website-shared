@@ -901,14 +901,14 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,contest_id ");       // 2
             query.append("       ,name ");             // 3
             query.append("       ,status ");           // 4
-            query.append("       ,calendar_id ");      // 6
-            query.append("       ,failed ");           // 7
-            query.append("       ,round_type_id ");    // 8
-            query.append("       ,invitational  ");    // 9
-            query.append("       ,notes         ");    // 10
-            query.append("       ,round_type_desc ");  // 11
-            query.append("       ,short_name ");       // 12
-            query.append("       ,forum_id)");         // 13
+            query.append("       ,calendar_id ");      // 5
+            query.append("       ,failed ");           // 6
+            query.append("       ,round_type_id ");    // 7
+            query.append("       ,invitational  ");    // 8
+            query.append("       ,notes         ");    // 9
+            query.append("       ,round_type_desc ");  // 10
+            query.append("       ,short_name ");       // 11
+            query.append("       ,forum_id)");         // 12
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,");
             query.append("?,?,?)");
@@ -974,18 +974,18 @@ public class TCLoadLong extends TCLoad {
                     }
                 } else {
                     psIns.clearParameters();
-                    psIns.setInt(1, rs.getInt(1));  // round_id
-                    psIns.setInt(2, rs.getInt(2));  // contest_id
-                    psIns.setString(3, rs.getString(3));  // name
-                    psIns.setString(4, rs.getString(4));  // status
+                    psIns.setInt(1, round_id);  // round_id
+                    psIns.setInt(2, rs.getInt("contest_id"));  // contest_id
+                    psIns.setString(3, rs.getString("name"));  // name
+                    psIns.setString(4, rs.getString("status"));  // status
                     psIns.setInt(5, calendar_id);  // cal_id of start_time
                     psIns.setInt(6, 0);                   // failed (default is 0)
-                    psIns.setInt(7, rs.getInt(7));        // round_type_id
-                    psIns.setInt(8, rs.getInt(8));        // invitational
-                    psIns.setString(9, rs.getString(9));     // notes
+                    psIns.setInt(7, rs.getInt("round_type_id"));        // round_type_id
+                    psIns.setInt(8, rs.getInt("invitational"));        // invitational
+                    psIns.setString(9, rs.getString("note"));     // notes
                     psIns.setString(10, rs.getString(10));    // round_type_desc
-                    psIns.setString(11, rs.getString(11));  // short name
-                    psIns.setString(12, rs.getString(12));  // forum_id
+                    psIns.setString(11, rs.getString("short_name"));  // short name
+                    psIns.setString(12, rs.getString("forum_id"));  // forum_id
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
