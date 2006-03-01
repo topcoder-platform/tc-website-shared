@@ -1044,7 +1044,7 @@ public class TCLoadLong extends TCLoad {
             query.append("     , rr.point_total ");
             query.append("     , cs.submission_number ");
             query.append("     , rr.attended");
-            query.append("  from long_room_result rr ");
+            query.append("  from long_comp_result rr ");
             query.append("     , long_component_state cs ");
             query.append(" where rr.round_id = ? ");
             query.append("   and cs.round_id = rr.round_id ");
