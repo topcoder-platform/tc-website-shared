@@ -875,15 +875,15 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,r.contest_id ");                       // 2
             query.append("       ,r.name ");                             // 3
             query.append("       ,r.status ");                           // 4
-            query.append("       ,rs.start_time ");                      // 6
-            query.append("       ,r.round_type_id ");                    // 7
-            query.append("       ,r.invitational ");                     // 8
-            query.append("       ,r.notes ");                            // 9
-            query.append("       ,(SELECT rtlu.round_type_desc ");       // 10
+            query.append("       ,rs.start_time ");                      // 5
+            query.append("       ,r.round_type_id ");                    // 6
+            query.append("       ,r.invitational ");                     // 7
+            query.append("       ,r.notes ");                            // 8
+            query.append("       ,(SELECT rtlu.round_type_desc ");       // 9
             query.append("           FROM round_type_lu rtlu ");
             query.append("          WHERE rtlu.round_type_id = r.round_type_id) ");
-            query.append("       ,r.short_name ");                       // 11
-            query.append("       ,r.forum_id");                          // 12
+            query.append("       ,r.short_name ");                       // 10
+            query.append("       ,r.forum_id");                          // 11
             query.append("  FROM round r ");
             query.append("       ,round_segment rs ");
             query.append(" WHERE r.round_id = ? ");
@@ -952,17 +952,17 @@ public class TCLoadLong extends TCLoad {
                 // we update. Otherwise, we insert.
                 if (rs2.next()) {
                     psUpd.clearParameters();
-                    psUpd.setInt(1, rs.getInt(2));  // contest_id
-                    psUpd.setString(2, rs.getString(3));  // name
-                    psUpd.setString(3, rs.getString(4));  // status
+                    psUpd.setInt(1, rs.getInt("contest_id"));  // contest_id
+                    psUpd.setString(2, rs.getString("name"));  // name
+                    psUpd.setString(3, rs.getString("status"));  // status
                     psUpd.setInt(4, calendar_id);         // cal_id of start_time
                     psUpd.setInt(5, 0);                   // failed (default is 0)
-                    psUpd.setInt(6, rs.getInt(7));        // round_type_id
-                    psUpd.setInt(7, rs.getInt(8));        // invitational
-                    psUpd.setString(8, rs.getString(9));     // notes
+                    psUpd.setInt(6, rs.getInt("round_type_id"));        // round_type_id
+                    psUpd.setInt(7, rs.getInt("invitational"));        // invitational
+                    psUpd.setString(8, rs.getString("note"));     // notes
                     psUpd.setString(9, rs.getString(10));    // round_type_desc
-                    psUpd.setString(10, rs.getString(11));   // shortname
-                    psUpd.setInt(11, rs.getInt(12));   // forum_id
+                    psUpd.setString(10, rs.getString("short_name"));   // shortname
+                    psUpd.setInt(11, rs.getInt("forum_id"));   // forum_id
                     psUpd.setInt(12, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
