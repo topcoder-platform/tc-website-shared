@@ -122,13 +122,11 @@ public class TCLoadLong extends TCLoad {
 
 
             a.add(new String("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)"));
-            a.add(new String("DELETE FROM system_test_result WHERE round_id = ?"));
-            a.add(new String("DELETE FROM problem_submission WHERE round_id = ?"));
+            a.add(new String("DELETE FROM long_system_test_result WHERE round_id = ?"));
+            a.add(new String("DELETE FROM long_problem_submission WHERE round_id = ?"));
             a.add(new String("DELETE FROM problem_category_xref where problem_id in (select problem_id from problem where round_id = ?)"));
             a.add(new String("DELETE FROM problem WHERE round_id = ?"));
             a.add(new String("DELETE FROM long_comp_result WHERE round_id = ?"));
-            a.add(new String("UPDATE rating SET first_rated_round_id = null WHERE first_rated_round_id = ?"));
-            a.add(new String("UPDATE rating SET last_rated_round_id = null WHERE last_rated_round_id = ?"));
 
             int count = 0;
             for (int i = 0; i < a.size(); i++) {
@@ -941,13 +939,13 @@ public class TCLoadLong extends TCLoad {
             psSel.setInt(1, fRoundId);
             rs = psSel.executeQuery();
             while (rs.next()) {
-                int round_id = rs.getInt(1);
+                int round_id = rs.getInt("round_id");
                 psSel2.clearParameters();
                 psSel2.setInt(1, round_id);
                 rs2 = psSel2.executeQuery();
 
                 // Retrieve the calendar_id for the start_time of this round
-                java.sql.Timestamp stamp = rs.getTimestamp(6);
+                java.sql.Timestamp stamp = rs.getTimestamp("start_time");
                 int calendar_id = lookupCalendarId(stamp, TARGET_DB);
 
                 // If next() returns true that means this row exists. If so,
