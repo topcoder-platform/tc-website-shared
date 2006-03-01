@@ -206,12 +206,12 @@ public class TCLoadLong extends TCLoad {
             query.append(" WHERE problem_status_id = cs.status_id) ");
             query.append(" ,c.compilation_text");      //13
             query.append(" ,s.submission_number");     //14
-            query.append(" FROM component_state cs ");
-            query.append(" LEFT OUTER JOIN submission s ");
-            query.append(" ON cs.component_state_id = s.component_state_id");
-            query.append(" LEFT OUTER JOIN compilation c ");
-            query.append(" ON cs.component_state_id = c.component_state_id");
+            query.append(" FROM long_component_state cs ");
+            query.append("     , outer long_submission s");
+            query.append("     , outer long_compilation");
             query.append(" WHERE cs.round_id = ?");
+            query.append("  and cs.long_component_state_id = c.long_component_state_id");
+            query.append("   and cs.long_component_state_id = s.long_component_state_id");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
@@ -234,10 +234,11 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,submit_time ");        // 10
             query.append("       ,submission_points ");  // 11
             query.append("       ,status_desc ");        // 12
-            query.append("       ,last_submission) ");   // 13
+            query.append("       ,last_submission ");   // 13
+            query.append("       ,example) ");   // 14
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
-            query.append("?,?,?)");                // 12 total values
+            query.append("?,?,?,?)");                // 14 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -246,6 +247,7 @@ public class TCLoadLong extends TCLoad {
             query.append("   AND coder_id = ? ");
             query.append("   AND problem_id = ?");
             query.append("   AND submission_number = ?");
+            query.append("   and example = ?");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             // On to the load
@@ -253,30 +255,32 @@ public class TCLoadLong extends TCLoad {
             rs = psSel.executeQuery();
 
             while (rs.next()) {
-                int round_id = rs.getInt(1);
-                int coder_id = rs.getInt(2);
-                int problem_id = rs.getInt(3);
+                long round_id = rs.getInt(1);
+                long coder_id = rs.getInt(2);
+                long problem_id = rs.getInt(3);
                 int submission_number = rs.getInt(14);
+                int example = rs.getInt("example");
                 int last_submission = 0;
                 if (rs.getInt(8) > 0) {  //they submitted at least once
                     last_submission = rs.getInt(8) == submission_number ? 1 : 0;
                 }
 
                 psDel.clearParameters();
-                psDel.setInt(1, round_id);
-                psDel.setInt(2, coder_id);
-                psDel.setInt(3, problem_id);
+                psDel.setLong(1, round_id);
+                psDel.setLong(2, coder_id);
+                psDel.setLong(3, problem_id);
                 psDel.setInt(4, submission_number);
+                psDel.setInt(5, example);
                 psDel.executeUpdate();
 
                 psIns.clearParameters();
-                psIns.setInt(1, rs.getInt(1));  // round_id
-                psIns.setInt(2, rs.getInt(2));  // coder_id
-                psIns.setInt(3, rs.getInt(3));  // problem_id
-                psIns.setFloat(4, rs.getFloat(4));  // final_points
-                psIns.setInt(5, rs.getInt(5));  // status_id
-                psIns.setInt(6, rs.getInt(6));  // language_id
-                psIns.setLong(7, rs.getLong(7));  // open_time
+                psIns.setLong(1, round_id);  // round_id
+                psIns.setLong(2, coder_id);  // coder_id
+                psIns.setLong(3, problem_id);  // problem_id
+                psIns.setFloat(4, rs.getFloat("points"));  // final_points
+                psIns.setInt(5, rs.getInt("status_id"));  // status_id
+                psIns.setInt(6, rs.getInt("language_id"));  // language_id
+                psIns.setLong(7, rs.getLong("open_time"));  // open_time
                 psIns.setInt(8, rs.getInt(14));  // submission_number
                 if (Arrays.equals(getBytes(rs, 9), "".getBytes()))
                     setBytes(psIns, 9, getBytes(rs, 13));       // use compilation_text
@@ -286,6 +290,7 @@ public class TCLoadLong extends TCLoad {
                 psIns.setFloat(11, rs.getFloat(11));  // submission_points
                 psIns.setString(12, rs.getString(12));  // status_desc
                 psIns.setInt(13, last_submission);  // last_submission
+                psIns.setInt(14, example);
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -415,55 +420,51 @@ public class TCLoadLong extends TCLoad {
 
         try {
             query = new StringBuffer(100);
-            query.append("SELECT str.coder_id ");           // 1
-            query.append("       ,str.round_id ");          // 2
-            query.append("       ,comp.problem_id ");        // 3
-            query.append("       ,str.test_case_id ");      // 4
-            query.append("       ,str.num_iterations ");    // 5
-            query.append("       ,str.processing_time ");   // 6
-            query.append("       ,str.deduction_amount ");  // 7
-            query.append("       ,str.timestamp ");         // 8
-            query.append("       ,str.viewable ");          // 9
-            query.append("       ,str.received ");          // 10
-            query.append("       ,str.succeeded ");         // 11
-            query.append("       ,str.message ");           // 12
-            query.append("       ,str.score");              //13
-            query.append("  FROM system_test_result str, component comp ");
-            query.append(" WHERE str.round_id = ?");
-            query.append(" AND comp.component_id = str.component_id");
-            query.append(" AND str.coder_id NOT IN  ");
-            query.append("       (SELECT gu.user_id ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.group_id IN (13,14))");
+            query.append("SELECT str.coder_id ");
+            query.append(",str.round_id ");
+            query.append(",comp.problem_id ");
+            query.append(",str.test_case_id ");
+            query.append(",str.submission_number ");
+            query.append(",str.example ");
+            query.append(",str.processing_time ");
+            query.append(",str.timestamp ");
+            query.append(",str.fatal_errors ");
+            query.append(",str.score ");
+            query.append("FROM long_system_test_result str, component comp ");
+            query.append("WHERE str.round_id = ? ");
+            query.append("AND comp.component_id = str.component_id ");
+            query.append("AND str.coder_id NOT IN ");
+            query.append("(SELECT gu.user_id ");
+            query.append("FROM group_user gu ");
+            query.append("WHERE gu.group_id IN (13,14)) ");
+
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
-            query.append("INSERT INTO system_test_result ");
-            query.append("      (coder_id ");           // 1
-            query.append("       ,round_id ");          // 2
-            query.append("       ,problem_id ");        // 3
-            query.append("       ,test_case_id ");      // 4
-            query.append("       ,num_iterations ");    // 5
-            query.append("       ,processing_time ");   // 6
-            query.append("       ,deduction_amount ");  // 7
-            query.append("       ,timestamp ");         // 8
-            query.append("       ,viewable ");          // 9
-            query.append("       ,received ");          // 10
-            query.append("       ,succeeded ");         // 11
-            query.append("       ,message ");           // 12
-            query.append("       ,score)");             //13
+            query.append("INSERT INTO long_system_test_result ");
+            query.append("      (coder_id ");
+            query.append("       ,round_id ");
+            query.append("       ,problem_id ");
+            query.append("       ,test_case_id ");
+            query.append("       ,submission_number");
+            query.append("       ,example ");
+            query.append("       ,processing_time ");
+            query.append("       ,timestamp ");
+            query.append("       ,fatal_errors ");
+            query.append("       ,score)");
             query.append("VALUES (");
-            query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?)");                 // 13 total values
+            query.append("?,?,?,?,?,?,?,?,?,?)");  // 10 values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("DELETE FROM system_test_result ");
+            query.append("DELETE FROM long_system_test_result ");
             query.append(" WHERE coder_id = ? ");
             query.append("   AND round_id = ? ");
             query.append("   AND problem_id = ? ");
             query.append("   AND test_case_id = ?");
+            query.append("   and submission_number = ?");
+            query.append("   and example = ?");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             // On to the load
@@ -471,32 +472,34 @@ public class TCLoadLong extends TCLoad {
             rs = psSel.executeQuery();
 
             while (rs.next()) {
-                int coder_id = rs.getInt(1);
-                int round_id = rs.getInt(2);
-                int problem_id = rs.getInt(3);
-                int test_case_id = rs.getInt(4);
+                long coder_id = rs.getLong("coder_id");
+                long round_id = rs.getLong("round_id");
+                long problem_id = rs.getLong("problem_id");
+                long test_case_id = rs.getLong("test_case_id");
+                int subNum = rs.getInt("submission_number");
+                int example = rs.getInt("example");
+
 
                 psDel.clearParameters();
-                psDel.setInt(1, coder_id);
-                psDel.setInt(2, round_id);
-                psDel.setInt(3, problem_id);
-                psDel.setInt(4, test_case_id);
+                psDel.setLong(1, coder_id);
+                psDel.setLong(2, round_id);
+                psDel.setLong(3, problem_id);
+                psDel.setLong(4, test_case_id);
+                psDel.setInt(5, subNum);
+                psDel.setInt(6, example);
                 psDel.executeUpdate();
 
                 psIns.clearParameters();
-                psIns.setInt(1, rs.getInt(1));  // coder_id
-                psIns.setInt(2, rs.getInt(2));  // round_id
-                psIns.setInt(3, rs.getInt(3));  // problem_id
-                psIns.setInt(4, rs.getInt(4));  // test_case_id
-                psIns.setInt(5, rs.getInt(5));  // num_iterations
-                psIns.setLong(6, rs.getLong(6));  // processing_time
-                psIns.setFloat(7, rs.getFloat(7));  // deduction_amount
-                psIns.setTimestamp(8, rs.getTimestamp(8));  // timestamp
-                psIns.setString(9, rs.getString(9));  // viewable
-                setBytes(psIns, 10, getBlobObject(rs, 10));  // received
-                psIns.setInt(11, rs.getInt(11));  // succeeded
-                psIns.setString(12, rs.getString(12));  // message
-                psIns.setFloat(13, rs.getFloat(13));  //score
+                psIns.setLong(1, coder_id);
+                psIns.setLong(2, round_id);
+                psIns.setLong(3, problem_id);
+                psIns.setLong(4, test_case_id);
+                psIns.setInt(5, subNum);
+                psIns.setLong(6, example);
+                psIns.setFloat(7, rs.getLong("processing_time"));
+                psIns.setTimestamp(8, rs.getTimestamp("timestamp"));
+                psIns.setBytes(9, rs.getBytes("fatal_errors"));
+                psIns.setFloat(10, rs.getFloat("score"));
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -504,17 +507,17 @@ public class TCLoadLong extends TCLoad {
                     throw new SQLException("TCLoadRound: Insert for coder_id " +
                             coder_id + ", round_id " + round_id +
                             ", problem_id " + problem_id +
-                            ", test_case_id " + test_case_id +
+                            ", test_case_id " + test_case_id + " subnum " + subNum + " example: " + example +
                             " modified " + retVal + " rows, not one.");
                 }
 
-                printLoadProgress(count, "system_test_result");
+                printLoadProgress(count, "long_system_test_result");
             }
 
-            log.info("System_test_result records copied = " + count);
+            log.info("long_system_test_result records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'system_test_result' table failed.\n" +
+            throw new Exception("Load of 'long_system_test_result' table failed.\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
@@ -874,9 +877,6 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,r.contest_id ");                       // 2
             query.append("       ,r.name ");                             // 3
             query.append("       ,r.status ");                           // 4
-            query.append("       ,(SELECT sum(paid) ");                  // 5
-            query.append("           FROM room_result rr ");
-            query.append("          WHERE rr.round_id = r.round_id) ");
             query.append("       ,rs.start_time ");                      // 6
             query.append("       ,r.round_type_id ");                    // 7
             query.append("       ,r.invitational ");                     // 8
@@ -903,7 +903,6 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,contest_id ");       // 2
             query.append("       ,name ");             // 3
             query.append("       ,status ");           // 4
-            query.append("       ,money_paid ");       // 5
             query.append("       ,calendar_id ");      // 6
             query.append("       ,failed ");           // 7
             query.append("       ,round_type_id ");    // 8
@@ -913,7 +912,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,short_name ");       // 12
             query.append("       ,forum_id)");         // 13
             query.append("VALUES (");
-            query.append("?,?,?,?,?,?,?,?,?,?,");
+            query.append("?,?,?,?,?,?,?,?,?,");
             query.append("?,?,?)");
 
             psIns = prepareStatement(query.toString(), TARGET_DB);
@@ -923,16 +922,15 @@ public class TCLoadLong extends TCLoad {
             query.append("   SET contest_id = ? ");       // 1
             query.append("       ,name = ? ");            // 2
             query.append("       ,status = ? ");          // 3
-            query.append("       ,money_paid = ? ");      // 4
-            query.append("       ,calendar_id = ? ");     // 5
-            query.append("       ,failed = ? ");          // 6
-            query.append("       ,round_type_id = ? ");   // 7
-            query.append("       ,invitational  = ? ");   // 8
-            query.append("       ,notes = ?         ");   // 9
-            query.append("       ,round_type_desc = ? "); // 10
-            query.append("       ,short_name = ? ");      // 11
-            query.append("       ,forum_id = ? ");        // 12
-            query.append(" WHERE round_id = ? ");         // 13
+            query.append("       ,calendar_id = ? ");     // 4
+            query.append("       ,failed = ? ");          // 5
+            query.append("       ,round_type_id = ? ");   // 6
+            query.append("       ,invitational  = ? ");   // 7
+            query.append("       ,notes = ?         ");   // 8
+            query.append("       ,round_type_desc = ? "); // 9
+            query.append("       ,short_name = ? ");      // 10
+            query.append("       ,forum_id = ? ");        // 11
+            query.append(" WHERE round_id = ? ");         // 12
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -959,16 +957,15 @@ public class TCLoadLong extends TCLoad {
                     psUpd.setInt(1, rs.getInt(2));  // contest_id
                     psUpd.setString(2, rs.getString(3));  // name
                     psUpd.setString(3, rs.getString(4));  // status
-                    psUpd.setFloat(4, rs.getFloat(5));  // money_paid
-                    psUpd.setInt(5, calendar_id);         // cal_id of start_time
-                    psUpd.setInt(6, 0);                   // failed (default is 0)
-                    psUpd.setInt(7, rs.getInt(7));        // round_type_id
-                    psUpd.setInt(8, rs.getInt(8));        // invitational
-                    psUpd.setString(9, rs.getString(9));     // notes
-                    psUpd.setString(10, rs.getString(10));    // round_type_desc
-                    psUpd.setString(11, rs.getString(11));   // shortname
-                    psUpd.setInt(12, rs.getInt(12));   // forum_id
-                    psUpd.setInt(13, rs.getInt(1));  // round_id
+                    psUpd.setInt(4, calendar_id);         // cal_id of start_time
+                    psUpd.setInt(5, 0);                   // failed (default is 0)
+                    psUpd.setInt(6, rs.getInt(7));        // round_type_id
+                    psUpd.setInt(7, rs.getInt(8));        // invitational
+                    psUpd.setString(8, rs.getString(9));     // notes
+                    psUpd.setString(9, rs.getString(10));    // round_type_desc
+                    psUpd.setString(10, rs.getString(11));   // shortname
+                    psUpd.setInt(11, rs.getInt(12));   // forum_id
+                    psUpd.setInt(12, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -983,15 +980,14 @@ public class TCLoadLong extends TCLoad {
                     psIns.setInt(2, rs.getInt(2));  // contest_id
                     psIns.setString(3, rs.getString(3));  // name
                     psIns.setString(4, rs.getString(4));  // status
-                    psIns.setFloat(5, rs.getFloat(5));  // money_paid
-                    psIns.setInt(6, calendar_id);  // cal_id of start_time
-                    psIns.setInt(7, 0);                   // failed (default is 0)
-                    psIns.setInt(8, rs.getInt(7));        // round_type_id
-                    psIns.setInt(9, rs.getInt(8));        // invitational
-                    psIns.setString(10, rs.getString(9));     // notes
-                    psIns.setString(11, rs.getString(10));    // round_type_desc
-                    psIns.setString(12, rs.getString(11));  // short name
-                    psIns.setString(13, rs.getString(12));  // forum_id
+                    psIns.setInt(5, calendar_id);  // cal_id of start_time
+                    psIns.setInt(6, 0);                   // failed (default is 0)
+                    psIns.setInt(7, rs.getInt(7));        // round_type_id
+                    psIns.setInt(8, rs.getInt(8));        // invitational
+                    psIns.setString(9, rs.getString(9));     // notes
+                    psIns.setString(10, rs.getString(10));    // round_type_desc
+                    psIns.setString(11, rs.getString(11));  // short name
+                    psIns.setString(12, rs.getString(12));  // forum_id
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
@@ -1045,12 +1041,12 @@ public class TCLoadLong extends TCLoad {
 
             query.append("select rr.coder_id ");
             query.append("     , rr.round_id ");
-            query.append("     , rr.division_placed ");
+            query.append("     , rr.placed ");
             query.append("     , rr.point_total ");
             query.append("     , cs.submission_number ");
             query.append("     , rr.attended");
-            query.append("  from room_result rr ");
-            query.append("     , component_state cs ");
+            query.append("  from long_room_result rr ");
+            query.append("     , long_component_state cs ");
             query.append(" where rr.round_id = ? ");
             query.append("   and cs.round_id = rr.round_id ");
             query.append("   and cs.coder_id = rr.coder_id ");
@@ -1095,7 +1091,7 @@ public class TCLoadLong extends TCLoad {
                 psIns.clearParameters();
                 psIns.setLong(1, round_id);
                 psIns.setLong(2, coder_id);
-                psIns.setInt(3, rs.getInt("division_placed"));
+                psIns.setInt(3, rs.getInt("placed"));
                 psIns.setFloat(4, rs.getFloat("point_total"));
                 psIns.setInt(5, rs.getInt("submission_number"));
                 psIns.setString(6, rs.getString("attended"));
@@ -1111,7 +1107,7 @@ public class TCLoadLong extends TCLoad {
                 printLoadProgress(count, "long_comp_result");
             }
 
-            log.info("Room_result records copied = " + count);
+            log.info("long_comp_result records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'long_comp_result' table failed for coder_id " +
