@@ -581,7 +581,7 @@ public class TCLoadTCS extends TCLoad {
                     "       then (select max(create_date) from project_result " +
                     "                    where project_id = p.project_id " +
                     "                    group by project_id) " +
-                    "end as rating_date" +
+                    " end as rating_date " +
                     "from project p, " +
                     "comp_versions cv, " +
                     "comp_catalog cc," +
