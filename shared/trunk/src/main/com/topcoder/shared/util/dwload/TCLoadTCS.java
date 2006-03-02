@@ -579,9 +579,7 @@ public class TCLoadTCS extends TCLoad {
                     "       then (select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
                     "  when exists (select 1 from project_result where project_id = p.project_id) " +
                     "       then (select max(create_date) from project_result " +
-                    "                    where project_id = p.project_id " +
-                    "                    group by project_id) " +
-                    " end as rating_date " +
+                    "                    where project_id = p.project_id) end as rating_date " +
                     "from project p, " +
                     "comp_versions cv, " +
                     "comp_catalog cc," +
