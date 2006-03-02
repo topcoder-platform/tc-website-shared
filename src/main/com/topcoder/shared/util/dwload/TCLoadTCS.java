@@ -2083,6 +2083,7 @@ public class TCLoadTCS extends TCLoad {
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
+        long questionId = 0;
         try {
             long start = System.currentTimeMillis();
 
@@ -2127,7 +2128,9 @@ public class TCLoadTCS extends TCLoad {
 
                 update.clearParameters();
 
-                update.setObject(1, rs.getObject("scorecard_template_id"));
+                questionId = rs.getLong("scorecard_template_id");
+
+                update.setLong(1, questionId);
                 update.setObject(2, rs.getObject("question_text"));
                 update.setObject(3, rs.getObject("question_weight"));
                 update.setObject(4, rs.getObject("section_id"));
@@ -2169,7 +2172,7 @@ public class TCLoadTCS extends TCLoad {
 
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'scorecard_question' table failed.\n" +
+            throw new Exception("Load of 'scorecard_question' table failed on " + questionId + ".\n" +
                     sqle.getMessage());
         } finally {
             close(insert);
