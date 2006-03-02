@@ -546,55 +546,54 @@ public class TCLoadTCS extends TCLoad {
 
             //get data from source DB
             final String SELECT = "select p.project_id, cc.component_id, cc.component_name, " +
-                    "case when exists (select 1 from component_inquiry where project_id = p.project_id) then " +
+                    " case when exists (select 1 from component_inquiry where project_id = p.project_id) then " +
                     "  (select count(*) from component_inquiry where project_id = p.project_id) " +
                     "    else  (case when exists (select 1 from component_inquiry where component_id = cc.component_id and version = cv.version)  then " +
                     "            (select count(distinct user_id) from component_inquiry ci1 where component_id = cc.component_id and version = cv.version) else null end) end as num_registrations, " +
-                    "case when exists  (select '1' from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) then " +
+                    " case when exists  (select '1' from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) then " +
                     "     (select count(*) from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) " +
-                    "else (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1) end " +
+                    " else (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1) end " +
                     "   as num_submissions,  " +
                     "  (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1 and not  " +
-                    "exists (select * from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 1 and submitter_id = pr.user_id))  " +
+                    " exists (select * from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 1 and submitter_id = pr.user_id))  " +
                     "    as num_valid_submissions, " +
-                    "(select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score, " +
-                    "(select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score, " +
-                    "case when p.project_type_id = 1 then 112 else 113 end as phase_id, " +
-                    "(select description from phase where phase_id = (case when p.project_type_id = 1 then 112 else 113 end)) as phase_desc, " +
-                    "cc.root_category_id as category_id, " +
-                    "(select category_name from categories where category_id = case when cc.root_category_id in (5801776,5801778) then 5801776 when cc.root_category_id in (5801777,5801779) then 5801777 else cc.root_category_id end) as category_desc, " +
-                    "(select start_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) as posting_date, " +
-                    "(select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) as submitby_date, " +
-                    "(select max(level_id) from comp_version_dates where comp_vers_id = p.comp_vers_id and phase_id = p.project_type_id + 111) as level_id, " +
-                    "p.complete_date, " +
-                    "rp.review_phase_id, " +
-                    "rp.review_phase_name," +
-                    "ps.project_stat_id," +
-                    "ps.project_stat_name, " +
-                    "case when cc.root_category_id in (5801778,5801779) then 1 else 0 end as custom_ind, " +
-                    "cv.version as version_id, " +
-                    "cv.version_text as version_text " +
-                    "case " +
+                    " (select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score, " +
+                    " (select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score, " +
+                    " case when p.project_type_id = 1 then 112 else 113 end as phase_id, " +
+                    " (select description from phase where phase_id = (case when p.project_type_id = 1 then 112 else 113 end)) as phase_desc, " +
+                    " cc.root_category_id as category_id, " +
+                    " (select category_name from categories where category_id = case when cc.root_category_id in (5801776,5801778) then 5801776 when cc.root_category_id in (5801777,5801779) then 5801777 else cc.root_category_id end) as category_desc, " +
+                    " (select start_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) as posting_date, " +
+                    " (select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) as submitby_date, " +
+                    " (select max(level_id) from comp_version_dates where comp_vers_id = p.comp_vers_id and phase_id = p.project_type_id + 111) as level_id, " +
+                    " p.complete_date, " +
+                    " rp.review_phase_id, " +
+                    " rp.review_phase_name," +
+                    " ps.project_stat_id," +
+                    " ps.project_stat_name, " +
+                    " case when cc.root_category_id in (5801778,5801779) then 1 else 0 end as custom_ind, " +
+                    " cv.version as version_id, " +
+                    " cv.version_text as version_text " +
+                    " case " +
                     "  when exists (select 1 from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
                     "       then (select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
                     "  when exists (select 1 from project_result where project_id = p.project_id) " +
                     "       then (select max(create_date) from project_result " +
                     "                    where project_id = p.project_id) end as rating_date " +
-                    "from project p, " +
-                    "comp_versions cv, " +
-                    "comp_catalog cc," +
-                    "phase_instance pi, " +
-                    "review_phase rp," +
-                    "project_status ps " +
-                    "where p.cur_version = 1  " +
-                    "and cv.comp_vers_id = p.comp_vers_id " +
-                    "and cc.component_id = cv.component_id " +
-                    "and pi.cur_version = 1 " +
-                    "and pi.phase_instance_id = p.phase_instance_id " +
-                    "and rp.review_phase_id = pi.phase_id " +
-                    "and ps.project_stat_id = p.project_stat_id "
-                    + "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pi.modify_date > ?)"
-                    ;
+                    " from project p, " +
+                    " comp_versions cv, " +
+                    " comp_catalog cc," +
+                    " phase_instance pi, " +
+                    " review_phase rp," +
+                    " project_status ps " +
+                    " where p.cur_version = 1  " +
+                    " and cv.comp_vers_id = p.comp_vers_id " +
+                    " and cc.component_id = cv.component_id " +
+                    " and pi.cur_version = 1 " +
+                    " and pi.phase_instance_id = p.phase_instance_id " +
+                    " and rp.review_phase_id = pi.phase_id " +
+                    " and ps.project_stat_id = p.project_stat_id " +
+                    " and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pi.modify_date > ?)";
 
             final String UPDATE = "update project set component_name = ?,  num_registrations = ?, " +
                     "num_submissions = ?, num_valid_submissions = ?, avg_raw_score = ?, avg_final_score = ?, " +
