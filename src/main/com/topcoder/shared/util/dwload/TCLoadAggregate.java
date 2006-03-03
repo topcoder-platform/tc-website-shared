@@ -917,6 +917,7 @@ public class TCLoadAggregate extends TCLoad {
 
             // On to the load. First, we want to delete the whole table so
             // we can reload it.
+            // Win streaks will include unrated rounds.  
             psDel.executeUpdate();
 
             rs = psSel.executeQuery();
@@ -1012,6 +1013,7 @@ public class TCLoadAggregate extends TCLoad {
 
     /**
      * This method loads the 'streak' table
+     * Unrated rounds are not considered.  --csj
      */
     private void loadRatingIncreaseStreak(boolean srmOnly) throws Exception {
         int retVal = 0;
@@ -1027,10 +1029,10 @@ public class TCLoadAggregate extends TCLoad {
             query = new StringBuffer(100);
             query.append("SELECT rr.coder_id ");      // 1
             query.append("       ,rr.round_id ");     // 2
-            query.append("       ,rr.old_rating");  // 4
-            query.append("       ,rr.new_rating");  // 5
-            query.append("       ,r.calendar_id");
-            query.append("       ,r.round_id");
+            query.append("       ,rr.old_rating");    // 3
+            query.append("       ,rr.new_rating");    // 4
+            query.append("       ,r.calendar_id");    // 5
+            query.append("       ,r.round_id");       // 6
             query.append("  FROM room_result rr ");
             query.append("       ,round r ");
             if (srmOnly)
@@ -1038,6 +1040,7 @@ public class TCLoadAggregate extends TCLoad {
             else
                 query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");
             query.append("   AND r.round_id = rr.round_id ");
+            query.append("   AND rr.rated_flag = 1 ");   // --csj
             query.append(" ORDER BY rr.coder_id ");
             query.append("          ,r.calendar_id asc");
             query.append("          ,r.round_id asc");
@@ -1167,6 +1170,7 @@ public class TCLoadAggregate extends TCLoad {
 
     /**
      * This method loads the 'streak' table
+     * Unrated rounds are not considered.  --csj
      */
     private void loadRatingDecreaseStreak(boolean srmOnly) throws Exception {
         int retVal = 0;
@@ -1182,10 +1186,10 @@ public class TCLoadAggregate extends TCLoad {
             query = new StringBuffer(100);
             query.append("SELECT rr.coder_id ");      // 1
             query.append("       ,rr.round_id ");     // 2
-            query.append("       ,rr.old_rating");  // 4
-            query.append("       ,rr.new_rating");  // 5
-            query.append("       ,r.calendar_id");
-            query.append("       ,r.round_id");
+            query.append("       ,rr.old_rating");    // 3
+            query.append("       ,rr.new_rating");    // 4
+            query.append("       ,r.calendar_id");    // 5
+            query.append("       ,r.round_id");       // 6
             query.append("  FROM room_result rr ");
             query.append("       ,round r ");
             if (srmOnly)
@@ -1193,6 +1197,7 @@ public class TCLoadAggregate extends TCLoad {
             else
                 query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND+ ")");
             query.append("   AND r.round_id = rr.round_id ");
+            query.append("   AND rr.rated_flag = 1 ");  // --csj
             query.append(" ORDER BY rr.coder_id ");
             query.append("          ,r.calendar_id asc ");
             query.append("          ,r.round_id asc ");

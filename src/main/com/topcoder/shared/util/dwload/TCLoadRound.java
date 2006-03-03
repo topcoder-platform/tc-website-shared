@@ -1243,7 +1243,8 @@ public class TCLoadRound extends TCLoad {
             query.append("           FROM round_type_lu rtlu ");
             query.append("          WHERE rtlu.round_type_id = r.round_type_id) ");
             query.append("       ,r.short_name ");                       // 11
-            query.append("       ,r.forum_id");                          // 12 
+            query.append("       ,r.forum_id");                          // 12
+            query.append("       ,r.rated_ind");                         // 13
             query.append("  FROM round r ");
             query.append("       ,round_segment rs ");
             query.append(" WHERE r.round_id = ? ");
@@ -1269,10 +1270,11 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,notes         ");    // 10
             query.append("       ,round_type_desc ");  // 11
             query.append("       ,short_name ");       // 12
-            query.append("       ,forum_id)");         // 13
+            query.append("       ,forum_id ");         // 13
+            query.append("       ,rated_ind)");         // 14
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");
-            query.append("?,?,?)");
+            query.append("?,?,?,?)");
 
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1290,7 +1292,8 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,round_type_desc = ? "); // 10
             query.append("       ,short_name = ? ");      // 11
             query.append("       ,forum_id = ? ");        // 12
-            query.append(" WHERE round_id = ? ");         // 13
+            query.append("       ,rated_ind = ? ");        // 13
+            query.append(" WHERE round_id = ? ");         // 14
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1326,7 +1329,8 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setString(10, rs.getString(10));    // round_type_desc
                     psUpd.setString(11, rs.getString(11));   // shortname
                     psUpd.setInt(12, rs.getInt(12));   // forum_id
-                    psUpd.setInt(13, rs.getInt(1));  // round_id
+                    psUpd.setInt(13, rs.getInt(13));   // rated_ind
+                    psUpd.setInt(14, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -1350,6 +1354,7 @@ public class TCLoadRound extends TCLoad {
                     psIns.setString(11, rs.getString(10));    // round_type_desc
                     psIns.setString(12, rs.getString(11));  // short name
                     psIns.setString(13, rs.getString(12));  // forum_id
+                    psIns.setInt(14, rs.getInt(13));  // rated_ind
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
