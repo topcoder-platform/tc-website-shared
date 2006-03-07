@@ -909,10 +909,11 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,notes         ");    // 9
             query.append("       ,round_type_desc ");  // 10
             query.append("       ,short_name ");       // 11
-            query.append("       ,forum_id)");         // 12
+            query.append("       ,forum_id");         // 12
+            query.append("       ,rating_ind)"); //13
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,");
-            query.append("?,?,?)");
+            query.append("?,?,?,?)");
 
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
@@ -929,7 +930,8 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,round_type_desc = ? "); // 9
             query.append("       ,short_name = ? ");      // 10
             query.append("       ,forum_id = ? ");        // 11
-            query.append(" WHERE round_id = ? ");         // 12
+            query.append("       ,rating_ind = ?");       // 12
+            query.append(" WHERE round_id = ? ");         // 13
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -964,7 +966,8 @@ public class TCLoadLong extends TCLoad {
                     psUpd.setString(9, rs.getString(10));    // round_type_desc
                     psUpd.setString(10, rs.getString("short_name"));   // shortname
                     psUpd.setInt(11, rs.getInt("forum_id"));   // forum_id
-                    psUpd.setInt(12, rs.getInt(1));  // round_id
+                    psUpd.setInt(12, 0);  // rating_ind
+                    psUpd.setInt(13, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -987,6 +990,7 @@ public class TCLoadLong extends TCLoad {
                     psIns.setString(10, rs.getString(10));    // round_type_desc
                     psIns.setString(11, rs.getString("short_name"));  // short name
                     psIns.setString(12, rs.getString("forum_id"));  // forum_id
+                    psIns.setInt(13,0); //rating ind
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
