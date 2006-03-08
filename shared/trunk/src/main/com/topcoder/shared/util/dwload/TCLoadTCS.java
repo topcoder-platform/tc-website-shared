@@ -574,13 +574,7 @@ public class TCLoadTCS extends TCLoad {
                     " case when cc.root_category_id in (5801778,5801779) then 1 else 0 end as custom_ind, " +
                     " cv.version as version_id, " +
                     " cv.version_text as version_text, " +
-                    //todo change this so that it just selects the rating date from transactional
-                    " case " +
-                    "  when exists (select 1 from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
-                    "       then (select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) " +
-                    "  when exists (select 1 from project_result where project_id = p.project_id) " +
-                    "       then (select max(create_date) from project_result " +
-                    "                    where project_id = p.project_id) end as rating_date " +
+                    " p.rating_date " +
                     " from project p, " +
                     " comp_versions cv, " +
                     " comp_catalog cc," +
