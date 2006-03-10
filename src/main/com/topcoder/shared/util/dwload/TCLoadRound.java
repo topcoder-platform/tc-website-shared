@@ -2019,6 +2019,9 @@ public class TCLoadRound extends TCLoad {
                 // if they didn't submit, use the difference between open time and the end of the coding phase
                 // otherwise use the difference between open time and submit time
                 long elapsed_time = rs.getLong(10) == 0 ? rs.getDate(16).getTime() - rs.getLong(9) : rs.getLong(11);
+                if (elapsed_time < 0) {
+                    elapsed_time = 0;
+                }
 
                 psSel2.clearParameters();
                 psSel2.setInt(1, component_id);
