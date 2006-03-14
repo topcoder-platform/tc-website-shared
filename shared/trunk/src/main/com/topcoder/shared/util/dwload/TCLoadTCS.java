@@ -727,7 +727,7 @@ public class TCLoadTCS extends TCLoad {
                 "   (select submission_id from submission s where s.cur_version = 1 and s.project_id = pr.project_id and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) " +
                 " and project_id = pr.project_id and cur_version = 1) as review_completed_timestamp, " +
                 "pr.payment, pr.old_rating, pr.new_rating, " +
-                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind " +
+                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind " +
                 "from project_result pr, " +
                 "project p, " +
                 "comp_versions cv, " +
@@ -741,12 +741,12 @@ public class TCLoadTCS extends TCLoad {
         final String RESULT_UPDATE =
                 "update project_result set submit_ind = ?, valid_submission_ind = ?, raw_score = ?, final_score = ?, inquire_timestamp = ?, " +
                 "submit_timestamp = ?, review_complete_timestamp = ?, payment = ?, old_rating = ?, new_rating = ?, old_reliability = ?, new_reliability = ?, " +
-                "placed = ?, rating_ind = ?, reliability_ind = ? where project_id = ? and user_id = ?";
+                "placed = ?, rating_ind = ?, reliability_ind = ?, passed_review_ind=? where project_id = ? and user_id = ?";
 
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
                 " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
-                "reliability_ind ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "reliability_ind,passed_review_ind ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
         try {
             long start = System.currentTimeMillis();
@@ -787,8 +787,9 @@ public class TCLoadTCS extends TCLoad {
                 resultUpdate.setObject(13, projectResults.getObject("placed"));
                 resultUpdate.setObject(14, projectResults.getObject("rating_ind"));
                 resultUpdate.setObject(15, projectResults.getObject("reliability_ind"));
-                resultUpdate.setLong(16, project_id);
-                resultUpdate.setLong(17, projectResults.getLong("user_id"));
+                resultUpdate.setObject(16, projectResults.getObject("passed_review_ind"));
+                resultUpdate.setLong(17, project_id);
+                resultUpdate.setLong(18, projectResults.getLong("user_id"));
 
                 //log.debug("before result update");
                 int retVal = resultUpdate.executeUpdate();
@@ -815,6 +816,7 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(15, projectResults.getObject("placed"));
                     resultInsert.setObject(16, projectResults.getObject("rating_ind"));
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
+                    resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
                     //log.debug("before result insert");
                     resultInsert.executeUpdate();
