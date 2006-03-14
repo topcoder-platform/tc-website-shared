@@ -571,19 +571,21 @@ public class TCLoadTCS extends TCLoad {
                     " rp.review_phase_name," +
                     " ps.project_stat_id," +
                     " ps.project_stat_name, " +
-                    " case when cc.root_category_id in (5801778,5801779) then 1 else 0 end as custom_ind, " +
+                    " cat.viewable, " +
                     " cv.version as version_id, " +
                     " cv.version_text as version_text, " +
                     " p.rating_date " +
                     " from project p, " +
                     " comp_versions cv, " +
                     " comp_catalog cc," +
+                    " categories cat, " +
                     " phase_instance pi, " +
                     " review_phase rp," +
                     " project_status ps " +
                     " where p.cur_version = 1  " +
                     " and cv.comp_vers_id = p.comp_vers_id " +
                     " and cc.component_id = cv.component_id " +
+                    " and cc.root_category_id = cat.category_id " +
                     " and pi.cur_version = 1 " +
                     " and pi.phase_instance_id = p.phase_instance_id " +
                     " and rp.review_phase_id = pi.phase_id " +
@@ -594,13 +596,13 @@ public class TCLoadTCS extends TCLoad {
                     "num_submissions = ?, num_valid_submissions = ?, avg_raw_score = ?, avg_final_score = ?, " +
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
-                    "status_id = ?, status_desc = ?, level_id = ?, custom_ind = ?, version_id = ?, version_text = ?, " +
+                    "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
                     "rating_date = ? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
-                    "review_phase_id, review_phase_name, status_id, status_desc, level_id, custom_ind, version_id, " +
+                    "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
                     "version_text, rating_date) " +
                     "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
@@ -640,7 +642,7 @@ public class TCLoadTCS extends TCLoad {
                 update.setLong(17, rs.getLong("project_stat_id"));
                 update.setString(18, rs.getString("project_stat_name"));
                 update.setLong(19, rs.getLong("level_id"));
-                update.setInt(20, rs.getInt("custom_ind"));
+                update.setInt(20, rs.getInt("viewable_category_ind"));
                 update.setInt(21, (int) rs.getLong("version_id"));
                 update.setString(22, rs.getString("version_text"));
                 update.setDate(23, rs.getDate("rating_date"));
@@ -671,7 +673,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setLong(18, rs.getLong("project_stat_id"));
                     insert.setString(19, rs.getString("project_stat_name"));
                     insert.setLong(20, rs.getLong("level_id"));
-                    insert.setInt(21, rs.getInt("custom_ind"));
+                    insert.setInt(21, rs.getInt("viewable_category_ind"));
                     insert.setInt(22, (int) rs.getLong("version_id"));
                     insert.setString(23, rs.getString("version_text"));
                     insert.setDate(24, rs.getDate("rating_date"));
