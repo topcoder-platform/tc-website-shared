@@ -642,7 +642,7 @@ public class TCLoadTCS extends TCLoad {
                 update.setLong(17, rs.getLong("project_stat_id"));
                 update.setString(18, rs.getString("project_stat_name"));
                 update.setLong(19, rs.getLong("level_id"));
-                update.setInt(20, rs.getInt("viewable_category_ind"));
+                update.setInt(20, rs.getInt("viewable"));
                 update.setInt(21, (int) rs.getLong("version_id"));
                 update.setString(22, rs.getString("version_text"));
                 update.setDate(23, rs.getDate("rating_date"));
@@ -673,7 +673,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setLong(18, rs.getLong("project_stat_id"));
                     insert.setString(19, rs.getString("project_stat_name"));
                     insert.setLong(20, rs.getLong("level_id"));
-                    insert.setInt(21, rs.getInt("viewable_category_ind"));
+                    insert.setInt(21, rs.getInt("viewable"));
                     insert.setInt(22, (int) rs.getLong("version_id"));
                     insert.setString(23, rs.getString("version_text"));
                     insert.setDate(24, rs.getDate("rating_date"));
