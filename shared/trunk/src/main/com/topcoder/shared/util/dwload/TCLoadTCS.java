@@ -12,10 +12,7 @@ import com.topcoder.shared.distCache.CacheClientFactory;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 public class TCLoadTCS extends TCLoad {
@@ -582,7 +579,8 @@ public class TCLoadTCS extends TCLoad {
                     " categories cat, " +
                     " phase_instance pi, " +
                     " review_phase rp," +
-                    " project_status ps " +
+                    " project_status ps, " +
+                    " p.winner_id " +
                     " where p.cur_version = 1  " +
                     " and cv.comp_vers_id = p.comp_vers_id " +
                     " and cc.component_id = cv.component_id " +
@@ -598,14 +596,14 @@ public class TCLoadTCS extends TCLoad {
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
                     "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
-                    "rating_date = ?, num_submissions_passed_review=? where project_id = ? ";
+                    "rating_date = ?, num_submissions_passed_review=?, winner_id=? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
                     "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
-                    "version_text, rating_date, num_submissions_passed_review) " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) ";
+                    "version_text, rating_date, num_submissions_passed_review, winner_id) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
@@ -648,7 +646,12 @@ public class TCLoadTCS extends TCLoad {
                 update.setString(22, rs.getString("version_text"));
                 update.setDate(23, rs.getDate("rating_date"));
                 update.setInt(24, rs.getInt("num_submissions_passed_review"));
-                update.setLong(25, rs.getLong("project_id"));
+                if (rs.getString("winner_id")==null) {
+                    update.setNull(25, Types.DECIMAL);
+                } else {
+                    update.setLong(25, rs.getLong("winner_id"));
+                }
+                update.setLong(26, rs.getLong("project_id"));
 
                 int retVal = update.executeUpdate();
 
@@ -680,6 +683,12 @@ public class TCLoadTCS extends TCLoad {
                     insert.setString(23, rs.getString("version_text"));
                     insert.setDate(24, rs.getDate("rating_date"));
                     insert.setInt(25, rs.getInt("num_submissions_passed_review"));
+                    if (rs.getString("winner_id")==null) {
+                        update.setNull(26, Types.DECIMAL);
+                    } else {
+                        update.setLong(26, rs.getLong("winner_id"));
+                    }
+
 
                     insert.executeUpdate();
                 }
