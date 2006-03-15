@@ -1040,7 +1040,7 @@ public class TCLoadAggregate extends TCLoad {
             else
                 query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");
             query.append("   AND r.round_id = rr.round_id ");
-            query.append("   AND rr.rated_ind = 1 ");   // --csj
+            query.append("   AND rr.rated_flag = 1 ");   // --csj
             query.append(" ORDER BY rr.coder_id ");
             query.append("          ,r.calendar_id asc");
             query.append("          ,r.round_id asc");
@@ -1197,7 +1197,7 @@ public class TCLoadAggregate extends TCLoad {
             else
                 query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND+ ")");
             query.append("   AND r.round_id = rr.round_id ");
-            query.append("   AND rr.rated_ind = 1 ");  // --csj
+            query.append("   AND rr.rated_flag = 1 ");  // --csj
             query.append(" ORDER BY rr.coder_id ");
             query.append("          ,r.calendar_id asc ");
             query.append("          ,r.round_id asc ");
