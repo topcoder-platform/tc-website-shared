@@ -572,15 +572,15 @@ public class TCLoadTCS extends TCLoad {
                     " cat.viewable, " +
                     " cv.version as version_id, " +
                     " cv.version_text as version_text, " +
-                    " p.rating_date " +
+                    " p.rating_date, " +
+                    " p.winner_id " +
                     " from project p, " +
                     " comp_versions cv, " +
                     " comp_catalog cc," +
                     " categories cat, " +
                     " phase_instance pi, " +
                     " review_phase rp," +
-                    " project_status ps, " +
-                    " p.winner_id " +
+                    " project_status ps " +
                     " where p.cur_version = 1  " +
                     " and cv.comp_vers_id = p.comp_vers_id " +
                     " and cc.component_id = cv.component_id " +
