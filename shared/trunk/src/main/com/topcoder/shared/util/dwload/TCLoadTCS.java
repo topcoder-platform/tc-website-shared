@@ -603,7 +603,12 @@ public class TCLoadTCS extends TCLoad {
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
                     "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
                     "version_text, rating_date, num_submissions_passed_review, winner_id) " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?) ";
+                    "values (?, ?, ?, ?, ?, " +
+                            "?, ?, ?, ?, ?, " +
+                            "?, ?, ?, ?, ?, " +
+                            "?, ?, ?, ?, ?, " +
+                            "?, ?, ?, ?, ?, " +
+                            "?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
