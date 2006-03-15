@@ -689,9 +689,9 @@ public class TCLoadTCS extends TCLoad {
                     insert.setDate(24, rs.getDate("rating_date"));
                     insert.setInt(25, rs.getInt("num_submissions_passed_review"));
                     if (rs.getString("winner_id")==null) {
-                        update.setNull(26, Types.DECIMAL);
+                        insert.setNull(26, Types.DECIMAL);
                     } else {
-                        update.setLong(26, rs.getLong("winner_id"));
+                        insert.setLong(26, rs.getLong("winner_id"));
                     }
 
 
