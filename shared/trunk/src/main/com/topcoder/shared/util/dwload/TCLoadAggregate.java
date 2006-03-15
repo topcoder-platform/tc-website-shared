@@ -1057,6 +1057,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append("VALUES (?,?,?,?,?,?)");  // 6 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
+
+            //todo change the definition of current.  this doesn't make sense, it should be the user's last rated round
             query = new StringBuffer(100);
             query.append("SELECT round_id FROM round");
             query.append(" WHERE calendar_id = (SELECT MAX(calendar_id) FROM round)");
@@ -1214,6 +1216,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("VALUES (?,?,?,?,?,?)");  // 6 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
+            //todo change the definition of current.  this doesn't make sense, it should be the user's last rated round
             query = new StringBuffer(100);
             query.append("SELECT round_id FROM round");
             query.append(" WHERE calendar_id = (SELECT MAX(calendar_id) FROM round)");
