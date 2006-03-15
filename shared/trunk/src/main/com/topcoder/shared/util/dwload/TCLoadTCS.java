@@ -557,6 +557,7 @@ public class TCLoadTCS extends TCLoad {
                     "  (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1 and not  " +
                     " exists (select * from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 1 and submitter_id = pr.user_id))  " +
                     "    as num_valid_submissions, " +
+                    "  (select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
                     " (select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score, " +
                     " (select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score, " +
                     " case when p.project_type_id = 1 then 112 else 113 end as phase_id, " +
@@ -597,14 +598,14 @@ public class TCLoadTCS extends TCLoad {
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
                     "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
-                    "rating_date = ? where project_id = ? ";
+                    "rating_date = ?, num_submissions_passed_review=? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
                     "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
-                    "version_text, rating_date) " +
-                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+                    "version_text, rating_date, num_submissions_passed_review) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
@@ -646,7 +647,8 @@ public class TCLoadTCS extends TCLoad {
                 update.setInt(21, (int) rs.getLong("version_id"));
                 update.setString(22, rs.getString("version_text"));
                 update.setDate(23, rs.getDate("rating_date"));
-                update.setLong(24, rs.getLong("project_id"));
+                update.setInt(24, rs.getInt("num_submissions_passed_review"));
+                update.setLong(25, rs.getLong("project_id"));
 
                 int retVal = update.executeUpdate();
 
@@ -677,6 +679,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setInt(22, (int) rs.getLong("version_id"));
                     insert.setString(23, rs.getString("version_text"));
                     insert.setDate(24, rs.getDate("rating_date"));
+                    insert.setInt(25, rs.getInt("num_submissions_passed_review"));
 
                     insert.executeUpdate();
                 }
