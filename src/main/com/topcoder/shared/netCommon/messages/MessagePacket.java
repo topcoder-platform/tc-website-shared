@@ -155,11 +155,25 @@ public class MessagePacket implements Serializable, Cloneable, CustomSerializabl
     }
 
     /**
+     * Sets the ID
+     */
+    public void setID(int id) {
+        ID = id;
+    }
+    
+    /**
      * Gets the messages
      * @return a non-mutable list of messages
      */
-    public List getMessages() {
-        return Collections.unmodifiableList(messages);
+    public ArrayList getMessages() {
+        return new ArrayList(messages);
+    }
+
+    /**
+     * Sets the messages
+     */
+    public void setMessages(ArrayList messages) {
+        this.messages = new ArrayList(messages);
     }
 
     /**

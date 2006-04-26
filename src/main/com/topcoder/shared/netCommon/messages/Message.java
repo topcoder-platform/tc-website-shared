@@ -8,8 +8,6 @@
 
 package com.topcoder.shared.netCommon.messages;
 
-//import com.topcoder.netCommon.*;
-
 import com.topcoder.shared.netCommon.*;
 
 import java.io.*;
@@ -37,6 +35,3 @@ public abstract class Message implements Serializable, Cloneable, CustomSerializ
         return "(Message)[]";
     }
 }
-
-
-/* @(#)Message.java */
