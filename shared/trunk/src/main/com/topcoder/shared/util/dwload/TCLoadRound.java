@@ -195,9 +195,7 @@ public class TCLoadRound extends TCLoad {
 
             loadRating();
 
-            //if running for an old round, the rating history load can not be run
-            //don't forget to remove it from the clear round method as well.
-            loadRatingHistory();
+
 
             loadCoderProblem();
 
@@ -470,73 +468,6 @@ public class TCLoadRound extends TCLoad {
             close(psUpd);
         }
     }
-
-    /**
-     * This method can not be run after the fact; meaning, if the
-     * rating table in the transactional database has the rating
-     * for a match that is not the one we're running the load for
-     * then rating history will get hosed up.
-     * @throws Exception
-     */
-    private void loadRatingHistory() throws Exception {
-        int count = 0;
-        int retVal = 0;
-        PreparedStatement psSel = null;
-        PreparedStatement psIns = null;
-        ResultSet rs = null;
-        StringBuffer query = null;
-
-        try {
-            // Get all the coders that participated in this round
-            query = new StringBuffer(100);
-            query.append(" select coder_id, rating, vol, num_ratings");
-            query.append(" from rating");
-            query.append(" where num_ratings > 0");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = coder_id ");
-            query.append("           AND gu.group_id IN (13,14))");
-
-            psSel = prepareStatement(query.toString(), SOURCE_DB);
-
-            query = new StringBuffer(100);
-            query.append("insert into rating_history (coder_id, round_id, rating, vol, num_ratings)");
-            query.append("values (?,?,?,?,?)");
-            psIns = prepareStatement(query.toString(), TARGET_DB);
-
-            rs = psSel.executeQuery();
-
-            while (rs.next()) {
-                psIns.clearParameters();
-                psIns.setLong(1, rs.getLong("coder_id"));
-                psIns.setLong(2, fRoundId);
-                psIns.setInt(3, rs.getInt("rating"));
-                psIns.setInt(4, rs.getInt("vol"));
-                psIns.setInt(5, rs.getInt("num_ratings"));
-
-                retVal = psIns.executeUpdate();
-                count = count + retVal;
-                if (retVal != 1) {
-                    throw new SQLException("TCLoadCoders: Insert for coderId " +
-                            rs.getLong("coder_id") +
-                            " modified " + retVal + " rows, not one.");
-                }
-
-                printLoadProgress(count, "rating_history");
-            }
-
-            log.info("Rating records updated = " + count);
-        } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'rating_history' table failed.\n" +
-                    sqle.getMessage());
-        } finally {
-            close(rs);
-            close(psSel);
-        }
-    }
-
 
     /**
      * This method loads the 'problem_submission' table which holds
