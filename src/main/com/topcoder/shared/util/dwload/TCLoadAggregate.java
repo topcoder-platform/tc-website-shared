@@ -226,11 +226,6 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" select coder_id, rating, vol, num_ratings");
             query.append(" from rating");
             query.append(" where num_ratings > 0");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = coder_id ");
-            query.append("           AND gu.group_id IN (13,14))");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
