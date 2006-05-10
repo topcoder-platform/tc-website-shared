@@ -143,12 +143,16 @@ public class DBMS {
     public static final int MESSAGE_SEQ = getIntProperty("MESSAGE_SEQ",98);
     public static final int BACKUP_SEQ = getIntProperty("BACKUP_SEQ",97);
     public static final int MAIN_SEQ = getIntProperty("MAIN_SEQ",200);
+    public static final int LONG_TEST_GROUP_SEQ = getIntProperty("LONG_TEST_GROUP_SEQ",102);
+    public static final int LONG_TEST_CASE_SEQ = getIntProperty("LONG_TEST_CASE_SEQ",103);
 
     public final static String INFORMIX_CONNECT_STRING = getProperty("INFORMIX_CONNECT_STRING","");
     public final static String EVENT_TOPIC = getProperty("EVENT_TOPIC","eventTopic");
     public final static String MPSQAS_TOPIC = getProperty("MPSQAS_TOPIC","mpsqasTopic");
     public final static String RESTART_TOPIC = getProperty("RESTART_TOPIC","restartTopic");
     public final static String EVENT_QUEUE = getProperty("EVENT_QUEUE", "eventQueue");
+    public final static String LONG_TEST_SVC_EVENT_TOPIC = getProperty("LONG_TEST_SVC_EVENT_TOPIC", "servicesEventTopic");
+    public final static String MPSQAS_SVC_EVENT_TOPIC = getProperty("MPSQAS_SVC_EVENT_TOPIC", "servicesEventTopic");
 
     private static final String getProperty(String key, String defaultValue) {
         return bundle.getProperty(key, defaultValue);
