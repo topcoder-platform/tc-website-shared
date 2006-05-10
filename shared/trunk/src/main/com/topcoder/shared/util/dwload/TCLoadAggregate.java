@@ -217,6 +217,7 @@ public class TCLoadAggregate extends TCLoad {
         int retVal = 0;
         PreparedStatement psSel = null;
         PreparedStatement psIns = null;
+        PreparedStatement psDel = null;
         ResultSet rs = null;
         StringBuffer query = null;
 
@@ -233,6 +234,13 @@ public class TCLoadAggregate extends TCLoad {
             query.append("insert into rating_history (coder_id, round_id, rating, vol, num_ratings)");
             query.append("values (?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("delete from rating_history where round_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setLong(1, fRoundId);
+
+            psDel.executeUpdate();            
 
             rs = psSel.executeQuery();
 
