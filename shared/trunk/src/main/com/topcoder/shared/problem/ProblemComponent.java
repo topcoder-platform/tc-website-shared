@@ -63,6 +63,7 @@ public class ProblemComponent extends BaseElement
     private String defaultSolution = "";
     private WebService[] webServices = new WebService[0];
     private int memLimitMB = DEFAULT_MEM_LIMIT; 
+    private int roundType = -1;
 
     public ProblemComponent() {
     }
@@ -155,6 +156,7 @@ public class ProblemComponent extends BaseElement
         writer.writeString(defaultSolution);
         writer.writeObjectArray(webServices);
         writer.writeInt(memLimitMB);
+        writer.writeInt(roundType);
     }
 
     /**
@@ -185,6 +187,7 @@ public class ProblemComponent extends BaseElement
         defaultSolution = reader.readString();
         webServices = (WebService[])reader.readObjectArray(WebService.class);
         memLimitMB = reader.readInt();
+        roundType = reader.readInt();
     }
 
     /**
@@ -504,6 +507,20 @@ public class ProblemComponent extends BaseElement
     }
     
     /**
+     * @return Returns the roundType.
+     */
+    public int getRoundType() {
+        return roundType;
+    }
+
+    /**
+     * @param roundType The roundType to set.
+     */
+    public void setRoundType(int roundType) {
+        this.roundType = roundType;
+    }
+    
+    /**
      *
      * @param name
      * @param elem
@@ -564,7 +581,9 @@ public class ProblemComponent extends BaseElement
         }
         buf.append("</test-cases><memlimit>");
         buf.append(memLimitMB);
-        buf.append("</memlimit></problem>");
+        buf.append("</memlimit><roundType>");
+        buf.append(roundType);
+        buf.append("</roundType></problem>");
         return buf.toString();
     }
 
@@ -597,6 +616,8 @@ public class ProblemComponent extends BaseElement
         str.append(paramNames);
         str.append(",memLimitMB=");
         str.append(memLimitMB);
+        str.append(",roundType=");
+        str.append(roundType);
         str.append(",spec=");
         str.append(spec);
         str.append(",notes=");

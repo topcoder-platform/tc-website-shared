@@ -51,6 +51,7 @@ public class ProblemComponentFactory
     static final String SIGNATURE_PARAM = "param";
     static final String SIGNATURE_PARAM_NAME = "name";
     static final String MEM_LIMIT = "memlimit";
+    static final String ROUND_TYPE = "roundType";
 
     Node doc, root;
     NodeList sections;
@@ -103,6 +104,7 @@ public class ProblemComponentFactory
             parseConstraints();
             parseTestCases();
             parseMemLimit();
+            parseRoundType();
             
             if(!unsafe)
                 removeNonExampleTestCases();
@@ -415,6 +417,21 @@ public class ProblemComponentFactory
                 stmt.setMemLimitMB(memLimit);
             } catch (Exception e) {
                 stmt.addMessage(new ProblemMessage(ProblemMessage.ERROR, "Non-numeric memory limit: "+getText(node)));
+                stmt.setValid(false);
+            }
+        }
+    }
+    
+    void parseRoundType()
+    {
+        Node node = getChildByName(sections, ROUND_TYPE);
+        if (node != null) {
+            try {
+                int roundType = Integer.parseInt(getText(node));
+                removeTextChildren(node);
+                stmt.setRoundType(roundType);
+            } catch (Exception e) {
+                stmt.addMessage(new ProblemMessage(ProblemMessage.ERROR, "Non-numeric round type: "+getText(node)));
                 stmt.setValid(false);
             }
         }
