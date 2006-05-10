@@ -240,7 +240,7 @@ public class TCLoadAggregate extends TCLoad {
             psDel = prepareStatement(query.toString(), TARGET_DB);
             psDel.setLong(1, fRoundId);
 
-            psDel.executeUpdate();            
+            psDel.executeUpdate();
 
             rs = psSel.executeQuery();
 
@@ -271,6 +271,7 @@ public class TCLoadAggregate extends TCLoad {
         } finally {
             close(rs);
             close(psSel);
+            close(psDel);
         }
     }
 
