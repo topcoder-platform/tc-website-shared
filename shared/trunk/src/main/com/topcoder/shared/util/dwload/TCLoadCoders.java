@@ -918,6 +918,7 @@ public class TCLoadCoders extends TCLoad {
         ResultSet rs = null;
         ResultSet rs2 = null;
         StringBuffer query = null;
+        int coder_id = 0;
 
         try {
             query = new StringBuffer(100);
@@ -983,7 +984,7 @@ public class TCLoadCoders extends TCLoad {
             // exists prior to deleting so we can maintain that first rated round
             // value. For the
             while (rs.next()) {
-                int coder_id = rs.getInt(1);
+                coder_id = rs.getInt(1);
                 int first_rated_round_id = -1;
                 int last_rated_round_id = -1;
                 int lowest_rating = 0;
@@ -1045,7 +1046,7 @@ public class TCLoadCoders extends TCLoad {
             log.info("Rating records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'rating' table failed.\n" +
+            throw new Exception("Load of 'rating' table failed on coder " + coder_id + " .\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
