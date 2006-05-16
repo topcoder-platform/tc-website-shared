@@ -85,6 +85,7 @@ public final class ServicesConstants {
     public static final int WEB_SERVICE_DEPLOY_ACTION = 8;
     public static final int AUTO_TEST_ACTION = 9;
     public static final int LONG_TEST_ACTION = 10;
+    public static final int LONG_SYSTEM_TEST_ACTION = 12;
     
     public static final int FAILURE_INCORRECT_RESULT = 1;
     public static final int FAILURE_TIMEOUT = 2;
