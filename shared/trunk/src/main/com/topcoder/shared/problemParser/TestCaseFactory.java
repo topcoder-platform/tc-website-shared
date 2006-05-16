@@ -27,6 +27,7 @@ public class TestCaseFactory
         Node annotation = ProblemComponentFactory.getChildByName(nl, ProblemComponentFactory.TEST_CASE_ANNOTATION);
         Element ne_annotation = annotation == null ? null : NodeElementFactory.build(annotation);
         boolean example = ProblemComponentFactory.getAttribute(node, "example") != null;
+        boolean systemTest = ProblemComponentFactory.getAttribute(node, "systemTest") != null;
         ArrayList inputList = new ArrayList();
 
         for(int i = 0; i < nl.getLength(); i++) {
@@ -40,7 +41,7 @@ public class TestCaseFactory
 
         for(int i = 0; i < input.length; i++)
             input[i] = (String)inputList.get(i);
-        return new TestCase(input, output.getFirstChild().getNodeValue(), ne_annotation, example);
+        return new TestCase(input, output.getFirstChild().getNodeValue(), ne_annotation, example, systemTest);
     }
 }
 

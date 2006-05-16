@@ -24,6 +24,10 @@ public class TestCase extends BaseElement implements Element {
     private String text;
     private Element annotation;
     private boolean example;
+    /**
+     * Indicates if this test is part of the system test cases
+     */
+    private boolean systemTest;
 
     public TestCase() {
     }
@@ -49,21 +53,36 @@ public class TestCase extends BaseElement implements Element {
      * @see Element
      */
     public TestCase(String[] input, String output, Element annotation, boolean example) {
-        this.input = input;
-        this.output = output;
-        this.annotation = annotation;
-        this.example = example;
-        if (annotation == null)
-            text = "";
-        else
-            text = annotation.toXML();
-
-        this.output = ProblemComponent.decodeXML(this.output);
-        for (int i = 0; i < this.input.length; i++) {
-            this.input[i] = ProblemComponent.decodeXML(this.input[i]);
-        }
+        this(input, output, annotation, example, false);
     }
 
+    /**
+    * @param input         An array of input values.  The first value should be the value for the first argument, etc.
+    * @param output        A string representation of the expected output for this test case
+    * @param annotation    An <code>Element</code> representing a writer's annotation, or explanation of this test case.
+    *                      This value can be <code>null</code> if no annotation exists, and should only be non-<code>null</code>
+    *                      when <code>example</code> is <code>true</code>.
+    * @param example       Specifies whether or not this is an example test case
+    * @param systemTest    Specifies whether or not this is a system test case
+    * @see Element
+    */
+   public TestCase(String[] input, String output, Element annotation, boolean example, boolean systemTest) {
+       this.input = input;
+       this.output = output;
+       this.annotation = annotation;
+       this.example = example;
+       this.systemTest = systemTest;
+       if (annotation == null)
+           text = "";
+       else
+           text = annotation.toXML();
+
+       this.output = ProblemComponent.decodeXML(this.output);
+       for (int i = 0; i < this.input.length; i++) {
+           this.input[i] = ProblemComponent.decodeXML(this.input[i]);
+       }
+   }
+    
     /**
      * Constructs a TestCase whos output is yet unknown.
      *
@@ -84,6 +103,7 @@ public class TestCase extends BaseElement implements Element {
         writer.writeString(output);
         writer.writeObject(annotation);
         writer.writeBoolean(example);
+        writer.writeBoolean(systemTest);
     }
 
     public void customReadObject(CSReader reader)
@@ -95,6 +115,7 @@ public class TestCase extends BaseElement implements Element {
         output = reader.readString();
         annotation = (Element) reader.readObject();
         example = reader.readBoolean();
+        systemTest = reader.readBoolean();
         input = new String[o_input.length];
         for (int i = 0; i < o_input.length; i++)
             input[i] = (String) o_input[i];
@@ -142,13 +163,29 @@ public class TestCase extends BaseElement implements Element {
         return annotation;
     }
 
+    /**
+     * @return Returns the systemTest.
+     */
+    public boolean isSystemTest() {
+        return systemTest;
+    }
+    /**
+     * @param system The systemTest to set.
+     */
+    public void setSystemTest(boolean systemTest) {
+        this.systemTest = systemTest;
+    }
+
     public String toXML() {
         StringBuffer buf = new StringBuffer(256);
 
         buf.append("<test-case");
         if (example)
             buf.append(" example=\"1\"");
+        if (systemTest)
+            buf.append(" systemTest=\"1\"");
         buf.append('>');
+        
         for (int i = 0; i < input.length; i++) {
             buf.append("<input>");
             buf.append(ProblemComponent.encodeXML(input[i]));
