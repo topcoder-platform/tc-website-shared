@@ -484,7 +484,7 @@ public class TCLoadCoders extends TCLoad {
                     psUpd.setString(17, rs.getString("status"));
                     psUpd.setString(18, rs.getString("address"));
                     psUpd.setString(19, rs.getString("region_code"));
-                    psUpd.setTimestamp(20, rs.getTimestamp("comp_country_code"));
+                    psUpd.setString(20, rs.getString("comp_country_code"));
                     psUpd.setLong(21, coder_id);
 
                     // Now, execute the insert of the new row
