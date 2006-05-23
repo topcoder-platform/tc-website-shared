@@ -9,7 +9,7 @@ package com.topcoder.shared.util.dwload;
  * The tables that are built by this load procedure are:
  *
  * <ul>
- * <li>rating (additional information is populated in the rating table)</li>
+ * <li>algo_rating (additional information is populated in the algo_rating table)</li>
  * <li>problem_submission</li>
  * <li>system_test_case</li>
  * <li>system_test_result</li>
@@ -69,8 +69,7 @@ public class TCLoadRound extends TCLoad {
     public TCLoadRound() {
         DEBUG = false;
 
-        USAGE_MESSAGE = new String(
-                "TCLoadRound parameters - defaults in ():\n" +
+        USAGE_MESSAGE = "TCLoadRound parameters - defaults in ():\n" +
                 "  -roundid number       : Round ID to load\n" +
                 "  [-failed number]      : Failed status for succeeded column    (0)\n" +
                 "  [-succeeded number]   : Succeeded status for succeeded column (1)\n" +
@@ -81,7 +80,7 @@ public class TCLoadRound extends TCLoad {
                 "  [-contestroom number] : Type id for contest rooms             (2)\n" +
                 "  [-roundlogtype number] : Log type id for this load            (1)\n" +
                 "  [-challengenullified number] : id for nullified challenges    (2)\n" +
-                "  [-fullload boolean] : true-clean round load, false-selective  (false)\n");
+                "  [-fullload boolean] : true-clean round load, false-selective  (false)\n";
     }
 
     /**
@@ -175,6 +174,8 @@ public class TCLoadRound extends TCLoad {
 
             clearRound();
 
+            loadSeasons();
+            
             loadContest();
 
             loadRound();
@@ -220,41 +221,43 @@ public class TCLoadRound extends TCLoad {
 
 
             if (FULL_LOAD) {
-                a.add(new String("DELETE FROM coder_level"));
-                a.add(new String("DELETE FROM coder_division"));
-                a.add(new String("DELETE FROM room_result WHERE round_id = ?"));
-                a.add(new String("DELETE FROM round_division"));
-                a.add(new String("DELETE FROM coder_problem_summary"));
-                a.add(new String("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)"));
-                a.add(new String("DELETE FROM round_problem"));
-                a.add(new String("DELETE FROM problem_language"));
-                a.add(new String("DELETE FROM challenge WHERE round_id = ?"));
-                a.add(new String("DELETE FROM coder_problem WHERE round_id = ?"));
-                a.add(new String("DELETE FROM room WHERE round_id = ?"));
-                a.add(new String("DELETE FROM system_test_result WHERE round_id = ?"));
-                a.add(new String("DELETE FROM problem_submission WHERE round_id = ?"));
-                a.add(new String("DELETE FROM problem_category_xref where problem_id in (select problem_id from problem where round_id = ?)"));
-                a.add(new String("DELETE FROM problem WHERE round_id = ?"));
-                a.add(new String("UPDATE rating SET first_rated_round_id = null WHERE first_rated_round_id = ?"));
-                a.add(new String("UPDATE rating SET last_rated_round_id = null WHERE last_rated_round_id = ?"));
+                a.add("DELETE FROM coder_level");
+                a.add("DELETE FROM coder_division");
+                a.add("DELETE FROM room_result WHERE round_id = ?");
+                a.add("DELETE FROM round_division");
+                a.add("DELETE FROM coder_problem_summary");
+                a.add("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)");
+                a.add("DELETE FROM round_problem");
+                a.add("DELETE FROM problem_language");
+                a.add("DELETE FROM challenge WHERE round_id = ?");
+                a.add("DELETE FROM coder_problem WHERE round_id = ?");
+                a.add("DELETE FROM room WHERE round_id = ?");
+                a.add("DELETE FROM system_test_result WHERE round_id = ?");
+                a.add("DELETE FROM problem_submission WHERE round_id = ?");
+                a.add("DELETE FROM problem_category_xref where problem_id in (select problem_id from problem where round_id = ?)");
+                a.add("DELETE FROM problem WHERE round_id = ?");
+                a.add("UPDATE algo_rating SET first_rated_round_id = null WHERE first_rated_round_id = ?");
+                a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
+                a.add("DELETE FROM rating_history WHERE round_id = ?");
 
             } else {
-                a.add(new String("DELETE FROM coder_level WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)"));
-                a.add(new String("DELETE FROM coder_division WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)"));
-                a.add(new String("DELETE FROM coder_problem_summary WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)"));
-                a.add(new String("DELETE FROM room_result WHERE round_id = ?"));
-                a.add(new String("DELETE FROM round_division WHERE round_id = ?"));
-                a.add(new String("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)"));
-                a.add(new String("DELETE FROM round_problem WHERE round_id = ?"));
-                a.add(new String("DELETE FROM problem_language WHERE round_id = ?"));
-                a.add(new String("DELETE FROM challenge WHERE round_id = ?"));
-                a.add(new String("DELETE FROM coder_problem WHERE round_id = ?"));
-                a.add(new String("DELETE FROM system_test_result WHERE round_id = ?"));
-                a.add(new String("DELETE FROM problem_submission WHERE round_id = ?"));
-                a.add(new String("DELETE FROM problem_category_xref where problem_id in (select problem_id from problem where round_id = ?)"));
-                a.add(new String("DELETE FROM problem WHERE round_id = ?"));
-                a.add(new String("UPDATE rating SET first_rated_round_id = null WHERE first_rated_round_id = ?"));
-                a.add(new String("UPDATE rating SET last_rated_round_id = null WHERE last_rated_round_id = ?"));
+                a.add("DELETE FROM coder_level WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
+                a.add("DELETE FROM coder_division WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
+                a.add("DELETE FROM coder_problem_summary WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
+                a.add("DELETE FROM room_result WHERE round_id = ?");
+                a.add("DELETE FROM round_division WHERE round_id = ?");
+                a.add("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)");
+                a.add("DELETE FROM round_problem WHERE round_id = ?");
+                a.add("DELETE FROM problem_language WHERE round_id = ?");
+                a.add("DELETE FROM challenge WHERE round_id = ?");
+                a.add("DELETE FROM coder_problem WHERE round_id = ?");
+                a.add("DELETE FROM system_test_result WHERE round_id = ?");
+                a.add("DELETE FROM problem_submission WHERE round_id = ?");
+                a.add("DELETE FROM problem_category_xref where problem_id in (select problem_id from problem where round_id = ?)");
+                a.add("DELETE FROM problem WHERE round_id = ?");
+                a.add("UPDATE algo_rating SET first_rated_round_id = null WHERE first_rated_round_id = ?");
+                a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
+                a.add("DELETE FROM rating_history WHERE round_id = ?");
             }
 
             int count = 0;
@@ -307,6 +310,7 @@ public class TCLoadRound extends TCLoad {
     private void loadRating() throws Exception {
         int count = 0;
         int retVal = 0;
+        int algoType = 0;
         PreparedStatement psSel = null;
         PreparedStatement psSelNumCompetitions = null;
         PreparedStatement psSelRatedRounds = null;
@@ -317,6 +321,8 @@ public class TCLoadRound extends TCLoad {
         StringBuffer query = null;
 
         try {
+            algoType = getRoundType(fRoundId);
+            
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
             query.append("SELECT rr.coder_id ");    // 1
@@ -335,10 +341,15 @@ public class TCLoadRound extends TCLoad {
             query.append("SELECT min(rr.new_rating) ");  // 1
             query.append("       ,max(rr.new_rating) "); // 2
             query.append("  FROM room_result rr ");
-            query.append(" WHERE rr.coder_id = ? ");
+            query.append("       ,round r ");
+            query.append("       ,round_type_lu rt ");
+            query.append(" WHERE r.round_id = rr.round_id ");
+            query.append("   AND r.round_type_id = rt.round_type_id ");
+            query.append("   AND rr.coder_id = ? ");
             query.append("   AND rr.attended = 'Y' ");
             query.append("   AND rr.new_rating > 0 ");
-
+            query.append("   AND rt.algo_rating_type_id = ? ");
+                        
             //use the target db (warehouse) for this historical data
             psSelMinMaxRatings = prepareStatement(query.toString(), TARGET_DB);
 
@@ -348,8 +359,9 @@ public class TCLoadRound extends TCLoad {
             query = new StringBuffer(100);
             query.append("SELECT first_rated_round_id "); // 1
             query.append("       ,last_rated_round_id "); // 2
-            query.append("  FROM rating ");
-            query.append(" WHERE coder_id = ?");
+            query.append("  FROM algo_rating ");
+            query.append(" WHERE coder_id = ? ");
+            query.append(" AND algo_rating_type_id = ? ");
             psSelRatedRounds = prepareStatement(query.toString(), TARGET_DB);
 
             // No need to filter admins here as they have already been filtered from
@@ -357,18 +369,24 @@ public class TCLoadRound extends TCLoad {
             query = new StringBuffer(100);
             query.append("SELECT count(*) ");     // 1
             query.append("  FROM room_result rr ");
-            query.append(" WHERE rr.attended = 'Y' ");
+            query.append("       ,round r ");
+            query.append("       ,round_type_lu rt ");            
+            query.append(" WHERE r.round_id = rr.round_id ");
+            query.append("   AND r.round_type_id = rt.round_type_id ");            
+            query.append("   AND rr.attended = 'Y' ");
             query.append("   AND rr.coder_id = ? ");
+            query.append("   AND rt.algo_rating_type_id = ? ");
             psSelNumCompetitions = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("UPDATE rating ");
+            query.append("UPDATE algo_rating ");
             query.append("   SET first_rated_round_id = ? ");  // 1
             query.append("       ,last_rated_round_id = ? ");  // 2
             query.append("       ,lowest_rating = ? ");        // 3
             query.append("       ,highest_rating = ? ");       // 4
             query.append("       ,num_competitions = ? ");     // 5
             query.append(" WHERE coder_id = ?");               // 6
+            query.append("   AND algo_rating_type_id = ? ");
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             psSel.setInt(1, fRoundId);
@@ -387,6 +405,7 @@ public class TCLoadRound extends TCLoad {
                 // already there.
                 psSelRatedRounds.clearParameters();
                 psSelRatedRounds.setInt(1, coder_id);
+                psSelRatedRounds.setInt(2, algoType);
                 rs2 = psSelRatedRounds.executeQuery();
                 if (rs2.next()) {
                     if (rs2.getString(1) != null)
@@ -400,6 +419,7 @@ public class TCLoadRound extends TCLoad {
                 // Get the number of competitions
                 psSelNumCompetitions.clearParameters();
                 psSelNumCompetitions.setInt(1, coder_id);
+                psSelNumCompetitions.setInt(2, algoType);
                 rs2 = psSelNumCompetitions.executeQuery();
                 if (rs2.next()) {
                     num_competitions = rs2.getInt(1);
@@ -410,6 +430,7 @@ public class TCLoadRound extends TCLoad {
                 // Get the new min/max ratings to see if we
                 psSelMinMaxRatings.clearParameters();
                 psSelMinMaxRatings.setInt(1, coder_id);
+                psSelMinMaxRatings.setInt(2, algoType);
                 rs2 = psSelMinMaxRatings.executeQuery();
                 if (rs2.next()) {
                     lowest_rating = rs2.getInt(1);
@@ -439,6 +460,7 @@ public class TCLoadRound extends TCLoad {
                 psUpd.setInt(4, highest_rating);        // highest_rating
                 psUpd.setInt(5, num_competitions);      // num_competitions
                 psUpd.setInt(6, coder_id);              // coder_id
+                psUpd.setInt(7, algoType);              // algo_rating_type_id
 
                 retVal = psUpd.executeUpdate();
                 count = count + retVal;
@@ -839,6 +861,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,c.ad_end ");       // 10
             query.append("       ,c.ad_task ");      // 11
             query.append("       ,c.ad_command ");   // 12
+            query.append("       ,c.season_id ");    // 13
             query.append("  FROM contest c ");
             query.append("       ,round r ");
             query.append(" WHERE r.round_id = ? ");
@@ -858,10 +881,11 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,ad_start ");     // 9
             query.append("       ,ad_end ");       // 10
             query.append("       ,ad_task ");      // 11
-            query.append("       ,ad_command) ");  // 12
+            query.append("       ,ad_command ");  // 12      
+            query.append("       ,season_id) ");    // 13
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?)");                  // 12 total values
+            query.append("?,?,?)");                // 13 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -876,8 +900,9 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,ad_start = ? ");     // 8
             query.append("       ,ad_end = ? ");       // 9
             query.append("       ,ad_task = ? ");      // 10
-            query.append("       ,ad_command = ? ");  // 11
-            query.append(" WHERE contest_id = ? ");    // 12
+            query.append("       ,ad_command = ? ");   // 11
+            query.append("       ,season_id = ? ");    // 12
+            query.append(" WHERE contest_id = ? ");    // 13
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -911,7 +936,8 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setTimestamp(9, rs.getTimestamp(10));  // ad_end
                     psUpd.setString(10, rs.getString(11));  // ad_task
                     psUpd.setString(11, rs.getString(12));  // ad_command
-                    psUpd.setInt(12, rs.getInt(1));  // contest_id
+                    psUpd.setString(12, rs.getString(13));  // season_id
+                    psUpd.setInt(13, rs.getInt(1));  // contest_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -934,6 +960,7 @@ public class TCLoadRound extends TCLoad {
                     psIns.setTimestamp(10, rs.getTimestamp(10));  // ad_end
                     psIns.setString(11, rs.getString(11));  // ad_task
                     psIns.setString(12, rs.getString(12));  // ad_command
+                    psIns.setString(13, rs.getString(13));  // season_id
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
@@ -2239,6 +2266,113 @@ public class TCLoadRound extends TCLoad {
             close(psSel);
             close(psIns);
             close(psDel);
+        }
+    }
+
+    
+    /**
+     * Load all the seasons from transactional.
+     */
+    private void loadSeasons() throws Exception {
+        int retVal = 0;
+        int count = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psSel2 = null;
+        PreparedStatement psIns = null;
+        PreparedStatement psUpd = null;
+        ResultSet rs = null;
+        ResultSet rs2 = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT s.season_id ");            // 1
+            query.append("      ,s.start_date ");           // 2
+            query.append("      ,s.end_date ");             // 3
+            query.append("      ,s.name ");                 // 4
+            query.append("      ,s.season_type_id ");       // 5
+            query.append("      ,st.season_type_desc ");    // 6
+            query.append("      FROM season s ");           
+            query.append("      ,season_type_lu st ");       
+            query.append("      WHERE s.season_type_id = st.season_type_id ");            
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO season ");
+            query.append("       (start_calendar_id ");   // 1
+            query.append("       ,end_calendar_id ");     // 2
+            query.append("       ,name ");                // 3
+            query.append("       ,season_type_id ");      // 4
+            query.append("       ,season_type_desc ");    // 5
+            query.append("       ,season_id) ");          // 6
+            query.append("VALUES (");
+            query.append("?,?,?,?,?,?)");  // 6 values
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("UPDATE season ");
+            query.append("   SET start_calendar_id = ?");   // 1
+            query.append("      ,end_calendar_id = ?");     // 2
+            query.append("      ,name = ?");                // 3
+            query.append("      ,season_type_id = ?");      // 4
+            query.append("      ,season_type_desc = ?");    // 5
+            query.append(" WHERE season_id = ?");           // 6
+            psUpd = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT 1 ");
+            query.append("  FROM season ");
+            query.append(" WHERE season_id = ?");
+            psSel2 = prepareStatement(query.toString(), TARGET_DB);
+
+            // On to the load
+            rs = psSel.executeQuery();
+
+            while (rs.next()) {
+                int season_id = rs.getInt(1);
+                int start_calendar_id = lookupCalendarId(rs.getTimestamp(2), TARGET_DB);
+                int end_calendar_id = lookupCalendarId(rs.getTimestamp(3), TARGET_DB);
+                String name = rs.getString(4);
+                int season_type_id = rs.getInt(5);
+                String season_type_desc = rs.getString(6);
+
+                psSel2.clearParameters();
+                psSel2.setInt(1, season_id);
+                rs2 = psSel2.executeQuery();
+
+                // If next() returns true that means this row exists. If so,
+                // we update. Otherwise, we insert.
+                PreparedStatement psInsUpd = rs2.next()? psUpd : psIns;
+
+                psInsUpd.clearParameters();
+                psInsUpd.setInt(1, start_calendar_id);
+                psInsUpd.setInt(2, end_calendar_id);  
+                psInsUpd.setString(3, name);
+                psInsUpd.setInt(4, season_type_id);
+                psInsUpd.setString(5, season_type_desc);
+                psInsUpd.setInt(6, season_id);
+                
+                retVal = psInsUpd.executeUpdate();
+                count += retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadRound: Insert or Update for season_id " + season_id +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                                
+                printLoadProgress(count, "season");
+            }
+
+            log.info("season records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'seasons' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
+            close(psUpd);
         }
     }
 

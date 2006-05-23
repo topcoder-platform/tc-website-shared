@@ -20,13 +20,19 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 public class TCLoadRank extends TCLoad {
     private int roundId = 0;
@@ -35,6 +41,9 @@ public class TCLoadRank extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadRank.class);
     private static final int OVERALL_RATING_RANK_TYPE_ID = 1;
     private static final int ACTIVE_RATING_RANK_TYPE_ID = 2;
+    
+    private static final int TC_RATING_TYPE_ID = 1;
+    private static final int TC_HS_RATING_TYPE_ID = 2;
 /*
     private static final int SRM_ROUND_TYPE = 1;
     private static final int TOURNAMENT_ROUND_TYPE = 2;
@@ -84,27 +93,68 @@ public class TCLoadRank extends TCLoad {
         try {
 
             long start = System.currentTimeMillis();
-            List l = getCurrentRatings();
+            
+            // determine if the round is regular or HS.
+            int algoType = getRoundType(roundId);
+            log.info("Round type=" + algoType);
+            
+            List l = getCurrentRatings(algoType);
             log.info("got " + l.size() + " records in " + (System.currentTimeMillis()-start) + " milliseconds");
-            loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
+            loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType,  l);
 
 //            loadOverallRatingRankHistory(l);
             //beware, this stuff can't be run be run on old rounds because of teh active flag.  you'll need to
             //run the full backpopulate load to rebuild this stuff.
-            loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, l);
-            loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, l);
+            loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
+            loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
 
-            loadRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
+            loadRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
 
 
-            loadCountryRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
-            loadStateRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
-            loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
+            loadCountryRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
+            loadStateRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
+            
+            // school rating just for regular competitions, not for HS
+            if (algoType == TC_RATING_TYPE_ID) {
+                loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
+            }
 
-            loadCountryRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
-            loadStateRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
-            loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
+            loadCountryRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
+            loadStateRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
+     
+            List countryRank = calculateCountryRank(l);
+            loadCountryRank(algoType, countryRank);
+            loadCountryRankHistory(algoType, countryRank);
+            
+            // school rating just for regular competitions, not for HS
+            if (algoType == TC_RATING_TYPE_ID) {           
+                loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
+            }
 //            loadAgeGroupAvgRatingRank();
+
+
+            int seasonId = getSeasonId(roundId);
+            
+            if (seasonId >= 0) {
+                List ratings = getCurrentSeasonRatings(seasonId);
+                
+                Collections.sort(ratings);
+                
+                loadSeasonRatingRank(seasonId, ratings);                
+                loadSeasonRatingRankHistory(seasonId, ratings);
+                
+                // the list is already sorted
+                List teamPoints = getTeamPoints(seasonId);
+                
+                loadSeasonTeamRank(seasonId, teamPoints);
+                loadSeasonTeamRankHistory(seasonId, teamPoints);
+                
+                List seasonCountryRank = calculateCountryRank(ratings);
+                
+                loadSeasonCountryRank(seasonId, seasonCountryRank);
+                loadSeasonCountryRankHistory(seasonId, seasonCountryRank);
+                
+            }
 
 
             log.info("SUCCESS: Rank load ran successfully for round " + roundId + ".");
@@ -119,7 +169,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the coder_rank table with information about
      * overall rating rank.
      */
-    private void loadRatingRank(int rankType, List list) throws Exception {
+    private void loadRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -135,12 +185,13 @@ public class TCLoadRank extends TCLoad {
             query.append(" DELETE");
             query.append(" FROM coder_rank");
             query.append(" WHERE coder_rank_type_id = " + rankType);
+            query.append(" AND algo_rating_type_id = " + ratingType);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO coder_rank (coder_id, percentile, rank, coder_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, " + rankType + ")");
+            query.append(" INTO coder_rank (coder_id, percentile, rank, coder_rank_type_id, algo_rating_type_id)");
+            query.append(" VALUES (?, ?, ?, " + rankType + ", " + ratingType + ")");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             /* coder_rank table should be kept "up-to-date" so get the most recent stuff
@@ -199,8 +250,508 @@ public class TCLoadRank extends TCLoad {
     }
 
 
+    /**
+     * Load table country_rank from a list of CountryRank objects passed in list parameter.
+     */
+    private void loadCountryRank(int ratingType, List list) throws Exception {
+        log.debug("loadCountryRank called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psIns = null;
+        int count = 0;
 
-    private void loadRatingRankHistory(int rankType, List list) throws Exception {
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM country_rank");
+            query.append(" WHERE algo_rating_type_id = " + ratingType);
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO country_rank (country_code, member_count, rating, rank, percentile, algo_rating_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            // delete all the previous records 
+            psDel.executeUpdate();
+
+            int size = list.size();
+            for (int j = 0; j < size; j++) {
+                CountryRank cr = (CountryRank) list.get(j);
+
+                psIns.clearParameters();
+                psIns.setString(1, cr.getCountryCode());
+                psIns.setInt(2, cr.getMemberCount());
+                psIns.setDouble(3, cr.getRating());
+                psIns.setInt(4, cr.getRank());
+                psIns.setDouble(5, cr.getPercentile());
+                psIns.setInt(6, ratingType);
+                count += psIns.executeUpdate();
+                            
+                printLoadProgress(count, "country rank");
+            }
+            log.info("Records loaded for country rank load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'country_rank' table failed for overall rating rank.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+    /**
+     * Load table country_rank_history from a list of CountryRank objects passed in list parameter.
+     */
+    private void loadCountryRankHistory(int ratingType, List list) throws Exception {
+        log.debug("loadCountryRankHistory called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psIns = null;
+        int count = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM country_rank_history");
+            query.append(" WHERE algo_rating_type_id = " + ratingType);
+            query.append(" AND round_id = " + roundId);
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO country_rank_history (country_code, member_count, rating, rank, percentile, algo_rating_type_id, round_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            // delete all the previous records 
+            psDel.executeUpdate();
+
+            int size = list.size();
+            for (int j = 0; j < size; j++) {
+                CountryRank cr = (CountryRank) list.get(j);
+                psIns.clearParameters();
+                psIns.setString(1, cr.getCountryCode());
+                psIns.setInt(2, cr.getMemberCount());
+                psIns.setDouble(3, cr.getRating());
+                psIns.setInt(4, cr.getRank());
+                psIns.setDouble(5,  cr.getPercentile());
+                psIns.setInt(6, ratingType);
+                psIns.setDouble(7, roundId);
+                count += psIns.executeUpdate();
+                
+                printLoadProgress(count, "country rank history");
+            }
+            log.info("Records loaded for country rank history load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'country_rank_history' table failed for overall rating rank.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+    /**
+     * Load table season_country_rank from a list of CountryRank objects passed in list parameter.
+     */
+    private void loadSeasonCountryRank(int seasonId, List list) throws Exception {
+        log.debug("loadSeasonCountryRank called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psIns = null;
+        int count = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM season_country_rank");
+            query.append(" WHERE season_id = " + seasonId);
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO season_country_rank (season_id, country_code, member_count, rating, rank, percentile)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            // delete all the previous records 
+            psDel.executeUpdate();
+
+            int size = list.size();
+            for (int j = 0; j < size; j++) {
+                CountryRank cr = (CountryRank) list.get(j);
+
+                psIns.clearParameters();
+                psIns.setInt(1, seasonId);
+                psIns.setString(2, cr.getCountryCode());
+                psIns.setInt(3, cr.getMemberCount());
+                psIns.setDouble(4, cr.getRating());
+                psIns.setInt(5, cr.getRank());
+                psIns.setDouble(6, cr.getPercentile());
+                count += psIns.executeUpdate();
+                            
+                printLoadProgress(count, "season_country rank");
+            }
+            log.info("Records loaded for season country rank load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_country_rank' table failed for overall rating rank.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+    /**
+     * Load table season_country_rank_history from a list of CountryRank objects passed in list parameter.
+     */
+    private void loadSeasonCountryRankHistory(int seasonId, List list) throws Exception {
+        log.debug("loadSeasonCountryRankHistory called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psIns = null;
+        int count = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM season_country_rank_history");
+            query.append(" WHERE season_id = " + seasonId);
+            query.append(" AND round_id = " + roundId);            
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO season_country_rank_history (season_id, country_code, member_count, rating, rank, percentile, round_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            // delete all the previous records 
+            psDel.executeUpdate();
+
+            int size = list.size();
+            for (int j = 0; j < size; j++) {
+                CountryRank cr = (CountryRank) list.get(j);
+
+                psIns.clearParameters();
+                psIns.setInt(1, seasonId);
+                psIns.setString(2, cr.getCountryCode());
+                psIns.setInt(3, cr.getMemberCount());
+                psIns.setDouble(4, cr.getRating());
+                psIns.setInt(5, cr.getRank());
+                psIns.setDouble(6, cr.getPercentile());
+                psIns.setInt(7, roundId);
+                count += psIns.executeUpdate();
+                            
+                printLoadProgress(count, "season country rank history");
+            }
+            log.info("Records loaded for season country rank history load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_country_rank_history' table failed for overall rating rank.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+    /**
+     * Loads the season_rank table with information about the ranks in the season
+     */
+    private void loadSeasonRatingRank(int seasonId, List ratings) throws Exception {
+        log.debug("loadSeasonRatingRank called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        int count = 0;
+        int coderCount = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM season_rank");
+            query.append(" WHERE season_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setInt(1, seasonId);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO season_rank (coder_id, season_id, rank, percentile)");
+            query.append(" VALUES (?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            coderCount = ratings.size();
+
+            // delete all the records for the overall rating rank type
+            psDel.executeUpdate();
+
+            int i = 0;
+            int rating = 0;
+            int rank = 0;
+            int size = ratings.size();
+            int tempRating = 0;
+            long tempCoderId = 0;
+            for (int j = 0; j < size; j++) {
+                i++;
+                tempRating = ((CoderRating) ratings.get(j)).getRating();
+                tempCoderId = ((CoderRating) ratings.get(j)).getCoderId();
+                if (tempRating != rating) {
+                    rating = tempRating;
+                    rank = i;
+                }
+                psIns.setLong(1, tempCoderId);
+                psIns.setInt(2, seasonId);
+                psIns.setInt(3, rank);
+                psIns.setFloat(4, (float) 100 * ((float) (coderCount - rank) / coderCount));
+                count += psIns.executeUpdate();
+                printLoadProgress(count, "season rating rank");
+            }
+            log.info("Records loaded for season rating rank load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_rank' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+    /**
+     * Loads the season_team_rank table with information about the team ranks in the season
+     */
+    private void loadSeasonTeamRank(int seasonId, List teamPoints) throws Exception {
+        log.debug("loadSeasonTeamRank called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        int count = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM season_team_rank");
+            query.append(" WHERE season_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setInt(1, seasonId);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO season_team_rank (team_id, season_id, rank, percentile, team_rank_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, 1)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+
+            // delete all the records for the overall rating rank type
+            psDel.executeUpdate();
+
+            int i = 0;
+            double points = -1;
+            int rank = 0;
+            int size = teamPoints.size();
+            double tempPoints = 0;
+            long tempTeamId = 0;
+            for (int j = 0; j < size; j++) {
+                i++;
+                tempPoints = ((TeamPoints) teamPoints.get(j)).getPoints();
+                tempTeamId = ((TeamPoints) teamPoints.get(j)).getTeamId();
+                if (tempPoints != points) {
+                    points = tempPoints;
+                    rank = i;
+                }
+                psIns.setLong(1, tempTeamId);
+                psIns.setInt(2, seasonId);
+                psIns.setInt(3, rank);
+                psIns.setFloat(4, (float) 100 * ((float) (size - rank) / size));
+                count += psIns.executeUpdate();
+                printLoadProgress(count, "season team rank");
+            }
+            log.info("Records loaded for season team rank load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_team_rank' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
+            close(psDel);
+        }
+    }
+
+    /**
+     * Loads the season_team_rank_history table with information about the team ranks in the season
+     */
+    private void loadSeasonTeamRankHistory(int seasonId, List teamPoints) throws Exception {
+        log.debug("loadSeasonTeamRankHistory called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        int count = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM season_team_rank_history");
+            query.append(" WHERE season_id = ?");
+            query.append(" AND round_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setInt(1, seasonId);
+            psDel.setInt(2, roundId);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO season_team_rank_history (team_id, season_id, rank, percentile, round_id, team_rank_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, 1)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+
+            // delete all the records for the overall rating rank type
+            psDel.executeUpdate();
+
+            int i = 0;
+            double points = -1;
+            int rank = 0;
+            int size = teamPoints.size();
+            double tempPoints = 0;
+            long tempTeamId = 0;
+            for (int j = 0; j < size; j++) {
+                i++;
+                tempPoints = ((TeamPoints) teamPoints.get(j)).getPoints();
+                tempTeamId = ((TeamPoints) teamPoints.get(j)).getTeamId();
+                if (tempPoints != points) {
+                    points = tempPoints;
+                    rank = i;
+                }
+                psIns.setLong(1, tempTeamId);
+                psIns.setInt(2, seasonId);
+                psIns.setInt(3, rank);
+                psIns.setFloat(4, (float) 100 * ((float) (size - rank) / size));
+                psIns.setInt(5, roundId);
+                count += psIns.executeUpdate();
+                printLoadProgress(count, "season team rank history");
+            }
+            log.info("Records loaded for season team rank history load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_team_rank_history' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+    /**
+     * Loads the season_rank table with information about the ranks in the season
+     */
+    private void loadSeasonRatingRankHistory(int seasonId, List ratings) throws Exception {
+        log.debug("loadSeasonRatingRankHistory called...");
+        StringBuffer query = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        int count = 0;
+        int coderCount = 0;
+
+        try {
+
+            query = new StringBuffer(100);
+            query.append(" DELETE");
+            query.append(" FROM season_rank_history");
+            query.append(" WHERE season_id = ?");
+            query.append(" AND round_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setInt(1, seasonId);
+            psDel.setInt(2, roundId);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT");
+            query.append(" INTO season_rank_history (coder_id, season_id, rank, percentile, round_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            coderCount = ratings.size();
+
+            // delete all the records for the overall rating rank type
+            psDel.executeUpdate();
+
+            int i = 0;
+            int rating = 0;
+            int rank = 0;
+            int size = ratings.size();
+            int tempRating = 0;
+            long tempCoderId = 0;
+            for (int j = 0; j < size; j++) {
+                i++;
+                tempRating = ((CoderRating) ratings.get(j)).getRating();
+                tempCoderId = ((CoderRating) ratings.get(j)).getCoderId();
+                if (tempRating != rating) {
+                    rating = tempRating;
+                    rank = i;
+                }
+                psIns.setLong(1, tempCoderId);
+                psIns.setInt(2, seasonId);
+                psIns.setInt(3, rank);
+                psIns.setFloat(4, (float) 100 * ((float) (coderCount - rank) / coderCount));
+                psIns.setInt(5, roundId);
+                count += psIns.executeUpdate();
+                printLoadProgress(count, "season rating rank history");
+            }
+            log.info("Records loaded for season rating rank history load: " + count);
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_rank_history' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
+            close(psDel);
+        }
+
+    }
+
+
+    private void loadRatingRankHistory(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadRatingRankHistory called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -218,12 +769,13 @@ public class TCLoadRank extends TCLoad {
             query.append(" FROM coder_rank_history");
             query.append(" WHERE coder_rank_type_id = " + rankType);
             query.append(" AND round_id = " + roundId);
+            query.append(" AND algo_rating_type_id = " + ratingType);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO coder_rank_history (coder_id, round_id, percentile, rank, coder_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, " + rankType + ")");
+            query.append(" INTO coder_rank_history (coder_id, round_id, percentile, rank, coder_rank_type_id, algo_rating_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, " + rankType + "," + ratingType + ")");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             if (rankType == ACTIVE_RATING_RANK_TYPE_ID) {
@@ -286,7 +838,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the country_coder_rank table with information about
      * rating rank within a country.
      */
-    private void loadCountryRatingRank(int rankType, List list) throws Exception {
+    private void loadCountryRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadCountryRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -304,12 +856,14 @@ public class TCLoadRank extends TCLoad {
             query.append(" DELETE");
             query.append(" FROM country_coder_rank");
             query.append(" WHERE coder_rank_type_id = " + rankType);
+            query.append(" AND algo_rating_type_id = " + ratingType);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO country_coder_rank (coder_id, percentile, rank, rank_no_tie, country_code, coder_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, ?, ?)");
+            query.append(" INTO country_coder_rank (coder_id, percentile, rank, rank_no_tie, ");
+            query.append("       country_code, coder_rank_type_id, algo_rating_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // delete all the records from the country ranking table
@@ -365,6 +919,7 @@ public class TCLoadRank extends TCLoad {
                     psIns.setInt(4, j + 1);
                     psIns.setString(5, curr.getCountryCode());
                     psIns.setInt(6, rankType);
+                    psIns.setInt(7, ratingType);
                     count += psIns.executeUpdate();
                     printLoadProgress(count, "country coder rating rank");
                 }
@@ -387,7 +942,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the state_coder_rank table with information about
      * rating rank within a state.
      */
-    private void loadStateRatingRank(int rankType, List list) throws Exception {
+    private void loadStateRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadStateRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -405,12 +960,13 @@ public class TCLoadRank extends TCLoad {
             query.append(" DELETE");
             query.append(" FROM state_coder_rank");
             query.append(" WHERE coder_rank_type_id = " + rankType);
+            query.append(" AND algo_rating_type_id = " + ratingType);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO state_coder_rank (coder_id, percentile, rank, rank_no_tie, state_code, coder_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, ?, ?)");
+            query.append(" INTO state_coder_rank (coder_id, percentile, rank, rank_no_tie, state_code, coder_rank_type_id, algo_rating_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
 
@@ -470,6 +1026,7 @@ public class TCLoadRank extends TCLoad {
                     psIns.setInt(4, j + 1);
                     psIns.setString(5, curr.getStateCode());
                     psIns.setInt(6, rankType);
+                    psIns.setInt(7, ratingType);
                     count += psIns.executeUpdate();
                     printLoadProgress(count, "state coder rating rank");
                 }
@@ -599,8 +1156,7 @@ public class TCLoadRank extends TCLoad {
     }
 
 
-
-    private List getCurrentRatings() throws Exception {
+    private List getCurrentRatings(int algoType) throws Exception {
         StringBuffer query = null;
         PreparedStatement psSel = null;
         ResultSet rs = null;
@@ -616,13 +1172,14 @@ public class TCLoadRank extends TCLoad {
             query.append(" , c.comp_country_code as country_code");
             query.append(" , c.state_code");
             query.append(" , case when exists (select '1' from active_members a where a.coder_id = c.coder_id) then 1 else 0 end as active");
-            query.append(" from rating r");
+            query.append(" from algo_rating r");
             query.append(" , outer current_school cs");
             query.append(" , coder c");
             query.append(" where r.coder_id = cs.coder_id");
             query.append(" and r.coder_id = c.coder_id");
             query.append(" and c.status = 'A'");
             query.append(" and r.num_ratings > 0");
+            query.append(" and algo_rating_type_id = " + algoType);
 
             psSel = prepareStatement(query.toString(), TARGET_DB);
 
@@ -632,10 +1189,12 @@ public class TCLoadRank extends TCLoad {
                 //pros
                 if (rs.getInt("coder_type_id") == 2) {
                     ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                        0, rs.getInt("active")==1, rs.getString("country_code"), rs.getString("state_code")));
+                        0, rs.getInt("active")==1, rs.getString("country_code"), 
+                        rs.getString("state_code")));
                 } else {
                     ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                        rs.getInt("school_id"), rs.getInt("active")==1, rs.getString("country_code"), rs.getString("state_code")));
+                        rs.getInt("school_id"), rs.getInt("active")==1, rs.getString("country_code"), 
+                        rs.getString("state_code")));
                 }
             }
 
@@ -652,6 +1211,150 @@ public class TCLoadRank extends TCLoad {
 
     }
 
+    private List getCurrentSeasonRatings(int seasonId) throws Exception {
+        StringBuffer query = null;
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+        List ret = null;
+
+        try {
+
+            query = new StringBuffer(200);
+            query.append(" SELECT r.coder_id ");
+            query.append(" ,r.rating ");
+            query.append(" , c.comp_country_code as country_code ");
+            query.append(" FROM season_algo_rating r ");
+            query.append(" ,coder c ");
+            query.append("  WHERE r.coder_id = c.coder_id ");
+            query.append(" AND r.season_id = ?");
+
+            psSel = prepareStatement(query.toString(), TARGET_DB);
+
+            psSel.setInt(1, seasonId);
+            rs = psSel.executeQuery();
+            ret = new ArrayList();
+            while (rs.next()) {
+                ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
+                    0, true, rs.getString("country_code"), "NA"));
+            }
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Get list of current season ratings failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+        return ret;
+
+    }
+
+    private List getTeamPoints(int seasonId) throws Exception {
+        StringBuffer query = null;
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+        List ret = null;
+
+        try {
+
+            query = new StringBuffer(200);
+            query.append(" SELECT team_id, avg(total_team_points) "); 
+            query.append(" FROM view_team_points tp, round r, contest c ");
+            query.append(" WHERE tp.round_id = r.round_id ");
+            query.append(" AND r.contest_id = c.contest_id ");
+            query.append(" AND c.season_id = ?");
+            query.append(" GROUP BY tp.team_id ");
+            query.append(" HAVING count(total_team_points) >= 4 ");
+            query.append(" ORDER BY 2");
+            
+
+            psSel = prepareStatement(query.toString(), TARGET_DB);
+
+            psSel.setInt(1, seasonId);
+            rs = psSel.executeQuery();
+            ret = new ArrayList();
+            while (rs.next()) {
+                ret.add(new TeamPoints(rs.getInt(1), rs.getDouble(2)));
+            }
+
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Get list of current season ratings failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+        return ret;
+
+    }
+
+    /**
+     * Calculate the country rating from a list of coder ratings.
+     * It also fills the rank and percentile.
+     * 
+     * @param list list of CoderRating
+     * @return a list of CountryRank with the country's ranking
+     */
+    private List calculateCountryRank(List list) {
+        ArrayList ratings = new ArrayList(list.size());
+        CoderRating cr = null;
+        for (int i = 0; i < list.size(); i++) {
+            cr = (CoderRating) list.get(i);
+            if (cr.isActive()) {
+                ratings.add(cr);
+            }
+        }
+        Collections.sort(ratings);
+        
+        int size = ratings.size();
+        Map countryRating = new HashMap();
+        
+        // Add all the coders to their country's rating
+        for (int i = 0; i < size; i++) {
+            cr = (CoderRating) ratings.get(i);
+            String cc = cr.getCountryCode();
+            
+            CountryRank r = (CountryRank) countryRating.get(cc);
+            if (r == null) {
+                r = new CountryRank(cc);
+                countryRating.put(cc, r);
+            }
+            r.addCoder(cr.getRating());
+        }
+        
+        // copy to l just the countries with at least 10 coders
+        ArrayList l = new ArrayList();
+                
+        for(Iterator it = countryRating.values().iterator(); it.hasNext(); )
+        {
+            CountryRank r = (CountryRank) it.next();
+            if (r.getMemberCount() >= 10) {              
+                l.add(r);
+            }
+        }
+        
+        Collections.sort(l);
+        int rank = 0;
+        double rating = -1;
+        size = l.size();
+        for (int i = 0; i < size; i++) {
+            CountryRank r = (CountryRank) l.get(i);
+            
+            if (Math.abs(rating - r.getRating()) >= 0.01) {
+                rank = i + 1;
+            }
+            rating = r.getRating();            
+            
+            
+            r.setRank(rank);
+            r.setPercentile((double) 100 * ((double) (size - rank) / size));            
+        }
+        
+        return l;
+    }
+    
     private class CoderRating implements Comparable {
         private long coderId = 0;
         private int rating = 0;
@@ -659,7 +1362,7 @@ public class TCLoadRank extends TCLoad {
         private boolean active = false;
         private String countryCode = null;
         private String stateCode = null;
-
+        
         CoderRating(long coderId, int rating, long schoolId, boolean active, String countryCode, String stateCode) {
             this.coderId = coderId;
             this.rating = rating;
@@ -729,8 +1432,113 @@ public class TCLoadRank extends TCLoad {
         public String toString() {
             return new String(coderId + ":" + rating + ":" + schoolId + ":" + active + ":" + stateCode);
         }
+
     }
 
+    private class TeamPoints {
+        private long teamId = 0;
+        private double points = 0;
+        
+        
+        public TeamPoints(long teamId, double points) {
+            this.teamId = teamId;
+            this.points = points;
+        }
+        
+        public double getPoints() {
+            return points;
+        }
+        public void setPoints(double points) {
+            this.points = points;
+        }
+        public long getTeamId() {
+            return teamId;
+        }
+        public void setTeamId(long teamId) {
+            this.teamId = teamId;
+        }
+        
+    }
+
+    private class CountryRank implements Comparable {
+        private final String countryCode;
+        
+        /**
+         * Con
+         */
+        private final static double R = 0.87;
+        
+        private int memberCount = 0;
+        
+        /**
+         * Sum of the rating, without multiplying by the factor
+         */
+        private double ratingSum = 0;
+        
+        /**
+         * Calculated rating.  Negative value indicates that the value needs to be calculated
+         */
+        private double rating = -1;
+        
+        private int rank;
+        private double percentile;
+        
+        public CountryRank(String countryCode) {
+            this.countryCode = countryCode;
+        }
+
+        public String getCountryCode() {
+            return countryCode;
+        }
+        
+        public int getMemberCount() {
+            return memberCount;
+        }
+        public void setMemberCount(int memberCount) {
+            this.memberCount = memberCount;
+        }
+        public double getPercentile() {
+            return percentile;
+        }
+        public void setPercentile(double percentile) {
+            this.percentile = percentile;
+        }
+        public int getRank() {
+            return rank;
+        }
+        public void setRank(int rank) {
+            this.rank = rank;
+        }
+        
+        public double getRating() {
+            // if it is negative it means that the value needs to be calculated
+            if (rating < 0) {
+                if (memberCount == 0) {
+                    throw new IllegalArgumentException("can't calculate the country rating when there are no members");
+                }
+                
+                rating = ratingSum * ((1 - R) / (1 - Math.pow(R, memberCount)));    
+            }
+            return rating;
+        }
+        
+        public void addCoder(int coderRating) 
+        {            
+            ratingSum += coderRating * Math.pow(R, memberCount);
+            memberCount++;            
+        }
+        
+        public int compareTo(Object other) {
+            if (((CountryRank) other).getRating() > getRating())
+                return 1;
+            else if (((CountryRank) other).getRating() < getRating())
+                return -1;
+            else
+                return 0;
+        }
+        
+        
+    }
 
 }
 

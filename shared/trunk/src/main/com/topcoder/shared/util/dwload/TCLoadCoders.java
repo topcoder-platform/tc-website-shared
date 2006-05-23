@@ -12,7 +12,7 @@ package com.topcoder.shared.util.dwload;
  * <li>skill</li>
  * <li>skill_type</li>
  * <li>coder_skill</li>
- * <li>rating</li>
+ * <li>algo_rating</li>
  * <li>path</li>
  * <li>image</li>
  * <li>coder_image_xref</li>
@@ -42,6 +42,13 @@ public class TCLoadCoders extends TCLoad {
     protected java.sql.Timestamp fStartTime = null;
     protected java.sql.Timestamp fLastLogTime = null;
     private int CODER_LOG_TYPE = 2;
+    private int CODING_SEGMENT_ID = 2;    // codingseg
+    
+    /**
+     * This Hashtable stores the start date of a particular round so
+     * that we don't have to look it up each time.
+     */
+    private Hashtable fRoundStartHT = new Hashtable();
 
 
     public TCLoadCoders() {
@@ -64,6 +71,7 @@ public class TCLoadCoders extends TCLoad {
 
             getLastUpdateTime();
 
+            
             loadState();
 
             loadCountry();
@@ -78,6 +86,8 @@ public class TCLoadCoders extends TCLoad {
             loadCoderSkill();
 
             loadRating();
+            
+            loadSeasonRating();
 
             loadPath();
 
@@ -91,6 +101,10 @@ public class TCLoadCoders extends TCLoad {
 
             loadAchievements();
 
+            loadTeam();
+            
+            loadTeamCoderXref();
+            
             clearCache(coders);
 
             setLastUpdateTime();
@@ -343,18 +357,19 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,u.handle ");                   // 24
             query.append("       ,u.password ");                 // 25
             query.append("       ,u.status ");                   // 26
-            query.append("       ,u.email ");                    // 27
-            query.append("       ,u.terms ");                    // 28
-            query.append("       ,u.last_login ");               // 29
-            query.append("       ,(SELECT rs.region_code ");     // 30
+            query.append("       ,e.address ");                  // 27
+            query.append("       ,u.last_login ");               // 28
+            query.append("       ,(SELECT rs.region_code ");     // 29
             query.append("           FROM region_state rs ");
             query.append("          WHERE c.state_code = rs.state_code ");
             query.append("          AND rs.user_type_id = 3) ");
-            query.append("       ,c.image ");                    // 31
-            query.append("       ,c.comp_country_code");         // 32
+            query.append("       ,c.image ");                    // 30
+            query.append("       ,c.comp_country_code");         // 31
             query.append("  FROM coder c ");
             query.append("       ,user u ");
+            query.append("       ,email e ");
             query.append(" WHERE c.coder_id = u.user_id ");
+            query.append("   AND c.coder_id = e.user_id ");
             query.append("   AND c.modify_date > ?");
             query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = u.user_id AND gu.group_id = 10)");
             query.append("   AND NOT EXISTS ");
@@ -399,16 +414,15 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,password ");                  // 25
             query.append("       ,status ");                    // 26
             query.append("       ,email ");                     // 27
-            query.append("       ,terms ");                     // 28
-            query.append("       ,last_login ");                // 29
-            query.append("       ,coder_region_code ");         // 30
-            query.append("       ,image ");                    // 31
-            query.append("       ,comp_country_code) ");         // 32
+            query.append("       ,last_login ");                // 28
+            query.append("       ,coder_region_code ");         // 29
+            query.append("       ,image ");                    // 30
+            query.append("       ,comp_country_code) ");         // 31
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 20
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 30
-            query.append("?,?)");                    // 32 total values
+            query.append("?)");                    // 31 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // Our update statement
@@ -440,12 +454,11 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,password = ? ");                  // 24
             query.append("       ,status = ? ");                    // 25
             query.append("       ,email = ? ");                     // 26
-            query.append("       ,terms = ? ");                     // 27
-            query.append("       ,last_login = ? ");                // 28
-            query.append("       ,coder_region_code = ? ");         // 29
-            query.append("       ,image = ? ");                     // 30
-            query.append("       ,comp_country_code = ?");          // 31
-            query.append("WHERE coder_id = ?");                     // 32
+            query.append("       ,last_login = ? ");                // 27
+            query.append("       ,coder_region_code = ? ");         // 28
+            query.append("       ,image = ? ");                     // 29
+            query.append("       ,comp_country_code = ?");          // 30
+            query.append("WHERE coder_id = ?");                     // 31
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             // Our select statement to determine if a particular row is
@@ -498,12 +511,11 @@ public class TCLoadCoders extends TCLoad {
                     psUpd.setString(24, rs.getString(25));  // password
                     psUpd.setString(25, rs.getString(26));  // status
                     psUpd.setString(26, rs.getString(27));  // email
-                    psUpd.setString(27, rs.getString(28));  // terms
-                    psUpd.setTimestamp(28, rs.getTimestamp(29));  // last_login
-                    psUpd.setString(29, rs.getString(30));  // coder_region_code
-                    psUpd.setInt(30, rs.getInt(31));  // image
-                    psUpd.setString(31, rs.getString(32)); //comp_country_code
-                    psUpd.setInt(32, coder_id);  // coder_id
+                    psUpd.setTimestamp(27, rs.getTimestamp(28));  // last_login
+                    psUpd.setString(28, rs.getString(29));  // coder_region_code
+                    psUpd.setInt(29, rs.getInt(30));  // image
+                    psUpd.setString(30, rs.getString(31)); //comp_country_code
+                    psUpd.setInt(31, coder_id);  // coder_id
 
                     // Now, execute the insert of the new row
                     retVal = psUpd.executeUpdate();
@@ -542,11 +554,10 @@ public class TCLoadCoders extends TCLoad {
                     psIns.setString(25, rs.getString(25));  // password
                     psIns.setString(26, rs.getString(26));  // status
                     psIns.setString(27, rs.getString(27));  // email
-                    psIns.setString(28, rs.getString(28));  // terms
-                    psIns.setTimestamp(29, rs.getTimestamp(29));  // last_login
-                    psIns.setString(30, rs.getString(30));  // coder_region_code
-                    psIns.setInt(31, rs.getInt(31));  // image
-                    psIns.setString(32, rs.getString(32));//comp_country_code
+                    psIns.setTimestamp(28, rs.getTimestamp(28));  // last_login
+                    psIns.setString(29, rs.getString(29));  // coder_region_code
+                    psIns.setInt(30, rs.getInt(30));  // image
+                    psIns.setString(31, rs.getString(31));//comp_country_code
 
                     // Now, execute the insert of the new row
                     retVal = psIns.executeUpdate();
@@ -925,10 +936,9 @@ public class TCLoadCoders extends TCLoad {
             query.append("SELECT r.coder_id ");           // 1
             query.append("       ,r.rating ");            // 2
             query.append("       ,r.num_ratings ");       // 3
-            query.append("       ,CURRENT ");             // 4
-            query.append("       ,r.vol ");               // 5
-            query.append("       ,r.rating_no_vol ");     // 6
-            query.append("  FROM rating r ");
+            query.append("       ,r.vol ");               // 4
+            query.append("       ,r.algo_rating_type_id "); // 5
+            query.append("  FROM algo_rating r ");
             query.append(" WHERE r.modify_date > ? ");
             query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = r.coder_id AND gu.group_id = 10)");
             query.append("   AND NOT EXISTS ");
@@ -949,30 +959,30 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,lowest_rating ");        // 3
             query.append("       ,highest_rating ");       // 4
             query.append("       ,num_competitions ");     // 5
-            query.append("  FROM rating ");
+            query.append("  FROM algo_rating "); 
             query.append(" WHERE coder_id = ?");
+            query.append(" AND algo_rating_type_id = ?");
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("INSERT INTO rating ");
+            query.append("INSERT INTO algo_rating ");
             query.append("      (coder_id ");               // 1
             query.append("       ,rating ");                // 2
             query.append("       ,num_ratings ");           // 3
-            query.append("       ,modify_date ");           // 4
-            query.append("       ,vol ");                   // 5
-            query.append("       ,rating_no_vol ");         // 6
-            query.append("       ,highest_rating ");        // 7
-            query.append("       ,lowest_rating ");         // 8
-            query.append("       ,first_rated_round_id ");  // 9
-            query.append("       ,last_rated_round_id ");   // 10
-            query.append("       ,num_competitions) ");     // 11
+            query.append("       ,vol ");                   // 4
+            query.append("       ,highest_rating ");        // 5
+            query.append("       ,lowest_rating ");         // 6
+            query.append("       ,first_rated_round_id ");  // 7
+            query.append("       ,last_rated_round_id ");   // 8
+            query.append("       ,num_competitions ");      // 9
+            query.append("       ,algo_rating_type_id) ");   // 10
             query.append("VALUES (");
-            query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?)");                   // 11 values
+            query.append("?,?,?,?,?,?,?,?,?,?)");  // 10 values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("DELETE FROM rating where coder_id = ?");
+            query.append("DELETE FROM algo_rating where coder_id = ? ");
+            query.append(" AND algo_rating_type_id = ?");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             psSel.setTimestamp(1, fLastLogTime);
@@ -985,6 +995,7 @@ public class TCLoadCoders extends TCLoad {
             // value. For the
             while (rs.next()) {
                 coder_id = rs.getInt(1);
+                int algo_rating_type_id = rs.getInt(5);
                 int first_rated_round_id = -1;
                 int last_rated_round_id = -1;
                 int lowest_rating = 0;
@@ -993,6 +1004,7 @@ public class TCLoadCoders extends TCLoad {
 
                 psSel2.clearParameters();
                 psSel2.setInt(1, coder_id);
+                psSel2.setInt(2, algo_rating_type_id);
                 rs2 = psSel2.executeQuery();
                 if (rs2.next()) {
                     if (rs2.getString(1) != null)
@@ -1008,29 +1020,29 @@ public class TCLoadCoders extends TCLoad {
 
                 psDel.clearParameters();
                 psDel.setInt(1, coder_id);
+                psDel.setInt(2, algo_rating_type_id);
                 psDel.executeUpdate();
 
                 psIns.clearParameters();
                 psIns.setInt(1, coder_id);  // coder_id
                 psIns.setInt(2, rs.getInt(2));  // rating
                 psIns.setInt(3, rs.getInt(3));  // num_ratings
-                psIns.setTimestamp(4, rs.getTimestamp(4));  // modify_date
-                psIns.setInt(5, rs.getInt(5));  // vol
-                psIns.setInt(6, rs.getInt(6));  // rating_no_vol
-                psIns.setInt(7, highest_rating);      // max_rating
-                psIns.setInt(8, lowest_rating);       // min_rating
+                psIns.setInt(4, rs.getInt(4));  // vol
+                psIns.setInt(5, highest_rating);      // max_rating
+                psIns.setInt(6, lowest_rating);       // min_rating
 
                 if (first_rated_round_id > -1)
-                    psIns.setInt(9, first_rated_round_id);     // first_rated_round_id
+                    psIns.setInt(7, first_rated_round_id);     // first_rated_round_id
                 else
-                    psIns.setNull(9, java.sql.Types.DECIMAL);
+                    psIns.setNull(7, java.sql.Types.DECIMAL);
 
                 if (last_rated_round_id > -1)
-                    psIns.setInt(10, last_rated_round_id);      // last_rated_round_id
+                    psIns.setInt(8, last_rated_round_id);      // last_rated_round_id
                 else
-                    psIns.setNull(10, java.sql.Types.DECIMAL);
+                    psIns.setNull(8, java.sql.Types.DECIMAL);
 
-                psIns.setInt(11, num_competitions);     // num_competitions
+                psIns.setInt(9, num_competitions);     // num_competitions
+                psIns.setInt(10, rs.getInt(5));     // algo_rating_type_id
 
                 retVal = psIns.executeUpdate();
                 count = count + retVal;
@@ -1040,18 +1052,211 @@ public class TCLoadCoders extends TCLoad {
                             " modified " + retVal + " rows, not one.");
                 }
 
-                printLoadProgress(count, "rating");
+                printLoadProgress(count, "algo_rating");
             }
 
             log.info("Rating records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'rating' table failed on coder " + coder_id + " .\n" +
+            throw new Exception("Load of 'algo_rating' table failed " + coder_id + " .\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
             close(psSel);
             close(psSel2);
+            close(psIns);
+            close(psDel);
+        }
+    }
+
+    /**
+     * Load the season_algo_rating table in DW.
+     * This is based in the table of the samen name in transactional, but has some additional information for
+     * highest and lowest rating, first and last round rated and number of competitions.
+     * The number of competitions is counted from room_results.
+     * The other fields are the result of checking whether the previous values in the table in DW are smaller/bigger
+     * than the values being inserted.
+     * For example, if there is already a row for the coder in the season with highest rating = 2000 but the current 
+     * rating is 2100, the highest rating will be replaced. 
+     */
+    private void loadSeasonRating() throws Exception {
+        int count = 0;
+        int retVal = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psSel2 = null;
+        PreparedStatement psSelNumCompetitions = null;
+        PreparedStatement psIns = null;
+        PreparedStatement psDel = null;
+        ResultSet rs = null;
+        ResultSet rs2 = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT r.coder_id ");           // 1
+            query.append("       ,r.rating ");            // 2
+            query.append("       ,r.num_ratings ");       // 3
+            query.append("       ,r.vol ");               // 4
+            query.append("       ,r.season_id ");         // 5
+            query.append("       ,r.round_id ");          // 6
+            query.append("  FROM season_algo_rating r ");
+            query.append("  WHERE r.modify_date > ? ");
+            query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = r.coder_id AND gu.group_id = 10)");
+            query.append("   AND NOT EXISTS ");
+            query.append("       (SELECT 'pops' ");
+            query.append("          FROM group_user gu ");
+            query.append("         WHERE gu.user_id = r.coder_id ");
+            query.append("           AND gu.group_id = 13)");
+            query.append("   AND NOT EXISTS ");
+            query.append("       (SELECT 'pops' ");
+            query.append("          FROM group_user gu ");
+            query.append("         WHERE gu.user_id = r.coder_id ");
+            query.append("           AND gu.group_id = 14)");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT first_rated_round_id ");  // 1
+            query.append("       ,last_rated_round_id ");  // 2
+            query.append("       ,lowest_rating ");        // 3
+            query.append("       ,highest_rating ");       // 4
+            query.append("  FROM season_algo_rating "); 
+            query.append(" WHERE coder_id = ?");
+            query.append(" AND season_id  = ?");
+            psSel2 = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO season_algo_rating ");
+            query.append("      (coder_id ");               // 1
+            query.append("       ,season_id ");             // 2
+            query.append("       ,rating ");                // 3
+            query.append("       ,vol ");                   // 4
+            query.append("       ,num_ratings ");           // 5
+            query.append("       ,num_competitions ");      // 6
+            query.append("       ,highest_rating ");        // 7
+            query.append("       ,lowest_rating ");         // 8
+            query.append("       ,first_rated_round_id ");  // 9
+            query.append("       ,last_rated_round_id) ");   // 10
+            query.append("VALUES (");
+            query.append("?,?,?,?,?,?,?,?,?,?)");  // 10 values
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT count(*) ");     // 1
+            query.append("  FROM room_result rr ");
+            query.append("       ,round r ");
+            query.append("       ,contest c ");
+            query.append(" WHERE r.round_id = rr.round_id ");
+            query.append("   AND r.contest_id = c.contest_id ");
+            query.append("   AND rr.attended = 'Y' ");
+            query.append("   AND rr.coder_id = ? ");
+            query.append("   AND c.season_id = ? ");
+            psSelNumCompetitions = prepareStatement(query.toString(), TARGET_DB);
+
+            
+            query = new StringBuffer(100);
+            query.append("DELETE FROM season_algo_rating where coder_id = ? ");
+            query.append(" AND season_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            psSel.setTimestamp(1, fLastLogTime);
+            rs = executeQuery(psSel, "loadRating");
+
+            while (rs.next()) {
+                int coder_id = rs.getInt(1);
+                int rating = rs.getInt(2);
+                int num_ratings = rs.getInt(3);
+                int vol = rs.getInt(4);
+                int season_id = rs.getInt(5);
+                int round_id = rs.getInt(6);
+
+                int num_competitions = 0;
+
+                
+                //use by default the loaded round id and rating, so that if there aren't other rounds, that round is the first and last
+                // and the rating is the lowest and highest.
+                int first_rated_round_id = round_id;
+                int last_rated_round_id = round_id;
+                int lowest_rating = rating;
+                int highest_rating = rating;
+
+                psSel2.clearParameters();
+                psSel2.setInt(1, coder_id);
+                psSel2.setInt(2, season_id);
+                rs2 = psSel2.executeQuery();
+                
+                // if there was already a row for that coder in the season, check the min and max for round date and rating
+                if (rs2.next()) {
+                    if (rs2.getString(1) != null) {                        
+                        first_rated_round_id = rs2.getInt(1);
+                    }
+                    
+                    if (rs2.getString(2) != null)
+                    {
+                        last_rated_round_id = rs2.getInt(2);
+                    }
+                    lowest_rating = Math.min(rs2.getInt(3), rating);
+                    highest_rating = Math.max(rs2.getInt(4), rating);
+
+                    if (getRoundStart(round_id).compareTo(getRoundStart(first_rated_round_id)) < 0)
+                        first_rated_round_id = round_id;
+
+                    if (getRoundStart(round_id).compareTo(getRoundStart(last_rated_round_id)) > 0)
+                        last_rated_round_id = round_id;
+
+                    
+                    // clear the row
+                    psDel.clearParameters();
+                    psDel.setInt(1, coder_id);
+                    psDel.setInt(2, season_id);
+                    psDel.executeUpdate();
+                }
+
+                close(rs2);
+
+                // Get the number of competitions
+                psSelNumCompetitions.clearParameters();
+                psSelNumCompetitions.setInt(1, coder_id);
+                psSelNumCompetitions.setInt(2, season_id);
+                rs2 = psSelNumCompetitions.executeQuery();
+                if (rs2.next()) {
+                    num_competitions = rs2.getInt(1);
+                }
+
+                close(rs2);
+
+                psIns.clearParameters();
+                psIns.setInt(1, coder_id);  
+                psIns.setInt(2, season_id); 
+                psIns.setInt(3, rating);
+                psIns.setInt(4, vol);
+                psIns.setInt(5, num_ratings);
+                psIns.setInt(6, num_competitions);
+                psIns.setInt(7, highest_rating);
+                psIns.setInt(8, lowest_rating);
+                psIns.setInt(9, first_rated_round_id);
+                psIns.setInt(10, last_rated_round_id);
+                
+                retVal = psIns.executeUpdate();
+                count = count + retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadCoders: Insert for coder_id " +
+                            coder_id +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                printLoadProgress(count, "season_algo_rating");
+            }
+
+            log.info("Season Rating records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_algo_rating' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psSel2);
+            close(psSelNumCompetitions);
             close(psIns);
             close(psDel);
         }
@@ -1404,9 +1609,7 @@ public class TCLoadCoders extends TCLoad {
         try {
             query = new StringBuffer(100);
             query.append("SELECT cs.coder_id ");
-            query.append(" ,cs.school_name ");
             query.append(" ,cs.school_id ");
-            query.append(" ,cs.degree_number ");
             query.append(" ,cs.gpa");
             query.append(" ,cs.gpa_scale");
             query.append(" ,cs.viewable");
@@ -1418,18 +1621,16 @@ public class TCLoadCoders extends TCLoad {
             query = new StringBuffer(100);
             query.append("INSERT INTO current_school ");
             query.append(" (coder_id ");
-            query.append(" ,school_name ");
             query.append(" ,school_id ");
-            query.append(" ,degree_number ");
             query.append(" ,gpa ");
             query.append(" ,gpa_scale ");
             query.append(" ,viewable) ");
             query.append("VALUES (");
-            query.append("?,?,?,?,?,?,?)");
+            query.append("?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append(" UPDATE current_school SET school_name = ?, school_id = ?, degree_number = ?, gpa=?, gpa_scale=?,viewable=? WHERE coder_id = ?");
+            query.append(" UPDATE current_school SET  school_id = ?, gpa=?, gpa_scale=?,viewable=? WHERE coder_id = ?");
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             rs = executeQuery(psSel, "loadCurrentSchool");
@@ -1439,22 +1640,18 @@ public class TCLoadCoders extends TCLoad {
 
                 try {
                     psIns.setInt(1, coder_id);
-                    psIns.setString(2, rs.getString("school_name"));
-                    psIns.setString(3, rs.getString("school_id"));
-                    psIns.setString(4, rs.getString("degree_number"));
-                    psIns.setFloat(5, rs.getFloat("gpa"));
-                    psIns.setFloat(6, rs.getFloat("gpa_scale"));
-                    psIns.setInt(7, rs.getInt("viewable"));
+                    psIns.setString(2, rs.getString("school_id"));
+                    psIns.setFloat(3, rs.getFloat("gpa"));
+                    psIns.setFloat(4, rs.getFloat("gpa_scale"));
+                    psIns.setInt(5, rs.getInt("viewable"));
                     retVal = psIns.executeUpdate();
                 } catch (Exception e) {
                     // the insert failed, so try an update
-                    psUpd.setString(1, rs.getString("school_name"));
-                    psUpd.setString(2, rs.getString("school_id"));
-                    psUpd.setString(3, rs.getString("degree_number"));
-                    psUpd.setInt(4, rs.getInt("gpa"));
-                    psUpd.setFloat(5, rs.getFloat("gpa_scale"));
-                    psUpd.setFloat(6, rs.getFloat("viewable"));
-                    psUpd.setInt(7, coder_id);
+                    psUpd.setString(1, rs.getString("school_id"));
+                    psUpd.setInt(2, rs.getInt("gpa"));
+                    psUpd.setFloat(3, rs.getFloat("gpa_scale"));
+                    psUpd.setFloat(4, rs.getFloat("viewable"));
+                    psUpd.setInt(5, coder_id);
                     retVal = psUpd.executeUpdate();
                 }
 
@@ -1548,6 +1745,128 @@ public class TCLoadCoders extends TCLoad {
         }
     }
 
+    private void loadTeam() throws Exception {
+        int count = 0;
+        int retVal = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        PreparedStatement psUpd = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT team_id ");
+            query.append(" ,team_name ");
+            query.append(" ,team_type ");
+            query.append(" ,school_id ");            
+            query.append(" FROM team ");
+            query.append(" WHERE modify_date > ?");
+            query.append(" AND team_type = 4 "); // for the moment, just load HS teams
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel.setTimestamp(1, fLastLogTime);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO team ");
+            query.append(" (name ");
+            query.append(" ,team_type ");
+            query.append(" ,school_id ");
+            query.append(" ,team_id) ");
+            query.append("VALUES (");
+            query.append("?,?,?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append(" UPDATE team SET name = ?, team_type = ?, school_id=? WHERE team_id = ?");
+            psUpd = prepareStatement(query.toString(), TARGET_DB);
+
+            rs = executeQuery(psSel, "loadTeam");
+
+            while (rs.next()) {
+                try {
+                    psIns.setString(1, rs.getString("team_name"));
+                    psIns.setInt(2, rs.getInt("team_type"));
+                    psIns.setInt(3, rs.getInt("school_id"));
+                    psIns.setInt(4, rs.getInt("team_id"));
+                    retVal = psIns.executeUpdate();
+                } catch (Exception e) {
+                    // the insert failed, so try an update
+                    psUpd.setString(1, rs.getString("team_name"));
+                    psUpd.setInt(2, rs.getInt("team_type"));
+                    psUpd.setInt(3, rs.getInt("school_id"));
+                    psUpd.setInt(4, rs.getInt("team_id"));
+                    retVal = psUpd.executeUpdate();
+                }
+
+
+                count = count + retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadCoder: Load team for " + rs.getInt("team_id") +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                printLoadProgress(count, "team");
+            }
+
+            log.info("team records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'team' table failed.\n" +
+                    sqle.getMessage());
+        }
+    }
+
+    private void loadTeamCoderXref() throws Exception {
+        int count = 0;
+        int retVal = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT tc.team_id ");
+            query.append(" ,tc.coder_id ");
+            query.append(" FROM team_coder_xref tc, team t");
+            query.append(" WHERE tc.team_id = t.team_id ");
+            query.append(" AND t.team_type = 4 ");
+            query.append(" AND create_date > ?");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel.setTimestamp(1, fLastLogTime);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO team_coder_xref ");
+            query.append(" (team_id ");
+            query.append(" ,coder_id) ");
+            query.append("VALUES (");
+            query.append("?,?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            rs = executeQuery(psSel, "loadTeamCoderXref");
+
+            while (rs.next()) {
+                try {
+                    psIns.setInt(1, rs.getInt("team_id"));
+                    psIns.setInt(2, rs.getInt("coder_id"));
+                    retVal = psIns.executeUpdate();
+                    count = count + retVal;
+                }  catch (Exception e) {
+                    // if the row already exists, there's no need to update it because the PK is the entire row                      
+                }
+
+                
+
+                printLoadProgress(count, "team_coder_xref");
+            }
+
+            log.info("team_coder_xref records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'team_coder_xref' table failed.\n" +
+                    sqle.getMessage());
+        }
+    }
 
     private void setLastUpdateTime() throws Exception {
         PreparedStatement psUpd = null;
@@ -1581,4 +1900,33 @@ public class TCLoadCoders extends TCLoad {
             close(psUpd);
         }
     }
+    
+    private java.sql.Date getRoundStart(int roundId)  throws SQLException 
+    {
+        Integer iRoundId = new Integer(roundId);
+        StringBuffer query = null;
+        if (fRoundStartHT.get(iRoundId) != null)
+            return (java.sql.Date) fRoundStartHT.get(iRoundId);
+        
+        query = new StringBuffer(100);
+        query.append("SELECT rs.start_time ");
+        query.append("  FROM round_segment rs ");
+        query.append(" WHERE rs.round_id = ? ");
+        query.append("   AND rs.segment_id = " + CODING_SEGMENT_ID);
+        PreparedStatement pSel = prepareStatement(query.toString(), SOURCE_DB);
+        
+        pSel.setInt(1, roundId);
+        ResultSet rs = pSel.executeQuery();
+        
+        if (rs.next()) {
+            java.sql.Date date = rs.getDate(1);
+            fRoundStartHT.put(new Integer(roundId), date);
+            return date;
+        } else {
+            throw new SQLException("Unable to determine start for " + roundId);
+        }
+    }
+    
+    
+    
 }

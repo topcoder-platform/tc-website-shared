@@ -15,6 +15,7 @@ package com.topcoder.shared.util.dwload;
  * <li>coder_level</li>
  * <li>streak</li>
  * <li>round_problem</li>
+ * <li>team_round</li>
  * </ul>
  *
  * @author Christopher Hopkins [TCid: darkstalker] (chrism_hopkins@yahoo.com)
@@ -192,11 +193,14 @@ public class TCLoadAggregate extends TCLoad {
             loadProblemLanguage();
 
             loadCoderProblem();
-
+            
+            loadTeamRound();
+            
             //if running for an old round, the rating history load can not be run
             //don't forget to remove it from the clear round method as well.
             loadRatingHistory();
-
+            
+            
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
@@ -2091,6 +2095,178 @@ public class TCLoadAggregate extends TCLoad {
             close(rs);
             close(psSel);
             close(psUpd);
+        }
+    }
+
+    /**
+     * This method loads the 'team_round' table
+     */
+    private void loadTeamRound() throws Exception {
+        int retVal = 0;
+        int count = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        PreparedStatement psDel = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT round_id ");                              // 1
+            query.append("       ,team_id ");                              // 2
+            query.append("       ,SUM(problems_presented) ");              // 3
+            query.append("       ,SUM(problems_opened) ");                 // 4
+            query.append("       ,SUM(problems_submitted) ");              // 5
+            query.append("       ,SUM(problems_correct) ");                // 6
+            query.append("       ,SUM(problems_failed_by_challenge) ");    // 7
+            query.append("       ,SUM(problems_failed_by_system_test) ");  // 8
+            query.append("       ,SUM(problems_left_open) ");              // 9
+            query.append("       ,SUM(challenge_attempts_made) ");         // 10
+            query.append("       ,SUM(challenges_made_successful) ");      // 11
+            query.append("       ,SUM(challenges_made_failed) ");          // 12
+            query.append("       ,SUM(challenge_attempts_received) ");     // 13
+            query.append("       ,SUM(challenges_received_successful) ");  // 14
+            query.append("       ,SUM(challenges_received_failed) ");      // 15
+            query.append("       ,SUM(submission_points) ");               // 16
+            query.append("       ,SUM(challenge_points) ");                // 17
+            query.append("       ,SUM(system_test_points) ");              // 18
+            query.append("       ,SUM(final_points) ");                    // 19
+            query.append("       ,SUM(defense_points) ");                  // 20
+            query.append("       ,AVG(final_points) ");                    // 21
+            query.append("       ,STDEV(final_points) ");                  // 22
+            query.append("       ,COUNT(coder_id) ");                      // 23
+            query.append("       ,SUM(team_points) team_points");          // 24
+            query.append("  FROM room_result ");
+            query.append("  WHERE team_id is not null ");   
+            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
+                query.append(" AND round_id = " + fRoundId);
+            }
+            query.append(" GROUP BY round_id ");
+            query.append("          ,team_id");
+            query.append(" ORDER BY round_id, team_points ");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+          
+            
+            query = new StringBuffer(100);
+            query.append("INSERT INTO team_round ");
+            query.append("      (round_id ");                         // 1
+            query.append("       ,team_id ");                         // 2
+            query.append("       ,problems_presented ");              // 3
+            query.append("       ,problems_opened ");                 // 4
+            query.append("       ,problems_submitted ");              // 5
+            query.append("       ,problems_correct ");                // 6
+            query.append("       ,problems_failed_by_challenge ");    // 7
+            query.append("       ,problems_failed_by_system_test ");  // 8
+            query.append("       ,problems_left_open ");              // 9
+            query.append("       ,challenge_attempts_made ");         // 10
+            query.append("       ,challenges_made_successful ");      // 11
+            query.append("       ,challenges_made_failed ");          // 12
+            query.append("       ,challenge_attempts_received ");     // 13
+            query.append("       ,challenges_received_successful ");  // 14
+            query.append("       ,challenges_received_failed ");      // 15
+            query.append("       ,submission_points ");               // 16
+            query.append("       ,challenge_points ");                // 17
+            query.append("       ,system_test_points ");              // 18
+            query.append("       ,final_points ");                    // 19
+            query.append("       ,defense_points  ");                 // 20
+            query.append("       ,average_points ");                  // 21
+            query.append("       ,point_standard_deviation ");        // 22
+            query.append("       ,num_coders ");                      // 23
+            query.append("       ,team_points ");                     // 24
+            query.append("       ,team_placed) ");                     // 25
+            query.append("VALUES (");
+            query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
+            query.append("?,?,?,?,?,?,?,?,?,?,");  // 20 values
+            query.append("?,?,?,?,?)");            // 25 total values
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("DELETE FROM team_round ");
+            query.append(" WHERE round_id = ? ");
+            query.append("   AND team_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            // On to the load
+            rs = psSel.executeQuery();
+            
+            int placed = 1;
+            int placedNoTie = 1;
+            int previousRound = -1;
+            int previousPoints = -1;
+            
+            while (rs.next()) {
+                int round_id = rs.getInt(1);
+                int team_id = rs.getInt(2);
+                int points = rs.getInt(24);
+
+                // when starting with another round, start again with placed
+                if (round_id != previousRound) {
+                    placedNoTie = 1;
+                    previousPoints = -1;
+                }
+                
+                if (previousPoints != points) {
+                    placed = placedNoTie;
+                }
+                
+                previousRound = round_id;
+                previousPoints = points;
+                placedNoTie++;
+                
+                psDel.clearParameters();
+                psDel.setInt(1, round_id);
+                psDel.setInt(2, team_id);
+                psDel.executeUpdate();
+
+                psIns.clearParameters();
+                psIns.setInt(1, rs.getInt(1));  // coder_id
+                psIns.setInt(2, rs.getInt(2));  // division_id
+                psIns.setInt(3, rs.getInt(3));  // problems_presented
+                psIns.setInt(4, rs.getInt(4));  // problems_opened
+                psIns.setInt(5, rs.getInt(5));  // problems_submitted
+                psIns.setInt(6, rs.getInt(6));  // problems_correct
+                psIns.setInt(7, rs.getInt(7));  // prblms_failed_by_systest
+                psIns.setInt(8, rs.getInt(8));  // prblms_failed_by_chlnge
+                psIns.setInt(9, rs.getInt(9));  // problems_left_open
+                psIns.setInt(10, rs.getInt(10));  // challenge_attempts_made
+                psIns.setInt(11, rs.getInt(11));  // chlnges_made_successful
+                psIns.setInt(12, rs.getInt(12));  // chlnges_made_failed
+                psIns.setInt(13, rs.getInt(13));  // chlnge_attempts_received
+                psIns.setInt(14, rs.getInt(14));  // chlnge_recvd_successfl
+                psIns.setInt(15, rs.getInt(15));  // chlnge_recvd_failed
+                psIns.setFloat(16, rs.getFloat(16));  // submission_points
+                psIns.setFloat(17, rs.getFloat(17));  // challenge_points
+                psIns.setFloat(18, rs.getFloat(18));  // system_test_points
+                psIns.setFloat(19, rs.getFloat(19));  // final_points
+                psIns.setFloat(20, rs.getFloat(20));  // defense_points
+                psIns.setFloat(21, rs.getFloat(21));  // average_points
+                psIns.setFloat(22, rs.getFloat(22));  // point_standard_deviation
+                psIns.setInt(23, rs.getInt(24));  // num_coders
+                psIns.setInt(24, rs.getInt(24));  // team_points
+                psIns.setInt(25, placed);  // placed
+                
+                retVal = psIns.executeUpdate();
+                count += retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadAggregate: Insert for " +
+                            "round " + round_id +
+                            ", team_id " + team_id +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                printLoadProgress(count, "team_round");
+            }
+
+            log.info("Records loaded for team_round: " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'team_round' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psIns);
+            close(psDel);
         }
     }
 
