@@ -352,7 +352,7 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,e.address ");                  // 19
             query.append("       ,(SELECT rs.region_code ");     // 20
             query.append("           FROM region_state rs ");
-            query.append("          WHERE c.state_code = rs.state_code ");
+            query.append("          WHERE a.state_code = rs.state_code ");
             query.append("          AND rs.user_type_id = 3) as region_code");
             query.append("       ,c.comp_country_code");         // 21
             query.append("  FROM coder c ");
