@@ -369,7 +369,6 @@ public class TCLoadCoders extends TCLoad {
             query.append("   and p.primary_ind = 1 ");
             query.append("   and x.user_id = u.user_id ");
             query.append("   AND (c.modify_date > ? OR a.modify_date > ? OR e.modify_date > ? OR u.modify_date > ? OR p.modify_date > ?)");
-            query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = u.user_id AND gu.group_id = 10)");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
@@ -804,7 +803,6 @@ public class TCLoadCoders extends TCLoad {
             query.append("      ,skill s ");
             query.append("WHERE cs.skill_id = s.skill_id ");
             query.append("  AND cs.modify_date > ?");
-            query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = cs.coder_id AND gu.group_id = 10)");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
@@ -901,7 +899,6 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,r.algo_rating_type_id "); // 5
             query.append("  FROM algo_rating r ");
             query.append(" WHERE r.modify_date > ? ");
-            query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = r.coder_id AND gu.group_id = 10)");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
@@ -1062,7 +1059,6 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,r.round_id ");          // 6
             query.append("  FROM season_algo_rating r ");
             query.append("  WHERE r.modify_date > ? ");
-            query.append("   AND EXISTS (SELECT 'pops' FROM group_user gu WHERE gu.user_id = r.coder_id AND gu.group_id = 10)");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
