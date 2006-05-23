@@ -409,8 +409,7 @@ public class TCLoadCoders extends TCLoad {
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 20
-            query.append("?,?,?,?,?,?,?,?,?,?,");  // 30
-            query.append("?)");                    // 31 total values
+            query.append("?)");                    // 21 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // Our update statement
@@ -450,6 +449,10 @@ public class TCLoadCoders extends TCLoad {
             // The first thing we do is delete the old record prior to inserting the
             // new record. We don't care if this fails or not.
             psSel.setTimestamp(1, fLastLogTime);
+            psSel.setTimestamp(2, fLastLogTime);
+            psSel.setTimestamp(3, fLastLogTime);
+            psSel.setTimestamp(4, fLastLogTime);
+            psSel.setTimestamp(5, fLastLogTime);
             rs = executeQuery(psSel, "loadCoder");
 
             while (rs.next()) {
