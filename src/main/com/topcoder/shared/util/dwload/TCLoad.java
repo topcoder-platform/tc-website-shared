@@ -440,6 +440,80 @@ public abstract class TCLoad {
                 (System.currentTimeMillis() - start));
         return rs;
     }
+    
+    /**
+     * Gets the type for this round (high school or regular).
+     * 
+     * @param round round to determine its type
+     * @return TC_HS_RATING_TYPE_ID or TC_RATING_TYPE_ID
+     * @throws Exception if the type couldn't be retrieved
+     */
+    protected int getRoundType(int round) throws Exception    {
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+        try {
+            query = new StringBuffer(100);
+            query.append(" SELECT algo_rating_type_id ");
+            query.append("   FROM round r, round_type_lu rt ");
+            query.append("   WHERE r.round_type_id = rt.round_type_id ");
+            query.append("   AND r.round_id = ? ");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            psSel.setInt(1, round);
+            rs = psSel.executeQuery();
+            if (!rs.next()) {
+                throw new Exception("Can't find an entry for round " + round + " in round table");
+            }
+
+            return rs.getInt("algo_rating_type_id");
+            
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Get round type failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+    }
+
+    /**
+     * Gets the Season_id for this round.
+     * 
+     * @param round round to determine its season
+     * @return the season_id for that round, or -1 if it doesn't belong to any season
+     * @throws Exception if the type couldn't be retrieved
+     */
+    protected int getSeasonId(int round) throws Exception    {
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+        try {
+            query = new StringBuffer(100);
+            query.append(" SELECT c.season_id ");
+            query.append(" FROM round r, contest c ");
+            query.append(" WHERE c.contest_id = r.contest_id ");
+            query.append(" AND r.round_id = ? ");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            psSel.setInt(1, round);
+            rs = psSel.executeQuery();
+            if (!rs.next()) {
+                return -1;
+            }
+
+            return rs.getString(1) == null? -1 : rs.getInt(1);
+            
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("getSeasonId failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+    }
 
     // PRIVATE METHODS
 
@@ -452,4 +526,6 @@ public abstract class TCLoad {
             return false;
         return true;
     }
+    
+    
 }
