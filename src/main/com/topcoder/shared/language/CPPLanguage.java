@@ -15,5 +15,9 @@ public class CPPLanguage
     {
         super(ID, DESCRIPTION);
     }
+    
+    public String getDefaultExtension() {
+        return "c";
+    }
 }
 

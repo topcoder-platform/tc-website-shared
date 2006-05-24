@@ -15,5 +15,9 @@ public class JavaLanguage
     {
         super(ID, DESCRIPTION);
     }
+    
+    public String getDefaultExtension() {
+        return "java";
+    }
 }
 

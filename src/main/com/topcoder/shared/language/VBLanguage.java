@@ -61,5 +61,8 @@ public class VBLanguage extends CStyleLanguage {
         buf.append(returns);
         return buf.toString();
     }
-
+    
+    public String getDefaultExtension() {
+        return "vb";
+    }
 }

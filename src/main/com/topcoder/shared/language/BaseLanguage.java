@@ -1,12 +1,11 @@
 package com.topcoder.shared.language;
 
-import com.topcoder.shared.problem.DataType;
+import java.io.IOException;
+import java.io.ObjectStreamException;
 
-import com.topcoder.shared.netCommon.CustomSerializable;
 import com.topcoder.shared.netCommon.CSReader;
 import com.topcoder.shared.netCommon.CSWriter;
-
-import java.io.*;
+import com.topcoder.shared.problem.DataType;
 
 
 /**
@@ -82,6 +81,10 @@ abstract public class BaseLanguage
                 return VBLanguage.VB_LANGUAGE;
             default: throw new IllegalArgumentException("Invalid language: " + typeID);
         }
+    }
+    
+    public String getDefaultExtension() {
+        return null;
     }
 }
 
