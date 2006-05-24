@@ -15,5 +15,9 @@ public class CSharpLanguage
     {
         super(ID, DESCRIPTION);
     }
+    
+    public String getDefaultExtension() {
+        return "cs";
+    }
 }
 
