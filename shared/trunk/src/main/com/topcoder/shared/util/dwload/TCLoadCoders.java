@@ -336,39 +336,35 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,a.country_code ");             // 3
             query.append("       ,u.first_name ");               // 4
             query.append("       ,u.last_name ");                // 5
-            query.append("       ,p.phone_number ");             // 6
-            query.append("       ,a.address1 ");                 // 7
-            query.append("       ,a.address2 ");                 // 8
-            query.append("       ,a.city ");                     // 9
-            query.append("       ,a.zip ");                      // 10
-            query.append("       ,u.middle_name ");              // 11
-            query.append("       ,u.activation_code ");          // 12
-            query.append("       ,c.member_since ");             // 13
-            query.append("       ,c.quote ");                    // 14
-            query.append("       ,c.language_id ");              // 15
-            query.append("       ,c.coder_type_id ");            // 16
-            query.append("       ,u.handle ");                   // 17
-            query.append("       ,u.status ");                   // 18
-            query.append("       ,e.address ");                  // 19
-            query.append("       ,(SELECT rs.region_code ");     // 20
+            query.append("       ,a.address1 ");                 // 6
+            query.append("       ,a.address2 ");                 // 7
+            query.append("       ,a.city ");                     // 8
+            query.append("       ,a.zip ");                      // 9
+            query.append("       ,u.middle_name ");              // 10
+            query.append("       ,u.activation_code ");          // 11
+            query.append("       ,c.member_since ");             // 12
+            query.append("       ,c.quote ");                    // 13
+            query.append("       ,c.language_id ");              // 14
+            query.append("       ,c.coder_type_id ");            // 15
+            query.append("       ,u.handle ");                   // 16
+            query.append("       ,u.status ");                   // 17
+            query.append("       ,e.address ");                  // 18
+            query.append("       ,(SELECT rs.region_code ");     // 19
             query.append("           FROM region_state rs ");
             query.append("          WHERE a.state_code = rs.state_code ");
             query.append("          AND rs.user_type_id = 3) as region_code");
-            query.append("       ,c.comp_country_code");         // 21
+            query.append("       ,c.comp_country_code");         // 20
             query.append("  FROM coder c ");
             query.append("       ,user u ");
             query.append("       ,email e ");
             query.append("       ,user_address_xref x ");
             query.append("       ,address a ");
-            query.append("       , phone p ");
             query.append(" WHERE c.coder_id = u.user_id ");
             query.append("   AND c.coder_id = e.user_id ");
             query.append("   and a.address_id = x.address_id ");
             query.append("   and a.address_type_id = 2 ");
-            query.append("   and p.user_id = u.user_id ");
-            query.append("   and p.primary_ind = 1 ");
             query.append("   and x.user_id = u.user_id ");
-            query.append("   AND (c.modify_date > ? OR a.modify_date > ? OR e.modify_date > ? OR u.modify_date > ? OR p.modify_date > ?)");
+            query.append("   AND (c.modify_date > ? OR a.modify_date > ? OR e.modify_date > ? OR u.modify_date > ?)");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
@@ -389,26 +385,24 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,country_code ");              // 3
             query.append("       ,first_name ");                // 4
             query.append("       ,last_name ");                 // 5
-            query.append("       ,home_phone ");                // 6
-            query.append("       ,address1 ");                  // 7
-            query.append("       ,address2 ");                  // 8
-            query.append("       ,city ");                      // 9
-            query.append("       ,zip ");                       // 10
-            query.append("       ,middle_name ");               // 11
-            query.append("       ,activation_code ");           // 12
-            query.append("       ,member_since ");              // 13
-            query.append("       ,quote ");                     // 14
-            query.append("       ,language_id ");               // 15
-            query.append("       ,coder_type_id ");             // 16
-            query.append("       ,handle ");                    // 17
-            query.append("       ,status ");                    // 18
-            query.append("       ,email ");                     // 19
-            query.append("       ,coder_region_code ");         // 20
-            query.append("       ,comp_country_code) ");         // 21
+            query.append("       ,address1 ");                  // 6
+            query.append("       ,address2 ");                  // 7
+            query.append("       ,city ");                      // 8
+            query.append("       ,zip ");                       // 9
+            query.append("       ,middle_name ");               // 10
+            query.append("       ,activation_code ");           // 11
+            query.append("       ,member_since ");              // 12
+            query.append("       ,quote ");                     // 13
+            query.append("       ,language_id ");               // 14
+            query.append("       ,coder_type_id ");             // 15
+            query.append("       ,handle ");                    // 16
+            query.append("       ,status ");                    // 17
+            query.append("       ,email ");                     // 18
+            query.append("       ,coder_region_code ");         // 19
+            query.append("       ,comp_country_code) ");         // 20
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
-            query.append("?,?,?,?,?,?,?,?,?,?,");  // 20
-            query.append("?)");                    // 21 total values
+            query.append("?,?,?,?,?,?,?,?,?,?)");  // 20
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // Our update statement
@@ -418,23 +412,22 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,country_code = ? ");              // 2
             query.append("       ,first_name = ? ");                // 3
             query.append("       ,last_name = ? ");                 // 4
-            query.append("       ,home_phone = ? ");                // 5
-            query.append("       ,address1 = ? ");                  // 6
-            query.append("       ,address2 = ? ");                  // 7
-            query.append("       ,city = ? ");                      // 8
-            query.append("       ,zip = ? ");                       // 9
-            query.append("       ,middle_name = ? ");               // 10
-            query.append("       ,activation_code = ? ");           // 11
-            query.append("       ,member_since = ? ");              // 12
-            query.append("       ,quote = ? ");                     // 13
-            query.append("       ,language_id = ? ");               // 14
-            query.append("       ,coder_type_id = ? ");             // 15
-            query.append("       ,handle = ? ");                    // 16
-            query.append("       ,status = ? ");                    // 17
-            query.append("       ,email = ? ");                     // 18
-            query.append("       ,coder_region_code = ? ");         // 19
-            query.append("       ,comp_country_code = ?");          // 20
-            query.append("WHERE coder_id = ?");                     // 21
+            query.append("       ,address1 = ? ");                  // 5
+            query.append("       ,address2 = ? ");                  // 6
+            query.append("       ,city = ? ");                      // 7
+            query.append("       ,zip = ? ");                       // 8
+            query.append("       ,middle_name = ? ");               // 9
+            query.append("       ,activation_code = ? ");           // 10
+            query.append("       ,member_since = ? ");              // 11
+            query.append("       ,quote = ? ");                     // 12
+            query.append("       ,language_id = ? ");               // 13
+            query.append("       ,coder_type_id = ? ");             // 14
+            query.append("       ,handle = ? ");                    // 15
+            query.append("       ,status = ? ");                    // 16
+            query.append("       ,email = ? ");                     // 17
+            query.append("       ,coder_region_code = ? ");         // 18
+            query.append("       ,comp_country_code = ?");          // 19
+            query.append("WHERE coder_id = ?");                     // 20
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             // Our select statement to determine if a particular row is
@@ -469,23 +462,22 @@ public class TCLoadCoders extends TCLoad {
                     psUpd.setString(2, rs.getString("country_code"));
                     psUpd.setString(3, rs.getString("first_name"));
                     psUpd.setString(4, rs.getString("last_name"));
-                    psUpd.setString(5, rs.getString("phone_number"));
-                    psUpd.setString(6, rs.getString("address1"));
-                    psUpd.setString(7, rs.getString("address2"));
-                    psUpd.setString(8, rs.getString("city"));
-                    psUpd.setString(9, rs.getString("zip"));
-                    psUpd.setString(10, rs.getString("middle_name"));
-                    psUpd.setString(11, rs.getString("activation_code"));
-                    psUpd.setTimestamp(12, rs.getTimestamp("member_since"));
-                    psUpd.setString(13, rs.getString("quote"));
-                    psUpd.setInt(14, rs.getInt("language_id"));
-                    psUpd.setInt(15, rs.getInt("coder_type_id"));
-                    psUpd.setString(16, rs.getString("handle"));
-                    psUpd.setString(17, rs.getString("status"));
-                    psUpd.setString(18, rs.getString("address"));
-                    psUpd.setString(19, rs.getString("region_code"));
-                    psUpd.setString(20, rs.getString("comp_country_code"));
-                    psUpd.setLong(21, coder_id);
+                    psUpd.setString(5, rs.getString("address1"));
+                    psUpd.setString(6, rs.getString("address2"));
+                    psUpd.setString(7, rs.getString("city"));
+                    psUpd.setString(8, rs.getString("zip"));
+                    psUpd.setString(9, rs.getString("middle_name"));
+                    psUpd.setString(10, rs.getString("activation_code"));
+                    psUpd.setTimestamp(11, rs.getTimestamp("member_since"));
+                    psUpd.setString(12, rs.getString("quote"));
+                    psUpd.setInt(13, rs.getInt("language_id"));
+                    psUpd.setInt(14, rs.getInt("coder_type_id"));
+                    psUpd.setString(15, rs.getString("handle"));
+                    psUpd.setString(16, rs.getString("status"));
+                    psUpd.setString(17, rs.getString("address"));
+                    psUpd.setString(18, rs.getString("region_code"));
+                    psUpd.setString(19, rs.getString("comp_country_code"));
+                    psUpd.setLong(20, coder_id);
 
                     // Now, execute the insert of the new row
                     retVal = psUpd.executeUpdate();
@@ -498,26 +490,25 @@ public class TCLoadCoders extends TCLoad {
                 } else {
                     psIns.clearParameters();
                     psIns.setInt(1, coder_id);
-                    psIns.setString(2, rs.getString("state_code"));   // state_code
-                    psIns.setString(3, rs.getString("country_code"));   // country_code
-                    psIns.setString(4, rs.getString("first_name"));   // first_name
-                    psIns.setString(5, rs.getString("last_name"));   // last_name
-                    psIns.setString(6, rs.getString("phone_number"));   // home_phone
-                    psIns.setString(7, rs.getString("address1"));   // address1
-                    psIns.setString(8, rs.getString("address2"));   // address2
-                    psIns.setString(9, rs.getString("city"));  // city
-                    psIns.setString(10, rs.getString("zip"));  // zip
-                    psIns.setString(11, rs.getString("middle_name"));  // middle_name
-                    psIns.setString(12, rs.getString("activation_code"));  // activation_code
-                    psIns.setTimestamp(13, rs.getTimestamp("member_since"));  // member_since
-                    psIns.setString(14, rs.getString("quote"));  // quote
-                    psIns.setInt(15, rs.getInt("language_id"));  // language_id
-                    psIns.setInt(16, rs.getInt("coder_type_id"));  // coder_type_id
-                    psIns.setString(17, rs.getString("handle"));  // handle
-                    psIns.setString(18, rs.getString("status"));  // status
-                    psIns.setString(19, rs.getString("address"));  // email
-                    psIns.setString(20, rs.getString("region_code"));  // coder_region_code
-                    psIns.setString(21, rs.getString("comp_country_code"));//comp_country_code
+                    psIns.setString(2, rs.getString("state_code"));
+                    psIns.setString(3, rs.getString("country_code"));
+                    psIns.setString(4, rs.getString("first_name"));
+                    psIns.setString(5, rs.getString("last_name"));
+                    psIns.setString(6, rs.getString("address1"));
+                    psIns.setString(7, rs.getString("address2"));
+                    psIns.setString(8, rs.getString("city"));
+                    psIns.setString(9, rs.getString("zip"));
+                    psIns.setString(10, rs.getString("middle_name"));
+                    psIns.setString(11, rs.getString("activation_code"));
+                    psIns.setTimestamp(12, rs.getTimestamp("member_since"));
+                    psIns.setString(13, rs.getString("quote"));
+                    psIns.setInt(14, rs.getInt("language_id"));
+                    psIns.setInt(15, rs.getInt("coder_type_id"));
+                    psIns.setString(16, rs.getString("handle"));
+                    psIns.setString(17, rs.getString("status"));
+                    psIns.setString(18, rs.getString("address"));
+                    psIns.setString(19, rs.getString("region_code"));
+                    psIns.setString(20, rs.getString("comp_country_code"));
 
                     // Now, execute the insert of the new row
                     retVal = psIns.executeUpdate();
