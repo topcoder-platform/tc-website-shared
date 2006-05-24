@@ -444,7 +444,6 @@ public class TCLoadCoders extends TCLoad {
             psSel.setTimestamp(2, fLastLogTime);
             psSel.setTimestamp(3, fLastLogTime);
             psSel.setTimestamp(4, fLastLogTime);
-            psSel.setTimestamp(5, fLastLogTime);
             rs = executeQuery(psSel, "loadCoder");
 
             while (rs.next()) {
