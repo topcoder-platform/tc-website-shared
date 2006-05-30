@@ -1,11 +1,7 @@
-package com.topcoder.shared.util.dwload;
-
-/**
- * TCLoadTCS.java
- *
- * @author rfairfax
- * @version $Revision$
+/*
+ * Copyright (c) 2006 TopCoder, Inc. All rights reserved.
  */
+package com.topcoder.shared.util.dwload;
 
 import com.topcoder.shared.distCache.CacheClient;
 import com.topcoder.shared.distCache.CacheClientFactory;
@@ -15,6 +11,23 @@ import com.topcoder.shared.util.logging.Logger;
 import java.sql.*;
 import java.util.*;
 
+/**
+ * <strong>Purpose</strong>:
+ * Extends from <strong>TCLoad</strong> to load TCS date to the DW.
+ *
+ * Version 1.1.0 Change notes:
+ * <ol>
+ * <li>
+ * Added columns to project, project_result.
+ * </li>
+ * <li>
+ * Added table rookie.
+ * </li>
+ * </ol>
+ *
+ * @author rfairfax, pulky
+ * @version 1.1.0
+ */
 public class TCLoadTCS extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadTCS.class);
 
@@ -25,6 +38,69 @@ public class TCLoadTCS extends TCLoad {
     protected java.sql.Timestamp fLastLogTime = null;
     private int TCS_LOG_TYPE = 4;
 
+    private static final String PROJECT_SELECT =
+            "select distinct project_id from project_result";
+    
+    /**
+     * First cut date for rookies in JDBC date escape format.
+     * @since 1.1.0
+     */
+    private static final String FIRST_CUT_DATE = "2006-5-11";
+        
+    /**
+     * Id of the first season for rookies.
+     * @since 1.1.0
+     */
+    private static final long FIRST_SEASON_ID = 1;
+    
+    /**
+     * Confirmed status.
+     * @since 1.1.0
+     */
+    private static final int CONFIRMED = 1;
+    
+    /**
+     * Passed review threshold for being elegible for the ROTY season..
+     * @since 1.1.0
+     */    
+    private static final int PASSED_REVIEW_THRESHOLD = 6;
+    
+    /**
+     * Potential status.
+     * @since 1.1.0
+     */
+    private static final int POTENTIAL = 0;
+    
+    /**
+     * ID for completed status.
+     * @since 1.1.0
+     */
+    private static final int STATUS_COMPLETED = 4;
+    
+    /**
+     * Max place reworded for placement points.
+     * @since 1.1.0
+     */
+    private static final int MAX_PLACE_REWORDED = 7;
+    
+    /**
+     * Max number of submissions for placement points matrix.
+     * @since 1.1.0
+     */
+    private static final int MAX_NUM_SUBMISSIONS = 7;
+
+    /**
+     * Placement points matrix
+     * @since 1.1.0
+     */
+    private static final int[][] placementPoints = {{500, 325, 270, 250, 245, 240, 235},
+                                                    {  0, 175, 150, 145, 135, 130, 130},
+                                                    {  0,   0,  80,  75,  75,  75,  75},
+                                                    {  0,   0,   0,  30,  30,  30,  30},
+                                                    {  0,   0,   0,   0,  15,  15,  15},
+                                                    {  0,   0,   0,   0,   0,  10,  10},
+                                                    {  0,   0,   0,   0,   0,   0,   5},
+                                                    };
 
     public TCLoadTCS() {
         DEBUG = false;
@@ -67,6 +143,8 @@ public class TCLoadTCS extends TCLoad {
             doLoadProjects();
 
             doLoadProjectResults();
+            
+            doLoadRookies();
 
             doLoadScorecardTemplate();
 
@@ -172,7 +250,9 @@ public class TCLoadTCS extends TCLoad {
                 "coder_all_ratings", "tco05", "coder_dev", "coder_des", "coder_algo",
                 "dd_design", "dd_development", "dd_component", "comp_list", "find_projects", "get_review_scorecard",
                 "get_screening_scorecard", "project_info", "reviewers_for_project", "scorecard_details", "submissions",
-                "comp_contest_details"};
+                "comp_contest_details", "dr_leader_board", "dr_rookie_board", "competition_history", "algo_competition_history", 
+                "dr_current_period", "dr_stages", "dr_seasons"   
+                };
 
         ArrayList list = cc.getKeys();
         for (int i = 0; i < list.size(); i++) {
@@ -530,7 +610,59 @@ public class TCLoadTCS extends TCLoad {
         }
     }
 
-    public void doLoadProjects() throws Exception {
+    /**
+     * <p>
+     * Calculates stage based on a date.
+     * </p>
+     *
+     * @param date The date used to calculate the stage.
+     *
+     * @return the stage ID.
+     * @since 1.1.0
+     */
+    private long calculateStage(java.sql.Date date) throws Exception {
+        PreparedStatement select = null;
+        ResultSet rs = null;
+
+        try {
+            //get data from source DB
+            final String SELECT = "select " +
+                                  "   stage_id " +
+                                  "from " +
+                                  "   stage s, calendar c1, calendar c2 " +
+                                  "where " +
+                                  "   s.start_calendar_id = c1.calendar_id and " +
+                                  "   s.end_calendar_id = c2.calendar_id and " +
+                                  "   c1.date <= DATE(?) and " +
+                                  "   c2.date >= DATE(?)";
+
+            select = prepareStatement(SELECT, TARGET_DB);
+            select.setDate(1, date);
+            select.setDate(2, date);
+
+            rs = select.executeQuery();
+            if (!rs.next()) {
+                throw new Exception("Stage calculation failed for date: " + date.toString() + ". (no stage found)");
+            }
+
+            //log.debug("Date " + date.toString() + " has been assigned stageId = " + rs.getLong("stage_id"));
+            return (rs.getLong("stage_id"));
+            
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Stage calculation failed for date: " + date.toString() + ".\n" + sqle.getMessage());
+        } finally {
+            close(rs);
+            close(select);
+        }
+    }
+    
+    /**
+     * <p>
+     * Load projects to the DW.
+     * </p>
+     */
+     public void doLoadProjects() throws Exception {
         log.info("load projects");
         PreparedStatement select = null;
         PreparedStatement update = null;
@@ -596,19 +728,19 @@ public class TCLoadTCS extends TCLoad {
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
                     "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
-                    "rating_date = ?, num_submissions_passed_review=?, winner_id=? where project_id = ? ";
+                    "rating_date = ?, num_submissions_passed_review=?, winner_id=?, stage_id = ? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
                     "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
-                    "version_text, rating_date, num_submissions_passed_review, winner_id) " +
+                    "version_text, rating_date, num_submissions_passed_review, winner_id, stage_id) " +
                     "values (?, ?, ?, ?, ?, " +
                             "?, ?, ?, ?, ?, " +
                             "?, ?, ?, ?, ?, " +
                             "?, ?, ?, ?, ?, " +
                             "?, ?, ?, ?, ?, " +
-                            "?) ";
+                            "?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
@@ -656,8 +788,20 @@ public class TCLoadTCS extends TCLoad {
                 } else {
                     update.setLong(25, rs.getLong("winner_id"));
                 }
-                update.setLong(26, rs.getLong("project_id"));
-
+                
+                
+                
+                if (rs.getDate("posting_date") == null) {
+                    update.setNull(26, Types.DATE);
+                } else {
+                    try {
+                        update.setLong(26, calculateStage(rs.getDate("posting_date")));
+                    } catch (Exception e) {
+                        update.setNull(26, Types.DATE);                        
+                    }
+                }
+                update.setLong(27, rs.getLong("project_id"));
+                
                 int retVal = update.executeUpdate();
 
                 if (retVal == 0) {
@@ -688,13 +832,20 @@ public class TCLoadTCS extends TCLoad {
                     insert.setString(23, rs.getString("version_text"));
                     insert.setDate(24, rs.getDate("rating_date"));
                     insert.setInt(25, rs.getInt("num_submissions_passed_review"));
-                    if (rs.getString("winner_id")==null) {
+                    if (rs.getString("winner_id") == null) {
                         insert.setNull(26, Types.DECIMAL);
                     } else {
                         insert.setLong(26, rs.getLong("winner_id"));
                     }
-
-
+                    if (rs.getDate("posting_date") == null) {
+                        insert.setNull(27, Types.DATE);
+                    } else {
+                        try {
+                            insert.setLong(27, calculateStage(rs.getDate("posting_date")));
+                        } catch (Exception e) {
+                            insert.setNull(27, Types.DATE);
+                        }
+                    }
                     insert.executeUpdate();
                 }
                 count++;
@@ -714,10 +865,40 @@ public class TCLoadTCS extends TCLoad {
             close(update);
         }
     }
+    
+    /**
+     * <p>
+     * Calculates points awarded based on the defined placementPoints matrix.
+     * </p>
+     *
+     * @param passedReview true if submission passed review
+     * @param placed The submission placement
+     *
+     * @return the points awarded.
+     * @since 1.1.0
+     */
+    private long calculatePointsAwarded(boolean passedReview, int placed, int numSubmissionsPassedReview) {
+        // If not passed review or placed too far, there are no chances of winning points
+        if (numSubmissionsPassedReview == 0 || !passedReview || placed > MAX_PLACE_REWORDED || placed == 0 ) {
+            return 0;
+        }
 
-    private static final String PROJECT_SELECT =
-            "select distinct project_id from project_result";
+        // If there are more submissions, stick to the last points
+        if (numSubmissionsPassedReview > MAX_NUM_SUBMISSIONS) {
+            numSubmissionsPassedReview = MAX_NUM_SUBMISSIONS;
+        }
 
+        //log.debug("passedReviewCount: " + numSubmissionsPassedReview);
+        //log.debug("placed: " + placed);
+        return (placementPoints[placed - 1][numSubmissionsPassedReview - 1]);
+    }
+
+    
+    /**
+     * <p>
+     * Load projects results to the DW.
+     * </p>
+     */
     public void doLoadProjectResults() throws Exception {
         log.info("load project results");
         ResultSet projectResults = null;
@@ -745,8 +926,9 @@ public class TCLoadTCS extends TCLoad {
                 "(select max(pm_review_timestamp) from scorecard where scorecard_type = 2 and is_completed = 1 and submission_id = " +
                 "   (select submission_id from submission s where s.cur_version = 1 and s.project_id = pr.project_id and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) " +
                 " and project_id = pr.project_id and cur_version = 1) as review_completed_timestamp, " +
+                "(select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
                 "pr.payment, pr.old_rating, pr.new_rating, " +
-                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind " +
+                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment " +
                 "from project_result pr, " +
                 "project p, " +
                 "comp_versions cv, " +
@@ -760,12 +942,12 @@ public class TCLoadTCS extends TCLoad {
         final String RESULT_UPDATE =
                 "update project_result set submit_ind = ?, valid_submission_ind = ?, raw_score = ?, final_score = ?, inquire_timestamp = ?, " +
                 "submit_timestamp = ?, review_complete_timestamp = ?, payment = ?, old_rating = ?, new_rating = ?, old_reliability = ?, new_reliability = ?, " +
-                "placed = ?, rating_ind = ?, reliability_ind = ?, passed_review_ind=? where project_id = ? and user_id = ?";
+                "placed = ?, rating_ind = ?, reliability_ind = ?, passed_review_ind = ?, points_awarded = ?, final_points = ?  where project_id = ? and user_id = ?";
 
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
                 " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
-                "reliability_ind,passed_review_ind ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
+                "reliability_ind, passed_review_ind, points_awarded, final_points) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
             long start = System.currentTimeMillis();
@@ -787,6 +969,27 @@ public class TCLoadTCS extends TCLoad {
 
             while (projectResults.next()) {
                 long project_id = projectResults.getLong("project_id");
+                boolean passedReview = false;
+                try {
+                    passedReview = projectResults.getInt("passed_review_ind") == 1 ? true : false;
+                } catch (Exception e) {
+                    // do nothing
+                }
+                
+                int placed = 0;
+                try {
+                    placed = projectResults.getInt("placed");
+                } catch (Exception e) {
+                    // do nothing
+                }
+
+                int numSubmissionsPassedReview = 0;
+                try {
+                    numSubmissionsPassedReview = projectResults.getInt("num_submissions_passed_review");
+                } catch (Exception e) {
+                    // do nothing
+                }
+                    
                 count++;
                 resultUpdate.clearParameters();
 
@@ -807,8 +1010,19 @@ public class TCLoadTCS extends TCLoad {
                 resultUpdate.setObject(14, projectResults.getObject("rating_ind"));
                 resultUpdate.setObject(15, projectResults.getObject("reliability_ind"));
                 resultUpdate.setObject(16, projectResults.getObject("passed_review_ind"));
-                resultUpdate.setLong(17, project_id);
-                resultUpdate.setLong(18, projectResults.getLong("user_id"));
+                
+                long pointsAwarded = 0;
+                if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED) {
+                    pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
+                    resultUpdate.setLong(17, pointsAwarded);
+                    // adjusts final points. point_adjustment could be negative to substracto points.
+                    resultUpdate.setLong(18, pointsAwarded + projectResults.getInt("point_adjustment"));
+                } else {
+                    resultUpdate.setNull(17, Types.DECIMAL);
+                    resultUpdate.setNull(18, Types.DECIMAL);
+                }
+                resultUpdate.setLong(19, project_id);
+                resultUpdate.setLong(20, projectResults.getLong("user_id"));
 
                 //log.debug("before result update");
                 int retVal = resultUpdate.executeUpdate();
@@ -837,6 +1051,13 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
+                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED) {
+                        resultInsert.setLong(19, pointsAwarded);
+                        resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
+                    } else {
+                        resultInsert.setNull(19, Types.DECIMAL);
+                        resultInsert.setNull(20, Types.DECIMAL);
+                    }
                     //log.debug("before result insert");
                     resultInsert.executeUpdate();
                     //log.debug("after result insert");
@@ -859,6 +1080,210 @@ public class TCLoadTCS extends TCLoad {
         }
     }
 
+    /**
+     * <p>
+     * Retrieves the seasons ID's from DB sorted by date.
+     * </p>
+     *
+     * @return a sorted list by date of the seasons ID's.
+     * @since 1.1.0
+     */
+     private List getSeasons() throws Exception {
+        PreparedStatement selectSeasons = null;
+        ResultSet rsSeasons = null;
+        final String SELECT_SEASONS = "select season_id, start_calendar_id from season order by start_calendar_id asc";
+        selectSeasons = prepareStatement(SELECT_SEASONS, TARGET_DB);
+        rsSeasons = selectSeasons.executeQuery();
+        List arrayList = new ArrayList();
+        while (rsSeasons.next()) {
+            arrayList.add(new Long(rsSeasons.getLong("season_id")));
+            // log.info("New season: " + rsSeasons.getLong("season_id"));
+        }
+        return (arrayList);
+    }
+    
+    /**
+     * <p>
+     * Retrieves next season id based on a particular season.
+     * </p>
+     *
+     * @param seasons The seasons list
+     * @param season The season to retrieve the next one
+     *
+     * @return the next season after season.
+     * @since 1.1.0
+     */
+     private long getNextSeason(List seasons, long season) throws Exception {
+        int i = seasons.indexOf(new Long(season));
+        return (((Long)seasons.get(i + 1)).longValue());
+    }    
+    
+    /**
+     * <p>
+     * Load rookies to the DW.
+     * @since 1.1.0
+     * </p>
+     */
+     public void doLoadRookies() throws Exception {
+        log.info("regenerating rookies");
+        PreparedStatement selectEdge = null;
+        PreparedStatement selectUsers = null;
+        PreparedStatement selectSubmissions = null;
+        PreparedStatement delete = null;
+        PreparedStatement insert = null;
+        ResultSet rsEdge = null;
+        ResultSet rsUsers = null;
+        ResultSet rsSubmissions = null;
+
+        List seasons = getSeasons();
+        
+        try {
+            long start = System.currentTimeMillis();
+            
+            final String SELECT_EDGE = "select pr.user_id, p.phase_id, count(*) num_passed_review from project_result pr, project p " +
+                "where pr.project_id = p.project_id and pr.passed_review_ind = 1 and DATE(p.posting_date) <= ? " +
+                "and not exists (select 'rookie_already_inserted' from rookie where " +
+                "user_id = pr.user_id and phase_id = p.phase_id and season_id = ?) " +
+                "group by pr.user_id, p.phase_id having count(*) < " + PASSED_REVIEW_THRESHOLD;
+            
+            // this query will retrieve users and their first season (when can be calculated), discriminating between
+            // development and design.
+            final String SELECT_USERS = "select distinct project_result.user_id, project.phase_id, " +
+                "( " +
+                    "select distinct s.season_id from project p, season s, stage st " +
+                    "where s.season_id = st.season_id and p.stage_id = st.stage_id and  " +
+                    "p.posting_date = ( " +
+                    "	select min(p.posting_date) from project p, project_result pr where   " +
+                    "     	p.project_id = pr.project_id and p.phase_id = project.phase_id and   " +
+                    "    	pr.passed_review_ind = 1 and user_id = project_result.user_id " +
+                    ") " +
+                ") as first_season " +
+                "from project, project_result " +
+                "where project.project_id = project_result.project_id and " +
+                "exists 	(	 " +
+                "	select s.season_id from project p, season s, stage st " +
+                "	where s.season_id = st.season_id and p.stage_id = st.stage_id and  " +
+                "	p.posting_date = ( " +
+                "		select min(p.posting_date) from project p, project_result pr where   " +
+                "		     	p.project_id = pr.project_id and p.phase_id = project.phase_id and   " +
+                "		    	pr.passed_review_ind = 1 and user_id = project_result.user_id " +
+                "	) " +
+                ")";
+        
+            // this query will retrieve the number of passing submissions for a particular user and phase 
+	        // for his first and second season (previously calculated)
+            final String SELECT_SUBMISSIONS = "select st.season_id, count(*) as num_submissions from project_result pr, " +
+                "project p, stage st " +
+                "where passed_review_ind = 1 and pr.project_id = p.project_id and p.stage_id = st.stage_id and " +
+                "user_id = ? and p.phase_id = ? and " +
+                "st.season_id in (?, ?) " +
+                "group by st.season_id " +
+                "order by st.season_id asc";
+
+            final String DELETE = "delete from rookie";
+
+            final String INSERT = "insert into rookie (user_id, season_id, phase_id, confirmed_ind) " +
+                    "values (?, ?, ?, ?) ";
+
+            selectEdge = prepareStatement(SELECT_EDGE, TARGET_DB);
+            selectEdge.setDate(1, java.sql.Date.valueOf(FIRST_CUT_DATE));
+            selectEdge.setLong(2, FIRST_SEASON_ID);            
+            selectUsers = prepareStatement(SELECT_USERS, TARGET_DB);
+            delete = prepareStatement(DELETE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+            selectSubmissions = prepareStatement(SELECT_SUBMISSIONS, TARGET_DB);
+            
+            // the process will delete all rookies and reload them again completly.
+            delete.executeUpdate();
+            
+            // Stationary state: 
+            // - if the user had in his first season more than PASSED_REVIEW_THRESHOLD submissions, 
+            //   he is confirmed for that season.
+            // - Otherwise he is potential for that season and confirmed for the next one.
+            rsUsers = selectUsers.executeQuery();
+            int count = 0;
+            while (rsUsers.next()) {
+                long subFirstSeason = 0;
+                long subSecondSeason = 0;
+                long firstSeason = rsUsers.getLong("first_season");
+                long secondSeason = getNextSeason(seasons, firstSeason);
+                long userId = rsUsers.getLong("user_id");
+                long phaseId = rsUsers.getLong("phase_id");
+
+                // log.info("New rookie: " + userId + "(" + phaseId + ") - " + firstSeason);
+                // log.info("Next season: "  +  secondSeason);
+                
+                selectSubmissions.setLong(1, userId);
+                selectSubmissions.setLong(2, phaseId);
+                selectSubmissions.setLong(3, firstSeason);
+                selectSubmissions.setLong(4, secondSeason);
+                rsSubmissions = selectSubmissions.executeQuery();
+                
+                // this should be always, since if it's the first season, it must have submissions.
+                if (rsSubmissions.next()) {
+                    subFirstSeason = rsSubmissions.getLong("num_submissions");
+                }
+                
+                // if there's no next record, second season has no submissions.
+                if (rsSubmissions.next()) {
+                    subSecondSeason = rsSubmissions.getLong("num_submissions");
+                }
+                
+                // if in his first season, he had more than PASSED_REVIEW_THRESHOLD submissions, he is confirmed for that season.
+                if (subFirstSeason >= PASSED_REVIEW_THRESHOLD) {
+                    insert.setLong(1, userId);
+                    insert.setLong(2, firstSeason);
+                    insert.setLong(3, phaseId);
+                    insert.setInt(4, CONFIRMED);
+                    insert.executeUpdate();
+                    count++;
+                    // log.info("(1) First submissions: "  + subFirstSeason + " - Second submissions: " + subSecondSeason);
+                } else {
+                    // else, he is potential for firstSeason and confirmed for secondSeason
+                    insert.setLong(1, userId);
+                    insert.setLong(2, firstSeason);
+                    insert.setLong(3, phaseId);
+                    insert.setInt(4, POTENTIAL);
+                    insert.executeUpdate();
+                    insert.setLong(2, secondSeason);
+                    insert.setInt(4, CONFIRMED);
+                    insert.executeUpdate();
+                    count+=2;
+                    // log.info("(2) First submissions: "  + subFirstSeason + " - Second submissions: " + subSecondSeason);
+                }
+            }
+
+            // Edge case: First rookies will be those having less than PASSED_REVIEW_THRESHOLD submissions prior to the
+            // FIRST_CUT_DATE.
+            rsEdge = selectEdge.executeQuery();
+            while (rsEdge.next()) {
+                insert.setLong(1, rsEdge.getLong("user_id"));
+                // fixed to the first season
+                insert.setLong(2, FIRST_SEASON_ID);
+                insert.setLong(3, rsEdge.getLong("phase_id"));
+                insert.setInt(4, CONFIRMED);
+
+                insert.executeUpdate();
+                count++;
+            }            
+            
+            log.info("" + count + " records generated in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+            
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Generation of rookie table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rsEdge);
+            close(rsUsers);
+            close(rsSubmissions);
+            close(selectEdge);
+            close(selectUsers);
+            close(selectSubmissions);
+            close(insert);
+            close(delete);
+        }
+    }
 
     public void doLoadSubmissionReview() throws Exception {
         log.info("load submission review");
