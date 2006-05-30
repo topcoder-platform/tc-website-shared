@@ -221,30 +221,24 @@ public class TCLoadAggregate extends TCLoad {
         int retVal = 0;
         PreparedStatement psSel = null;
         PreparedStatement psIns = null;
-        PreparedStatement psDel = null;
         ResultSet rs = null;
         StringBuffer query = null;
+        int algoType = getRoundType(fRoundId);
 
         try {
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
-            query.append(" select coder_id, rating, vol, num_ratings");
-            query.append(" from rating");
+            query.append(" select coder_id, rating, vol, num_ratings, algo_rating_type_id");
+            query.append(" from algo_rating");
             query.append(" where num_ratings > 0");
+            query.append(" and algo_rating_type_id = " + algoType);
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
-            query.append("insert into rating_history (coder_id, round_id, rating, vol, num_ratings)");
-            query.append("values (?,?,?,?,?)");
+            query.append("insert into algo_rating_history (coder_id, round_id, rating, vol, num_ratings, algo_rating_type_id)");
+            query.append("values (?,?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
-
-            query = new StringBuffer(100);
-            query.append("delete from rating_history where round_id = ?");
-            psDel = prepareStatement(query.toString(), TARGET_DB);
-            psDel.setLong(1, fRoundId);
-
-            psDel.executeUpdate();
 
             rs = psSel.executeQuery();
 
@@ -255,6 +249,7 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setInt(3, rs.getInt("rating"));
                 psIns.setInt(4, rs.getInt("vol"));
                 psIns.setInt(5, rs.getInt("num_ratings"));
+                psIns.setInt(6, rs.getInt("algo_rating_type_id"));
 
                 retVal = psIns.executeUpdate();
                 count = count + retVal;
@@ -264,18 +259,17 @@ public class TCLoadAggregate extends TCLoad {
                             " modified " + retVal + " rows, not one.");
                 }
 
-                printLoadProgress(count, "rating_history");
+                printLoadProgress(count, "algo_rating_history");
             }
 
-            log.info("Rating records updated = " + count);
+            log.info("Rating History records updated = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'rating_history' table failed.\n" +
+            throw new Exception("Load of 'algo_rating_history' table failed.\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
             close(psSel);
-            close(psDel);
         }
     }
 
