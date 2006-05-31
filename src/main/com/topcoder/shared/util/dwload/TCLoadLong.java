@@ -336,6 +336,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,stc.expected_result ");  // 4
             query.append("       ,CURRENT ");              // 5
             query.append("       ,stc.example_flag ");
+            query.append("       ,stc.system_flag ");
             query.append("  FROM system_test_case stc, component comp ");
             query.append(" WHERE comp.component_id in (SELECT component_id FROM round_component WHERE round_id = ?)");
             query.append(" AND comp.component_id = stc.component_id");
@@ -348,9 +349,10 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,args ");             // 3
             query.append("       ,expected_result ");  // 4
             query.append("       ,modify_date ");     // 5
-            query.append("       ,example_flag)");    //6
+            query.append("       ,example_flag");    //6
+            query.append("       ,system_flag)");   //7
             query.append("VALUES ( ");
-            query.append("?,?,?,?,?,?)");  // 6 total values
+            query.append("?,?,?,?,?,?,?)");  // 7 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -379,6 +381,7 @@ public class TCLoadLong extends TCLoad {
                 setBytes(psIns, 4, getBlobObject(rs, 4));  // expected_result
                 psIns.setTimestamp(5, rs.getTimestamp(5));  // modify_date
                 psIns.setInt(6, rs.getInt("example_flag"));
+                psIns.setInt(7, rs.getInt("system_flag"));
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -429,6 +432,7 @@ public class TCLoadLong extends TCLoad {
             query.append(",str.timestamp ");
             query.append(",str.fatal_errors ");
             query.append(",str.score ");
+            query.append(",str.test_action ");
             query.append("FROM long_system_test_result str, component comp ");
             query.append("WHERE str.round_id = ? ");
             query.append("AND comp.component_id = str.component_id ");
@@ -451,9 +455,10 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,processing_time ");
             query.append("       ,timestamp ");
             query.append("       ,fatal_errors ");
-            query.append("       ,score)");
+            query.append("       ,score ");
+            query.append("       ,test_action_id)");
             query.append("VALUES (");
-            query.append("?,?,?,?,?,?,?,?,?,?)");  // 10 values
+            query.append("?,?,?,?,?,?,?,?,?,?,?)");  // 11 values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -499,6 +504,7 @@ public class TCLoadLong extends TCLoad {
                 psIns.setTimestamp(8, rs.getTimestamp("timestamp"));
                 psIns.setBytes(9, rs.getBytes("fatal_errors"));
                 psIns.setFloat(10, rs.getFloat("score"));
+                psIns.setInt(11, rs.getInt("test_action"));
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -1046,6 +1052,7 @@ public class TCLoadLong extends TCLoad {
             query.append("     , rr.round_id ");
             query.append("     , rr.placed ");
             query.append("     , rr.point_total ");
+            query.append("     , rr.system_point_total ");
             query.append("     , cs.submission_number ");
             query.append("     , rr.attended");
             query.append("  from long_comp_result rr ");
@@ -1067,9 +1074,10 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,coder_id ");                        // 2
             query.append("       ,placed");                           // 3
             query.append("       ,point_total ");                     // 4
-            query.append("       ,num_submissions");                  // 5
-            query.append("       ,attended)");                        // 6
-            query.append("VALUES (?,?,?,?,?,?)");                     // 6 values
+            query.append("       ,system_point_total ");                     // 5
+            query.append("       ,num_submissions");                  // 6
+            query.append("       ,attended)");                        // 7
+            query.append("VALUES (?,?,?,?,?,?,7)");                     // 7 values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1096,8 +1104,9 @@ public class TCLoadLong extends TCLoad {
                 psIns.setLong(2, coder_id);
                 psIns.setInt(3, rs.getInt("placed"));
                 psIns.setFloat(4, rs.getFloat("point_total"));
-                psIns.setInt(5, rs.getInt("submission_number"));
-                psIns.setString(6, rs.getString("attended"));
+                psIns.setFloat(5, rs.getFloat("system_point_total"));
+                psIns.setInt(6, rs.getInt("submission_number"));
+                psIns.setString(7, rs.getString("attended"));
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
