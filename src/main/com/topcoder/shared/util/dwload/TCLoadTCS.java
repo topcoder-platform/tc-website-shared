@@ -967,7 +967,7 @@ public class TCLoadTCS extends TCLoad {
                 " and project_id = pr.project_id and cur_version = 1) as review_completed_timestamp, " +
                 "(select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
                 "pr.payment, pr.old_rating, pr.new_rating, " +
-                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment, p.stage_id " +
+                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment " +
                 "from project_result pr, " +
                 "project p, " +
                 "comp_versions cv, " +
