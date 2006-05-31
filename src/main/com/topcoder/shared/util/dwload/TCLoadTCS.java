@@ -893,7 +893,46 @@ public class TCLoadTCS extends TCLoad {
         return (placementPoints[placed - 1][numSubmissionsPassedReview - 1]);
     }
 
-    
+    /**
+     * <p>
+     * Gets all projects with a defined stage.
+     * </p>
+     *
+     * @return a list containing the DR project IDs.
+     * @since 1.1.0
+     */
+    private List getDRProjects() throws Exception{
+        PreparedStatement select = null;
+        ResultSet rs = null;
+
+        ArrayList dRProjects = new ArrayList();
+        try {
+            //get data from source DB
+            final String SELECT = "select " +
+                                  "   project_id, stage_id " +
+                                  "from " +
+                                  "   project " +
+                                  "where " +
+                                  "   stage_id is not null";
+
+            select = prepareStatement(SELECT, TARGET_DB);
+
+            rs = select.executeQuery();
+            while (rs.next()) {
+                dRProjects.add(new Long(rs.getLong("project_id")));
+            }
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("could not get DR projects.");
+        } finally {
+            close(rs);
+            close(select);
+        }
+        return (dRProjects);
+    }
+      
+          
     /**
      * <p>
      * Load projects results to the DW.
@@ -952,6 +991,8 @@ public class TCLoadTCS extends TCLoad {
         try {
             long start = System.currentTimeMillis();
 
+            List dRProjects = getDRProjects();
+            
             resultSelect = prepareStatement(RESULT_SELECT, SOURCE_DB);
             resultSelect.setTimestamp(1, fLastLogTime);
             resultSelect.setTimestamp(2, fLastLogTime);
@@ -1013,7 +1054,7 @@ public class TCLoadTCS extends TCLoad {
                 
                 long pointsAwarded = 0;
                 if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                    projectResults.getObject("stage_id") != null) {
+                    dRProjects.contains(new Long(project_id))) {
                     pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
                     resultUpdate.setLong(17, pointsAwarded);
                     // adjusts final points. point_adjustment could be negative to substracto points.
@@ -1053,7 +1094,7 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
                     if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                        projectResults.getObject("stage_id") != null) {
+                        dRProjects.contains(new Long(project_id))) {
                         resultInsert.setLong(19, pointsAwarded);
                         resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
                     } else {
