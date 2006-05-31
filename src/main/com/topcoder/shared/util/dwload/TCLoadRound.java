@@ -175,7 +175,7 @@ public class TCLoadRound extends TCLoad {
             clearRound();
 
             loadSeasons();
-            
+
             loadContest();
 
             loadRound();
@@ -195,8 +195,6 @@ public class TCLoadRound extends TCLoad {
             loadRoomResult();
 
             loadRating();
-
-
 
             loadCoderProblem();
 
@@ -238,12 +236,12 @@ public class TCLoadRound extends TCLoad {
                 a.add("DELETE FROM problem WHERE round_id = ?");
                 a.add("UPDATE algo_rating SET first_rated_round_id = null WHERE first_rated_round_id = ?");
                 a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
-                a.add("DELETE FROM rating_history WHERE round_id = ?");
-
+                a.add("DELETE FROM algo_rating_history WHERE round_id = ?");
             } else {
-                a.add("DELETE FROM coder_level WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
+                int algoType = getRoundType(fRoundId);
+                a.add("DELETE FROM coder_level WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?) AND algo_rating_type_id=" + algoType);
                 a.add("DELETE FROM coder_division WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
-                a.add("DELETE FROM coder_problem_summary WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
+                a.add("DELETE FROM coder_problem_summary WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?) AND algo_rating_type_id=" + algoType);
                 a.add("DELETE FROM room_result WHERE round_id = ?");
                 a.add("DELETE FROM round_division WHERE round_id = ?");
                 a.add("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)");
@@ -257,7 +255,7 @@ public class TCLoadRound extends TCLoad {
                 a.add("DELETE FROM problem WHERE round_id = ?");
                 a.add("UPDATE algo_rating SET first_rated_round_id = null WHERE first_rated_round_id = ?");
                 a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
-                a.add("DELETE FROM rating_history WHERE round_id = ?");
+                a.add("DELETE FROM algo_rating_history WHERE round_id = ?");
             }
 
             int count = 0;
@@ -322,7 +320,7 @@ public class TCLoadRound extends TCLoad {
 
         try {
             algoType = getRoundType(fRoundId);
-            
+
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
             query.append("SELECT rr.coder_id ");    // 1
@@ -349,7 +347,7 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND rr.attended = 'Y' ");
             query.append("   AND rr.new_rating > 0 ");
             query.append("   AND rt.algo_rating_type_id = ? ");
-                        
+
             //use the target db (warehouse) for this historical data
             psSelMinMaxRatings = prepareStatement(query.toString(), TARGET_DB);
 
@@ -370,9 +368,9 @@ public class TCLoadRound extends TCLoad {
             query.append("SELECT count(*) ");     // 1
             query.append("  FROM room_result rr ");
             query.append("       ,round r ");
-            query.append("       ,round_type_lu rt ");            
+            query.append("       ,round_type_lu rt ");
             query.append(" WHERE r.round_id = rr.round_id ");
-            query.append("   AND r.round_type_id = rt.round_type_id ");            
+            query.append("   AND r.round_type_id = rt.round_type_id ");
             query.append("   AND rr.attended = 'Y' ");
             query.append("   AND rr.coder_id = ? ");
             query.append("   AND rt.algo_rating_type_id = ? ");
@@ -881,7 +879,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,ad_start ");     // 9
             query.append("       ,ad_end ");       // 10
             query.append("       ,ad_task ");      // 11
-            query.append("       ,ad_command ");  // 12      
+            query.append("       ,ad_command ");  // 12
             query.append("       ,season_id) ");    // 13
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
@@ -2269,7 +2267,8 @@ public class TCLoadRound extends TCLoad {
         }
     }
 
-    
+
+
     /**
      * Load all the seasons from transactional.
      */
@@ -2292,9 +2291,9 @@ public class TCLoadRound extends TCLoad {
             query.append("      ,s.name ");                 // 4
             query.append("      ,s.season_type_id ");       // 5
             query.append("      ,st.season_type_desc ");    // 6
-            query.append("      FROM season s ");           
-            query.append("      ,season_type_lu st ");       
-            query.append("      WHERE s.season_type_id = st.season_type_id ");            
+            query.append("      FROM season s ");
+            query.append("      ,season_type_lu st ");
+            query.append("      WHERE s.season_type_id = st.season_type_id ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -2346,12 +2345,12 @@ public class TCLoadRound extends TCLoad {
 
                 psInsUpd.clearParameters();
                 psInsUpd.setInt(1, start_calendar_id);
-                psInsUpd.setInt(2, end_calendar_id);  
+                psInsUpd.setInt(2, end_calendar_id);
                 psInsUpd.setString(3, name);
                 psInsUpd.setInt(4, season_type_id);
                 psInsUpd.setString(5, season_type_desc);
                 psInsUpd.setInt(6, season_id);
-                
+
                 retVal = psInsUpd.executeUpdate();
                 count += retVal;
                 if (retVal != 1) {
@@ -2359,7 +2358,7 @@ public class TCLoadRound extends TCLoad {
                             " modified " + retVal + " rows, not one.");
                 }
 
-                                
+
                 printLoadProgress(count, "season");
             }
 
