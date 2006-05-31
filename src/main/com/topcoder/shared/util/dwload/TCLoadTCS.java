@@ -928,7 +928,7 @@ public class TCLoadTCS extends TCLoad {
                 " and project_id = pr.project_id and cur_version = 1) as review_completed_timestamp, " +
                 "(select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
                 "pr.payment, pr.old_rating, pr.new_rating, " +
-                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment " +
+                "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment, p.stage_id " +
                 "from project_result pr, " +
                 "project p, " +
                 "comp_versions cv, " +
@@ -1012,7 +1012,8 @@ public class TCLoadTCS extends TCLoad {
                 resultUpdate.setObject(16, projectResults.getObject("passed_review_ind"));
                 
                 long pointsAwarded = 0;
-                if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED) {
+                if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                    projectResults.getObject("stage_id") != null) {
                     pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
                     resultUpdate.setLong(17, pointsAwarded);
                     // adjusts final points. point_adjustment could be negative to substracto points.
@@ -1051,7 +1052,8 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
-                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED) {
+                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                        projectResults.getObject("stage_id") != null) {
                         resultInsert.setLong(19, pointsAwarded);
                         resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
                     } else {
