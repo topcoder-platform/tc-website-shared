@@ -41,7 +41,7 @@ public class TCLoadRank extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadRank.class);
     private static final int OVERALL_RATING_RANK_TYPE_ID = 1;
     private static final int ACTIVE_RATING_RANK_TYPE_ID = 2;
-    
+
     private static final int TC_RATING_TYPE_ID = 1;
     private static final int TC_HS_RATING_TYPE_ID = 2;
 /*
@@ -93,11 +93,11 @@ public class TCLoadRank extends TCLoad {
         try {
 
             long start = System.currentTimeMillis();
-            
+
             // determine if the round is regular or HS.
             int algoType = getRoundType(roundId);
             log.info("Round type=" + algoType);
-            
+
             List l = getCurrentRatings(algoType);
             log.info("got " + l.size() + " records in " + (System.currentTimeMillis()-start) + " milliseconds");
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType,  l);
@@ -113,7 +113,7 @@ public class TCLoadRank extends TCLoad {
 
             loadCountryRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
             loadStateRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
-            
+
             // school rating just for regular competitions, not for HS
             if (algoType == TC_RATING_TYPE_ID) {
                 loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
@@ -121,39 +121,39 @@ public class TCLoadRank extends TCLoad {
 
             loadCountryRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
             loadStateRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
-     
+
             List countryRank = calculateCountryRank(l);
             loadCountryRank(algoType, countryRank);
             loadCountryRankHistory(algoType, countryRank);
-            
+
             // school rating just for regular competitions, not for HS
-            if (algoType == TC_RATING_TYPE_ID) {           
+            if (algoType == TC_RATING_TYPE_ID) {
                 loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
             }
 //            loadAgeGroupAvgRatingRank();
 
 
             int seasonId = getSeasonId(roundId);
-            
+
             if (seasonId >= 0) {
                 List ratings = getCurrentSeasonRatings(seasonId);
-                
+
                 Collections.sort(ratings);
-                
-                loadSeasonRatingRank(seasonId, ratings);                
+
+                loadSeasonRatingRank(seasonId, ratings);
                 loadSeasonRatingRankHistory(seasonId, ratings);
-                
+
                 // the list is already sorted
                 List teamPoints = getTeamPoints(seasonId);
-                
+
                 loadSeasonTeamRank(seasonId, teamPoints);
                 loadSeasonTeamRankHistory(seasonId, teamPoints);
-                
+
                 List seasonCountryRank = calculateCountryRank(ratings);
-                
+
                 loadSeasonCountryRank(seasonId, seasonCountryRank);
                 loadSeasonCountryRankHistory(seasonId, seasonCountryRank);
-                
+
             }
 
 
@@ -274,7 +274,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-            // delete all the previous records 
+            // delete all the previous records
             psDel.executeUpdate();
 
             int size = list.size();
@@ -289,7 +289,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setDouble(5, cr.getPercentile());
                 psIns.setInt(6, ratingType);
                 count += psIns.executeUpdate();
-                            
+
                 printLoadProgress(count, "country rank");
             }
             log.info("Records loaded for country rank load: " + count);
@@ -330,7 +330,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-            // delete all the previous records 
+            // delete all the previous records
             psDel.executeUpdate();
 
             int size = list.size();
@@ -345,7 +345,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(6, ratingType);
                 psIns.setDouble(7, roundId);
                 count += psIns.executeUpdate();
-                
+
                 printLoadProgress(count, "country rank history");
             }
             log.info("Records loaded for country rank history load: " + count);
@@ -385,7 +385,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-            // delete all the previous records 
+            // delete all the previous records
             psDel.executeUpdate();
 
             int size = list.size();
@@ -400,7 +400,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(5, cr.getRank());
                 psIns.setDouble(6, cr.getPercentile());
                 count += psIns.executeUpdate();
-                            
+
                 printLoadProgress(count, "season_country rank");
             }
             log.info("Records loaded for season country rank load: " + count);
@@ -432,7 +432,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" DELETE");
             query.append(" FROM season_country_rank_history");
             query.append(" WHERE season_id = " + seasonId);
-            query.append(" AND round_id = " + roundId);            
+            query.append(" AND round_id = " + roundId);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -441,7 +441,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-            // delete all the previous records 
+            // delete all the previous records
             psDel.executeUpdate();
 
             int size = list.size();
@@ -457,7 +457,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setDouble(6, cr.getPercentile());
                 psIns.setInt(7, roundId);
                 count += psIns.executeUpdate();
-                            
+
                 printLoadProgress(count, "season country rank history");
             }
             log.info("Records loaded for season country rank history load: " + count);
@@ -779,16 +779,16 @@ public class TCLoadRank extends TCLoad {
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             if (rankType == ACTIVE_RATING_RANK_TYPE_ID) {
-	            ratings = new ArrayList();
-	            for (Iterator i = list.iterator(); i.hasNext();) {
-					CoderRating rating = (CoderRating)i.next();
-					if (rating.active) {
-						ratings.add(rating);
-					}
-				}
+                ratings = new ArrayList();
+                for (Iterator i = list.iterator(); i.hasNext();) {
+                    CoderRating rating = (CoderRating)i.next();
+                    if (rating.active) {
+                        ratings.add(rating);
+                    }
+                }
             }
             else {
-            	ratings = list;
+                ratings = list;
             }
 
             coderCount = ratings.size();
@@ -1189,11 +1189,11 @@ public class TCLoadRank extends TCLoad {
                 //pros
                 if (rs.getInt("coder_type_id") == 2) {
                     ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                        0, rs.getInt("active")==1, rs.getString("country_code"), 
+                        0, rs.getInt("active")==1, rs.getString("country_code"),
                         rs.getString("state_code")));
                 } else {
                     ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                        rs.getInt("school_id"), rs.getInt("active")==1, rs.getString("country_code"), 
+                        rs.getInt("school_id"), rs.getInt("active")==1, rs.getString("country_code"),
                         rs.getString("state_code")));
                 }
             }
@@ -1210,6 +1210,7 @@ public class TCLoadRank extends TCLoad {
         return ret;
 
     }
+
 
     private List getCurrentSeasonRatings(int seasonId) throws Exception {
         StringBuffer query = null;
@@ -1258,15 +1259,15 @@ public class TCLoadRank extends TCLoad {
         try {
 
             query = new StringBuffer(200);
-            query.append(" SELECT team_id, avg(total_team_points) "); 
-            query.append(" FROM view_team_points tp, round r, contest c ");
+            query.append(" SELECT team_id, avg(team_points) ");
+            query.append(" FROM team_round tp, round r, contest c ");
             query.append(" WHERE tp.round_id = r.round_id ");
             query.append(" AND r.contest_id = c.contest_id ");
             query.append(" AND c.season_id = ?");
             query.append(" GROUP BY tp.team_id ");
-            query.append(" HAVING count(total_team_points) >= 4 ");
+            query.append(" HAVING count(team_points) >= 4 ");
             query.append(" ORDER BY 2");
-            
+
 
             psSel = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1293,7 +1294,7 @@ public class TCLoadRank extends TCLoad {
     /**
      * Calculate the country rating from a list of coder ratings.
      * It also fills the rank and percentile.
-     * 
+     *
      * @param list list of CoderRating
      * @return a list of CountryRank with the country's ranking
      */
@@ -1307,15 +1308,15 @@ public class TCLoadRank extends TCLoad {
             }
         }
         Collections.sort(ratings);
-        
+
         int size = ratings.size();
         Map countryRating = new HashMap();
-        
+
         // Add all the coders to their country's rating
         for (int i = 0; i < size; i++) {
             cr = (CoderRating) ratings.get(i);
             String cc = cr.getCountryCode();
-            
+
             CountryRank r = (CountryRank) countryRating.get(cc);
             if (r == null) {
                 r = new CountryRank(cc);
@@ -1323,38 +1324,38 @@ public class TCLoadRank extends TCLoad {
             }
             r.addCoder(cr.getRating());
         }
-        
+
         // copy to l just the countries with at least 10 coders
         ArrayList l = new ArrayList();
-                
+
         for(Iterator it = countryRating.values().iterator(); it.hasNext(); )
         {
             CountryRank r = (CountryRank) it.next();
-            if (r.getMemberCount() >= 10) {              
+            if (r.getMemberCount() >= 10) {
                 l.add(r);
             }
         }
-        
+
         Collections.sort(l);
         int rank = 0;
         double rating = -1;
         size = l.size();
         for (int i = 0; i < size; i++) {
             CountryRank r = (CountryRank) l.get(i);
-            
+
             if (Math.abs(rating - r.getRating()) >= 0.01) {
                 rank = i + 1;
             }
-            rating = r.getRating();            
-            
-            
+            rating = r.getRating();
+
+
             r.setRank(rank);
-            r.setPercentile((double) 100 * ((double) (size - rank) / size));            
+            r.setPercentile((double) 100 * ((double) (size - rank) / size));
         }
-        
+
         return l;
     }
-    
+
     private class CoderRating implements Comparable {
         private long coderId = 0;
         private int rating = 0;
@@ -1362,7 +1363,7 @@ public class TCLoadRank extends TCLoad {
         private boolean active = false;
         private String countryCode = null;
         private String stateCode = null;
-        
+
         CoderRating(long coderId, int rating, long schoolId, boolean active, String countryCode, String stateCode) {
             this.coderId = coderId;
             this.rating = rating;
@@ -1438,13 +1439,13 @@ public class TCLoadRank extends TCLoad {
     private class TeamPoints {
         private long teamId = 0;
         private double points = 0;
-        
-        
+
+
         public TeamPoints(long teamId, double points) {
             this.teamId = teamId;
             this.points = points;
         }
-        
+
         public double getPoints() {
             return points;
         }
@@ -1457,32 +1458,32 @@ public class TCLoadRank extends TCLoad {
         public void setTeamId(long teamId) {
             this.teamId = teamId;
         }
-        
+
     }
 
     private class CountryRank implements Comparable {
         private final String countryCode;
-        
+
         /**
          * Con
          */
         private final static double R = 0.87;
-        
+
         private int memberCount = 0;
-        
+
         /**
          * Sum of the rating, without multiplying by the factor
          */
         private double ratingSum = 0;
-        
+
         /**
          * Calculated rating.  Negative value indicates that the value needs to be calculated
          */
         private double rating = -1;
-        
+
         private int rank;
         private double percentile;
-        
+
         public CountryRank(String countryCode) {
             this.countryCode = countryCode;
         }
@@ -1490,7 +1491,7 @@ public class TCLoadRank extends TCLoad {
         public String getCountryCode() {
             return countryCode;
         }
-        
+
         public int getMemberCount() {
             return memberCount;
         }
@@ -1509,25 +1510,25 @@ public class TCLoadRank extends TCLoad {
         public void setRank(int rank) {
             this.rank = rank;
         }
-        
+
         public double getRating() {
             // if it is negative it means that the value needs to be calculated
             if (rating < 0) {
                 if (memberCount == 0) {
                     throw new IllegalArgumentException("can't calculate the country rating when there are no members");
                 }
-                
-                rating = ratingSum * ((1 - R) / (1 - Math.pow(R, memberCount)));    
+
+                rating = ratingSum * ((1 - R) / (1 - Math.pow(R, memberCount)));
             }
             return rating;
         }
-        
-        public void addCoder(int coderRating) 
-        {            
+
+        public void addCoder(int coderRating)
+        {
             ratingSum += coderRating * Math.pow(R, memberCount);
-            memberCount++;            
+            memberCount++;
         }
-        
+
         public int compareTo(Object other) {
             if (((CountryRank) other).getRating() > getRating())
                 return 1;
@@ -1536,8 +1537,8 @@ public class TCLoadRank extends TCLoad {
             else
                 return 0;
         }
-        
-        
+
+
     }
 
 }

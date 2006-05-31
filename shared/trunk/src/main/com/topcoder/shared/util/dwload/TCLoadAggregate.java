@@ -193,14 +193,13 @@ public class TCLoadAggregate extends TCLoad {
             loadProblemLanguage();
 
             loadCoderProblem();
-            
+
             loadTeamRound();
-            
+
             //if running for an old round, the rating history load can not be run
             //don't forget to remove it from the clear round method as well.
             loadRatingHistory();
-            
-            
+
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
@@ -573,15 +572,21 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,STDEV(cp.final_points)");   //15
             query.append(" ,SUM(cp.defense_points)");   //16
             query.append(" ,AVG(cp.time_elapsed)");     //17
+            query.append(" ,rt.algo_rating_type_id ");  //18
             query.append(" FROM coder_problem cp");
+            query.append("    , round r ");
+            query.append("    , round_type_lu rt ");
+            query.append("     WHERE cp.round_id = r.round_id ");
+            query.append("     AND r.round_type_id = rt.round_type_id ");
             if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
-                query.append(" WHERE cp.coder_id IN");
+                query.append(" AND cp.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
+                query.append(" AND rt.algo_rating_type_id = " + getRoundType(fRoundId));
             }
-            query.append(" GROUP BY 1,2,3");
+            query.append(" GROUP BY 1,2,3, 18");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
 
@@ -604,10 +609,11 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,final_points ");                    // 14
             query.append(" ,point_standard_deviation ");        // 15
             query.append(" ,defense_points ");                  // 16
-            query.append(" ,avg_time_elapsed) ");               // 16
+            query.append(" ,avg_time_elapsed ");                // 17
+            query.append(" ,algo_rating_type_id) ");            // 18
             query.append(" VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?,?,?,?,?)");       // 17 total values
+            query.append("?,?,?,?,?,?,?,?)");       // 18 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -706,7 +712,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" WHERE coder_id = ?");
             query.append(" AND division_id = ?");
             query.append(" AND level_id = ?");
-
+            query.append(" AND algo_rating_type_id = ?");
 
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
@@ -715,6 +721,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" WHERE coder_id = ? ");
             query.append("   AND division_id = ?");
             query.append("   AND level_id = ?");
+            query.append("   AND algo_rating_type_id = ?");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             // On to the load
@@ -724,11 +731,13 @@ public class TCLoadAggregate extends TCLoad {
                 int coder_id = rs.getInt(1);
                 int division_id = rs.getInt(2);
                 int level_id = rs.getInt(3);
+                int algoType = rs.getInt(18);
 
                 psDel.clearParameters();
                 psDel.setInt(1, coder_id);
                 psDel.setInt(2, division_id);
                 psDel.setInt(3, level_id);
+                psDel.setInt(4, algoType);
                 psDel.executeUpdate();
 
                 psIns.clearParameters();
@@ -749,6 +758,7 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(15, rs.getFloat(15));  // point_standard_deviation
                 psIns.setFloat(16, rs.getFloat(16));  // defense_points
                 psIns.setFloat(17, rs.getFloat(17));  // avg_time_elapsed
+                psIns.setInt(18, rs.getInt(18));      // algo_rating_type_id
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -763,6 +773,7 @@ public class TCLoadAggregate extends TCLoad {
                 psUpd.setInt(1, coder_id);
                 psUpd.setInt(2, division_id);
                 psUpd.setInt(3, level_id);
+                psUpd.setInt(4, algoType);
 
                 retVal = psUpd.executeUpdate();
                 if (retVal != 1) {
@@ -805,7 +816,7 @@ public class TCLoadAggregate extends TCLoad {
 
         try {
             query = new StringBuffer(100);
-            query.append("SELECT coder_id ");                              // 1
+            query.append("SELECT rr.coder_id ");                           // 1
             query.append("       ,SUM(problems_presented) ");              // 2
             query.append("       ,SUM(problems_opened) ");                 // 3
             query.append("       ,SUM(problems_submitted) ");              // 4
@@ -824,15 +835,22 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,SUM(system_test_points) ");              // 17
             query.append("       ,SUM(final_points) ");                    // 18
             query.append("       ,SUM(defense_points) ");                  // 19
-            query.append("  FROM room_result ");
+            query.append("       ,rt.algo_rating_type_id ");               // 20
+            query.append("  FROM room_result rr");
+            query.append("      , round r ");
+            query.append("      , round_type_lu rt ");
+            query.append("      WHERE rr.round_id = r.round_id ");
+            query.append("      AND r.round_type_id = rt.round_type_id ");
+
             if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
-                query.append(" WHERE coder_id IN");
+                query.append(" AND coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
+                query.append(" AND rt.algo_rating_type_id = " + getRoundType(fRoundId));
             }
-            query.append(" GROUP BY coder_id ");
+            query.append(" GROUP BY coder_id, algo_rating_type_id ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -855,15 +873,16 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,challenge_points ");                // 16
             query.append("       ,system_test_points ");              // 17
             query.append("       ,final_points ");                    // 18
-            query.append("       ,defense_points) ");                  // 19
+            query.append("       ,defense_points ");                  // 19
+            query.append("       ,algo_rating_type_id) ");            // 20
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?,?,?,?,?,?,?)");    // 19 total values
+            query.append("?,?,?,?,?,?,?,?,?,?)");    // 20 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append("DELETE FROM coder_problem_summary ");
-            query.append(" WHERE coder_id = ? ");
+            query.append(" WHERE coder_id = ? AND algo_rating_type_id = ? ");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             // On to the load
@@ -871,9 +890,11 @@ public class TCLoadAggregate extends TCLoad {
 
             while (rs.next()) {
                 int coder_id = rs.getInt(1);
+                int algoType = rs.getInt(20);
 
                 psDel.clearParameters();
                 psDel.setInt(1, coder_id);
+                psDel.setInt(2, algoType);
                 psDel.executeUpdate();
 
                 psIns.clearParameters();
@@ -896,6 +917,7 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(17, rs.getFloat(17));  // system_test_points
                 psIns.setFloat(18, rs.getFloat(18));  // final_points
                 psIns.setFloat(19, rs.getFloat(19));  // defense_points
+                psIns.setInt(20, rs.getInt(20));  // algo_rating_type_id
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -1546,6 +1568,11 @@ public class TCLoadAggregate extends TCLoad {
                     float final_points = rs2.getFloat(2);
                     float coder_pstddev = ((final_points - avgpts) / pstddev);
 
+                    if (pstddev  < 0.00001) {
+                        // this should happen only if all the coders got the same points.
+                        coder_pstddev = 0;
+                        log.warn("pstddev too small in round " + round_id + " for coder " + coder_id);
+                    }
                     psUpd.clearParameters();
                     psUpd.setFloat(1, coder_pstddev); // point_standard_deviation
                     psUpd.setInt(2, round_id);
@@ -2092,6 +2119,7 @@ public class TCLoadAggregate extends TCLoad {
         }
     }
 
+
     /**
      * This method loads the 'team_round' table
      */
@@ -2131,7 +2159,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,COUNT(coder_id) ");                      // 23
             query.append("       ,SUM(team_points) team_points");          // 24
             query.append("  FROM room_result ");
-            query.append("  WHERE team_id is not null ");   
+            query.append("  WHERE team_id is not null ");
             if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND round_id = " + fRoundId);
             }
@@ -2139,8 +2167,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append("          ,team_id");
             query.append(" ORDER BY round_id, team_points ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
-          
-            
+
+
             query = new StringBuffer(100);
             query.append("INSERT INTO team_round ");
             query.append("      (round_id ");                         // 1
@@ -2182,12 +2210,12 @@ public class TCLoadAggregate extends TCLoad {
 
             // On to the load
             rs = psSel.executeQuery();
-            
+
             int placed = 1;
             int placedNoTie = 1;
             int previousRound = -1;
             int previousPoints = -1;
-            
+
             while (rs.next()) {
                 int round_id = rs.getInt(1);
                 int team_id = rs.getInt(2);
@@ -2198,15 +2226,15 @@ public class TCLoadAggregate extends TCLoad {
                     placedNoTie = 1;
                     previousPoints = -1;
                 }
-                
+
                 if (previousPoints != points) {
                     placed = placedNoTie;
                 }
-                
+
                 previousRound = round_id;
                 previousPoints = points;
                 placedNoTie++;
-                
+
                 psDel.clearParameters();
                 psDel.setInt(1, round_id);
                 psDel.setInt(2, team_id);
@@ -2238,7 +2266,7 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setInt(23, rs.getInt(24));  // num_coders
                 psIns.setInt(24, rs.getInt(24));  // team_points
                 psIns.setInt(25, placed);  // placed
-                
+
                 retVal = psIns.executeUpdate();
                 count += retVal;
                 if (retVal != 1) {

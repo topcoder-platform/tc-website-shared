@@ -172,11 +172,11 @@ public abstract class TCLoad {
         }
         return conn;
     }
-    
+
     public void setSourceConnection(Connection c) {
         fConnections.put(new Integer(SOURCE_DB), c);
     }
-    
+
     public void setTargetConnection(Connection c) {
         fConnections.put(new Integer(TARGET_DB), c);
     }
@@ -440,10 +440,10 @@ public abstract class TCLoad {
                 (System.currentTimeMillis() - start));
         return rs;
     }
-    
+
     /**
      * Gets the type for this round (high school or regular).
-     * 
+     *
      * @param round round to determine its type
      * @return TC_HS_RATING_TYPE_ID or TC_RATING_TYPE_ID
      * @throws Exception if the type couldn't be retrieved
@@ -467,7 +467,7 @@ public abstract class TCLoad {
             }
 
             return rs.getInt("algo_rating_type_id");
-            
+
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Get round type failed.\n" +
@@ -480,7 +480,7 @@ public abstract class TCLoad {
 
     /**
      * Gets the Season_id for this round.
-     * 
+     *
      * @param round round to determine its season
      * @return the season_id for that round, or -1 if it doesn't belong to any season
      * @throws Exception if the type couldn't be retrieved
@@ -504,7 +504,7 @@ public abstract class TCLoad {
             }
 
             return rs.getString(1) == null? -1 : rs.getInt(1);
-            
+
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("getSeasonId failed.\n" +
@@ -526,6 +526,6 @@ public abstract class TCLoad {
             return false;
         return true;
     }
-    
-    
+
+
 }

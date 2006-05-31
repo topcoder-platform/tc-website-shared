@@ -71,7 +71,6 @@ public class TCLoadCoders extends TCLoad {
 
             getLastUpdateTime();
 
-
             loadState();
 
             loadCountry();
@@ -86,6 +85,8 @@ public class TCLoadCoders extends TCLoad {
             loadCoderSkill();
 
             loadRating();
+
+            loadSeasonRating();
 
             loadSeasonRating();
 
@@ -1210,7 +1211,6 @@ public class TCLoadCoders extends TCLoad {
         }
     }
 
-
     private void loadImage() throws Exception {
         int count = 0;
         int retVal = 0;
@@ -1874,7 +1874,5 @@ public class TCLoadCoders extends TCLoad {
             throw new SQLException("Unable to determine start for " + roundId);
         }
     }
-
-
 
 }
