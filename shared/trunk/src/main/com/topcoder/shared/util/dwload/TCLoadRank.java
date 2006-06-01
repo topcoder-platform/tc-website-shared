@@ -1316,6 +1316,8 @@ public class TCLoadRank extends TCLoad {
         for (int i = 0; i < size; i++) {
             cr = (CoderRating) ratings.get(i);
             String cc = cr.getCountryCode();
+            
+            if (cc == null) continue;
 
             CountryRank r = (CountryRank) countryRating.get(cc);
             if (r == null) {
