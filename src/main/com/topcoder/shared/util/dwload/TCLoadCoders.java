@@ -88,8 +88,6 @@ public class TCLoadCoders extends TCLoad {
 
             loadSeasonRating();
 
-            loadSeasonRating();
-
             loadPath();
 
             loadImage();
