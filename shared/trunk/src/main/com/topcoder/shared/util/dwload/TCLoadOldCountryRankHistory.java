@@ -49,8 +49,6 @@ public class TCLoadOldCountryRankHistory extends TCLoad {
         log.debug("performLoad called...");
         try {
 
-            long start = System.currentTimeMillis();
-
             clearCountryRankHistory();
             
             List rounds = getRounds();
@@ -73,7 +71,7 @@ public class TCLoadOldCountryRankHistory extends TCLoad {
      * claer table country_rank_historY.
      */
     private void clearCountryRankHistory() throws Exception {
-        PreparedStatement psDel = ("delete from country_rank_history", TARGET_DB);
+        PreparedStatement psDel = prepareStatement("delete from country_rank_history", TARGET_DB);
         psDel.executeUpdate();
     }
 
