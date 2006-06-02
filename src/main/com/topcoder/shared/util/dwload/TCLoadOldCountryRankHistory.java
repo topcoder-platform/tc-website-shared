@@ -119,7 +119,6 @@ public class TCLoadOldCountryRankHistory extends TCLoad {
 
     /**
      * Get a list of Integer's that are the different round numbers in algo_rating_history table. 
-     * @return
      */
    private List getRounds() throws Exception {
        PreparedStatement psSel = null;
@@ -146,7 +145,8 @@ public class TCLoadOldCountryRankHistory extends TCLoad {
    }
 
    /**
-    * Get the coder's rating for a round.
+    * Get the coder's rating for a round. Just the coders that were active on that round
+    * are returned.
     * 
     * @param roundId 
     * @return
@@ -159,13 +159,13 @@ public class TCLoadOldCountryRankHistory extends TCLoad {
         List ret = null;
 
         try {
-
+            // coder_rank_history is joined to select just the active coders.
             query = new StringBuffer(200);
             query.append(" select arh.coder_id ");
             query.append(" , arh.rating ");
             query.append(" , c.comp_country_code as country_code ");
             query.append(" from algo_rating_history arh ");
-            query.append(" , coder_rank_history crh ");
+            query.append(" ,  crh ");
             query.append(" , coder c ");
             query.append(" where arh.round_id = crh.round_id ");
             query.append(" and arh.coder_id = crh.coder_id ");
