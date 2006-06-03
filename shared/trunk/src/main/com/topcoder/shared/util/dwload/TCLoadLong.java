@@ -1077,7 +1077,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,system_point_total ");                     // 5
             query.append("       ,num_submissions");                  // 6
             query.append("       ,attended)");                        // 7
-            query.append("VALUES (?,?,?,?,?,?,7)");                     // 7 values
+            query.append("VALUES (?,?,?,?,?,?,?)");                     // 7 values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
