@@ -276,7 +276,7 @@ public class TCLoadLong extends TCLoad {
                 psIns.setLong(1, round_id);  // round_id
                 psIns.setLong(2, coder_id);  // coder_id
                 psIns.setLong(3, problem_id);  // problem_id
-                psIns.setFloat(4, rs.getFloat("points"));  // final_points
+                psIns.setDouble(4, rs.getDouble("points"));  // final_points
                 psIns.setInt(5, rs.getInt("status_id"));  // status_id
                 psIns.setInt(6, rs.getInt("language_id"));  // language_id
                 psIns.setLong(7, rs.getLong("open_time"));  // open_time
@@ -286,7 +286,7 @@ public class TCLoadLong extends TCLoad {
                 else
                     setBytes(psIns, 9, getBytes(rs, 9));       // use submission_text
                 psIns.setLong(10, rs.getLong(10));  // submit_time
-                psIns.setFloat(11, rs.getFloat(11));  // submission_points
+                psIns.setDouble(11, rs.getDouble(11));  // submission_points
                 psIns.setString(12, rs.getString(12));  // status_desc
                 psIns.setInt(13, last_submission);  // last_submission
                 psIns.setInt(14, example);
@@ -503,7 +503,7 @@ public class TCLoadLong extends TCLoad {
                 psIns.setFloat(7, rs.getLong("processing_time"));
                 psIns.setTimestamp(8, rs.getTimestamp("timestamp"));
                 psIns.setBytes(9, rs.getBytes("fatal_errors"));
-                psIns.setFloat(10, rs.getFloat("score"));
+                psIns.setDouble(10, rs.getDouble("score"));
                 psIns.setInt(11, rs.getInt("test_action"));
 
                 retVal = psIns.executeUpdate();
@@ -803,7 +803,7 @@ public class TCLoadLong extends TCLoad {
                     psUpd.setString(8, rs.getString(10));  // result_type_desc
                     psUpd.setInt(9, rs.getInt(11));  // level_id
                     psUpd.setString(10, rs.getString(12));  // level_desc
-                    psUpd.setFloat(11, rs.getFloat(14)); // points
+                    psUpd.setDouble(11, rs.getDouble(14)); // points
                     psUpd.setInt(12, 1); //viewable
                     psUpd.setInt(13, rs.getInt(1));  // problem_id
                     psUpd.setInt(14, rs.getInt(2));  // round_id
@@ -831,7 +831,7 @@ public class TCLoadLong extends TCLoad {
                     psIns.setInt(11, rs.getInt(11));  // level_id
                     psIns.setString(12, rs.getString(12));  // level_desc
                     psIns.setInt(13, rs.getInt(13));  // division_id
-                    psIns.setFloat(14, rs.getFloat(14)); //points
+                    psIns.setDouble(14, rs.getDouble(14)); //points
                     psIns.setInt(15, 1); //viewable
 
                     retVal = psIns.executeUpdate();
@@ -1103,8 +1103,8 @@ public class TCLoadLong extends TCLoad {
                 psIns.setLong(1, round_id);
                 psIns.setLong(2, coder_id);
                 psIns.setInt(3, rs.getInt("placed"));
-                psIns.setFloat(4, rs.getFloat("point_total"));
-                psIns.setFloat(5, rs.getFloat("system_point_total"));
+                psIns.setDouble(4, rs.getDouble("point_total"));
+                psIns.setDouble(5, rs.getDouble("system_point_total"));
                 psIns.setInt(6, rs.getInt("submission_number"));
                 psIns.setString(7, rs.getString("attended"));
 
