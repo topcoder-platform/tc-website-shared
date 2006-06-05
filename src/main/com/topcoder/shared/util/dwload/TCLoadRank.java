@@ -1164,6 +1164,7 @@ public class TCLoadRank extends TCLoad {
 
         try {
 
+            String activeMembers = algoType == TC_RATING_TYPE_ID? "active_members" : "active_hs_members";
             query = new StringBuffer(200);
             query.append(" select r.coder_id");
             query.append(" , r.rating");
@@ -1171,7 +1172,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" , c.coder_type_id");
             query.append(" , c.comp_country_code as country_code");
             query.append(" , c.state_code");
-            query.append(" , case when exists (select '1' from active_members a where a.coder_id = c.coder_id) then 1 else 0 end as active");
+            query.append(" , case when exists (select '1' from " + activeMembers + " a where a.coder_id = c.coder_id) then 1 else 0 end as active");
             query.append(" from algo_rating r");
             query.append(" , outer current_school cs");
             query.append(" , coder c");
