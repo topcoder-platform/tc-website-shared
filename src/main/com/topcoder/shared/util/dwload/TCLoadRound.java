@@ -1768,15 +1768,15 @@ public class TCLoadRound extends TCLoad {
                 
                 
                 if (rs.getString("team_points") == null) {
-                    psIns.setInt(35, rs.getInt("team_points"));
-                } else {
                     psIns.setNull(35, java.sql.Types.DECIMAL);
+                } else {                    
+                    psIns.setInt(35, rs.getInt("team_points"));
                 }
                 
                 if (rs.getString("team_id") == null) {
-                    psIns.setInt(36, rs.getInt("team_id"));
-                } else {
                     psIns.setNull(36, java.sql.Types.DECIMAL);
+                } else {
+                    psIns.setInt(36, rs.getInt("team_id"));                    
                 }
                 
 
