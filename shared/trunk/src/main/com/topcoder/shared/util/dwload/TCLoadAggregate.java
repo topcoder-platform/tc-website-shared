@@ -2264,7 +2264,12 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(21, rs.getFloat(21));  // average_points
                 psIns.setFloat(22, rs.getFloat(22));  // point_standard_deviation
                 psIns.setInt(23, rs.getInt(24));  // num_coders
-                psIns.setInt(24, rs.getInt(24));  // team_points
+                if (rs.getString(24) == null) {
+                    psIns.setNull(24, java.sql.Types.DECIMAL);  // team_points
+                } else {
+                    psIns.setInt(24, rs.getInt(24));  // team_points
+                }
+                
                 psIns.setInt(25, placed);  // placed
 
                 retVal = psIns.executeUpdate();
