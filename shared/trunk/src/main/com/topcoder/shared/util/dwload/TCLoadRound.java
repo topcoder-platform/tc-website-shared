@@ -1605,6 +1605,12 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,pt.payment_type_id");                      // 31
             query.append("       ,pt.payment_type_desc");                    // 32
             query.append("       ,rr.rated_flag");                           //33
+            query.append("       ,rr.team_points");                          //34
+            query.append("       ,(SELECT tcx.team_id ");
+            query.append("          FROM team_coder_xref tcx, team t  ");
+            query.append("          WHERE coder_id = rr.coder_id ");
+            query.append("          AND tcx.team_id = t.team_id  ");
+            query.append("          AND t.team_type=4) as team_id ");        // 35
             query.append("  FROM room_result rr ");
             query.append("  JOIN room r ON rr.round_id = r.round_id ");
             query.append("   AND rr.room_id = r.room_id ");
@@ -1675,10 +1681,13 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,payment_type_id ");                 // 31
             query.append("       ,payment_type_desc ");               // 32
             query.append("       ,num_ratings ");                     // 33
-            query.append("       ,rated_flag)");                      // 34
+            query.append("       ,rated_flag ");                      // 34
+            query.append("       ,team_points ");                     // 35
+            query.append("       ,team_id ");                         // 36
             query.append("VALUES (?,?,?,?,?,?,?,?,?,?,");  // 10 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 20 values
-            query.append("        ?,?,?,?,?,?,?,?,?,?,?,?,?,?)");  // 34 total values
+            query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 30 values
+            query.append("        ?,?,?,?,?,?)");          // 36 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1756,6 +1765,8 @@ public class TCLoadRound extends TCLoad {
                     numRatings = ((Integer) ratingsMap.get(tempCoderId)).intValue();
                 psIns.setInt(33, rs.getInt("rated_flag") == 1 ? numRatings + 1 : numRatings);
                 psIns.setInt(34, rs.getInt("rated_flag"));
+                psIns.setInt(35, rs.getInt("team_points"));
+                psIns.setInt(36, rs.getInt("team_id"));
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
