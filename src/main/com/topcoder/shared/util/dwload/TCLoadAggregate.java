@@ -2220,20 +2220,24 @@ public class TCLoadAggregate extends TCLoad {
                 int round_id = rs.getInt(1);
                 int team_id = rs.getInt(2);
                 int points = rs.getInt(24);
-
+                boolean nullPoints = rs.getString(24)== null;
+                    
                 // when starting with another round, start again with placed
                 if (round_id != previousRound) {
                     placedNoTie = 1;
                     previousPoints = -1;
                 }
 
-                if (previousPoints != points) {
+                if (!nullPoints && (previousPoints != points)) {
                     placed = placedNoTie;
                 }
 
                 previousRound = round_id;
-                previousPoints = points;
-                placedNoTie++;
+                
+                if (!nullPoints) {
+                    previousPoints = points;
+                    placedNoTie++;
+                }
 
                 psDel.clearParameters();
                 psDel.setInt(1, round_id);
@@ -2264,13 +2268,15 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(21, rs.getFloat(21));  // average_points
                 psIns.setFloat(22, rs.getFloat(22));  // point_standard_deviation
                 psIns.setInt(23, rs.getInt(24));  // num_coders
-                if (rs.getString(24) == null) {
+                if (nullPoints) {
                     psIns.setNull(24, java.sql.Types.DECIMAL);  // team_points
+                    psIns.setNull(25, java.sql.Types.DECIMAL);  // placed
                 } else {
                     psIns.setInt(24, rs.getInt(24));  // team_points
+                    psIns.setInt(25, placed);  // placed
                 }
                 
-                psIns.setInt(25, placed);  // placed
+                
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
