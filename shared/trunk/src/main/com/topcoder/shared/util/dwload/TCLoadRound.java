@@ -853,13 +853,12 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,c.end_date ");     // 4
             query.append("       ,c.status ");       // 5
             query.append("       ,c.group_id ");     // 6
-            query.append("       ,c.region_code ");  // 7
-            query.append("       ,c.ad_text ");      // 8
-            query.append("       ,c.ad_start ");     // 9
-            query.append("       ,c.ad_end ");       // 10
-            query.append("       ,c.ad_task ");      // 11
-            query.append("       ,c.ad_command ");   // 12
-            query.append("       ,c.season_id ");    // 13
+            query.append("       ,c.ad_text ");      // 7
+            query.append("       ,c.ad_start ");     // 8
+            query.append("       ,c.ad_end ");       // 9
+            query.append("       ,c.ad_task ");      // 10
+            query.append("       ,c.ad_command ");   // 11
+            query.append("       ,c.season_id ");    // 12
             query.append("  FROM contest c ");
             query.append("       ,round r ");
             query.append(" WHERE r.round_id = ? ");
@@ -874,16 +873,15 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,end_date ");     // 4
             query.append("       ,status ");       // 5
             query.append("       ,group_id ");     // 6
-            query.append("       ,region_code ");  // 7
-            query.append("       ,ad_text ");      // 8
-            query.append("       ,ad_start ");     // 9
-            query.append("       ,ad_end ");       // 10
-            query.append("       ,ad_task ");      // 11
-            query.append("       ,ad_command ");  // 12
-            query.append("       ,season_id) ");    // 13
+            query.append("       ,ad_text ");      // 7
+            query.append("       ,ad_start ");     // 8
+            query.append("       ,ad_end ");       // 9
+            query.append("       ,ad_task ");      // 10
+            query.append("       ,ad_command ");  // 11
+            query.append("       ,season_id) ");    // 12
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?)");                // 13 total values
+            query.append("?,?)");                // 12 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -893,14 +891,13 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,end_date = ? ");     // 3
             query.append("       ,status = ? ");       // 4
             query.append("       ,group_id = ? ");     // 5
-            query.append("       ,region_code = ? ");  // 6
-            query.append("       ,ad_text = ? ");      // 7
-            query.append("       ,ad_start = ? ");     // 8
-            query.append("       ,ad_end = ? ");       // 9
-            query.append("       ,ad_task = ? ");      // 10
-            query.append("       ,ad_command = ? ");   // 11
-            query.append("       ,season_id = ? ");    // 12
-            query.append(" WHERE contest_id = ? ");    // 13
+            query.append("       ,ad_text = ? ");      // 6
+            query.append("       ,ad_start = ? ");     // 7
+            query.append("       ,ad_end = ? ");       // 8
+            query.append("       ,ad_task = ? ");      // 9
+            query.append("       ,ad_command = ? ");   // 10
+            query.append("       ,season_id = ? ");    // 11
+            query.append(" WHERE contest_id = ? ");    // 12
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -928,14 +925,13 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setTimestamp(3, rs.getTimestamp(4));  // end_date
                     psUpd.setString(4, rs.getString(5));  // status
                     psUpd.setInt(5, rs.getInt(6));  // group_id
-                    psUpd.setString(6, rs.getString(7));  // region_code
-                    psUpd.setString(7, rs.getString(8));  // ad_text
-                    psUpd.setTimestamp(8, rs.getTimestamp(9));  // ad_start
-                    psUpd.setTimestamp(9, rs.getTimestamp(10));  // ad_end
-                    psUpd.setString(10, rs.getString(11));  // ad_task
-                    psUpd.setString(11, rs.getString(12));  // ad_command
-                    psUpd.setString(12, rs.getString(13));  // season_id
-                    psUpd.setInt(13, rs.getInt(1));  // contest_id
+                    psUpd.setString(6, rs.getString(7));  // ad_text
+                    psUpd.setTimestamp(7, rs.getTimestamp(8));  // ad_start
+                    psUpd.setTimestamp(8, rs.getTimestamp(9));  // ad_end
+                    psUpd.setString(9, rs.getString(10));  // ad_task
+                    psUpd.setString(10, rs.getString(11));  // ad_command
+                    psUpd.setString(11, rs.getString(12));  // season_id
+                    psUpd.setInt(12, rs.getInt(1));  // contest_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -952,13 +948,12 @@ public class TCLoadRound extends TCLoad {
                     psIns.setTimestamp(4, rs.getTimestamp(4));  // end_date
                     psIns.setString(5, rs.getString(5));  // status
                     psIns.setInt(6, rs.getInt(6));  // group_id
-                    psIns.setString(7, rs.getString(7));  // region_code
-                    psIns.setString(8, rs.getString(8));  // ad_text
-                    psIns.setTimestamp(9, rs.getTimestamp(9));  // ad_start
-                    psIns.setTimestamp(10, rs.getTimestamp(10));  // ad_end
-                    psIns.setString(11, rs.getString(11));  // ad_task
-                    psIns.setString(12, rs.getString(12));  // ad_command
-                    psIns.setString(13, rs.getString(13));  // season_id
+                    psIns.setString(7, rs.getString(7));  // ad_text
+                    psIns.setTimestamp(8, rs.getTimestamp(8));  // ad_start
+                    psIns.setTimestamp(9, rs.getTimestamp(9));  // ad_end
+                    psIns.setString(10, rs.getString(10));  // ad_task
+                    psIns.setString(11, rs.getString(11));  // ad_command
+                    psIns.setString(12, rs.getString(12));  // season_id
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
@@ -1364,21 +1359,16 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,(SELECT c.country_name ");                     // 7
             query.append("           FROM country c ");
             query.append("          WHERE c.country_code = r.country_code) ");
-            query.append("       ,r.region_code ");                              // 8
-            query.append("       ,(SELECT reg.region_name ");                    // 9
-            query.append("           FROM region reg ");
-            query.append("          WHERE reg.region_code = r.region_code ");
-            query.append("            AND reg.country_code = r.country_code) ");
-            query.append("       ,r.division_id ");                              // 10
-            query.append("       ,(SELECT d.division_desc ");                    // 11
+            query.append("       ,r.division_id ");                              // 8
+            query.append("       ,(SELECT d.division_desc ");                    // 9
             query.append("           FROM division d ");
             query.append("          WHERE d.division_id = r.division_id) ");
-            query.append("       ,r.room_type_id ");                             // 12
-            query.append("       ,(SELECT rt.room_type_desc ");                  // 13
+            query.append("       ,r.room_type_id ");                             // 10
+            query.append("       ,(SELECT rt.room_type_desc ");                  // 11
             query.append("           FROM room_type rt ");
             query.append("          WHERE rt.room_type_id = r.room_type_id) ");
-            query.append("       ,r.eligible ");                                 // 14
-            query.append("       ,r.unrated ");                                  // 15
+            query.append("       ,r.eligible ");                                 // 12
+            query.append("       ,r.unrated ");                                  // 13
             query.append("   FROM room r ");
             query.append("  WHERE round_id = ?");
             query.append("    AND r.room_type_id = " + CONTEST_ROOM);
@@ -1393,17 +1383,15 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,state_name ");       // 5
             query.append("       ,country_code ");     // 6
             query.append("       ,country_name ");     // 7
-            query.append("       ,region_code ");      // 8
-            query.append("       ,region_name ");      // 9
-            query.append("       ,division_id ");      // 10
-            query.append("       ,division_desc ");    // 11
-            query.append("       ,room_type_id ");     // 12
-            query.append("       ,room_type_desc ");   // 13
-            query.append("       ,eligible ");         // 14
-            query.append("       ,unrated) ");         // 15
+            query.append("       ,division_id ");      // 8
+            query.append("       ,division_desc ");    // 9
+            query.append("       ,room_type_id ");     // 10
+            query.append("       ,room_type_desc ");   // 11
+            query.append("       ,eligible ");         // 12
+            query.append("       ,unrated) ");         // 13
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?,?,?)");            // 15 total values
+            query.append("?,?,?)");                // 13 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1414,15 +1402,13 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,state_name = ? ");       // 4
             query.append("       ,country_code = ? ");     // 5
             query.append("       ,country_name = ? ");     // 6
-            query.append("       ,region_code = ? ");      // 7
-            query.append("       ,region_name = ? ");      // 8
-            query.append("       ,division_id = ? ");      // 9
-            query.append("       ,division_desc = ? ");    // 10
-            query.append("       ,room_type_id = ? ");     // 11
-            query.append("       ,room_type_desc = ? ");   // 12
-            query.append("       ,eligible = ? ");         // 13
-            query.append("       ,unrated = ? ");          // 14
-            query.append(" WHERE room_id = ? ");           // 15
+            query.append("       ,division_id = ? ");      // 7
+            query.append("       ,division_desc = ? ");    // 8
+            query.append("       ,room_type_id = ? ");     // 9
+            query.append("       ,room_type_desc = ? ");   // 10
+            query.append("       ,eligible = ? ");         // 11
+            query.append("       ,unrated = ? ");          // 12
+            query.append(" WHERE room_id = ? ");           // 13
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1449,15 +1435,13 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setString(4, rs.getString(5));  // state_name
                     psUpd.setString(5, rs.getString(6));  // country_code
                     psUpd.setString(6, rs.getString(7));  // country_name
-                    psUpd.setString(7, rs.getString(8));  // region_code
-                    psUpd.setString(8, rs.getString(9));  // region_name
-                    psUpd.setInt(9, rs.getInt(10));  // division_id
-                    psUpd.setString(10, rs.getString(11));  // division_desc
-                    psUpd.setInt(11, rs.getInt(12));  // room_type_id
-                    psUpd.setString(12, rs.getString(13));  // room_type_desc
-                    psUpd.setInt(13, rs.getInt(14));  // eligible
-                    psUpd.setInt(14, rs.getInt(15));  // unrated
-                    psUpd.setInt(15, rs.getInt(1));  // room_id
+                    psUpd.setInt(7, rs.getInt(8));  // division_id
+                    psUpd.setString(8, rs.getString(9));  // division_desc
+                    psUpd.setInt(9, rs.getInt(10));  // room_type_id
+                    psUpd.setString(10, rs.getString(11));  // room_type_desc
+                    psUpd.setInt(11, rs.getInt(12));  // eligible
+                    psUpd.setInt(12, rs.getInt(13));  // unrated
+                    psUpd.setInt(13, rs.getInt(1));  // room_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -1475,14 +1459,12 @@ public class TCLoadRound extends TCLoad {
                     psIns.setString(5, rs.getString(5));  // state_name
                     psIns.setString(6, rs.getString(6));  // country_code
                     psIns.setString(7, rs.getString(7));  // country_name
-                    psIns.setString(8, rs.getString(8));  // region_code
-                    psIns.setString(9, rs.getString(9));  // region_name
-                    psIns.setInt(10, rs.getInt(10));  // division_id
-                    psIns.setString(11, rs.getString(11));  // division_desc
-                    psIns.setInt(12, rs.getInt(12));  // room_type_id
-                    psIns.setString(13, rs.getString(13));  // room_type_desc
-                    psIns.setInt(14, rs.getInt(14));  // eligible
-                    psIns.setInt(15, rs.getInt(15));  // unrated
+                    psIns.setInt(8, rs.getInt(8));  // division_id
+                    psIns.setString(9, rs.getString(9));  // division_desc
+                    psIns.setInt(10, rs.getInt(10));  // room_type_id
+                    psIns.setString(11, rs.getString(11));  // room_type_desc
+                    psIns.setInt(12, rs.getInt(12));  // eligible
+                    psIns.setInt(13, rs.getInt(13));  // unrated
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
