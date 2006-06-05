@@ -165,7 +165,7 @@ public class TCLoadOldCountryRankHistory extends TCLoad {
             query.append(" , arh.rating ");
             query.append(" , c.comp_country_code as country_code ");
             query.append(" from algo_rating_history arh ");
-            query.append(" ,  crh ");
+            query.append(" , coder_rank_history crh ");
             query.append(" , coder c ");
             query.append(" where arh.round_id = crh.round_id ");
             query.append(" and arh.coder_id = crh.coder_id ");
