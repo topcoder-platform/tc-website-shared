@@ -1765,8 +1765,20 @@ public class TCLoadRound extends TCLoad {
                     numRatings = ((Integer) ratingsMap.get(tempCoderId)).intValue();
                 psIns.setInt(33, rs.getInt("rated_flag") == 1 ? numRatings + 1 : numRatings);
                 psIns.setInt(34, rs.getInt("rated_flag"));
-                psIns.setInt(35, rs.getInt("team_points"));
-                psIns.setInt(36, rs.getInt("team_id"));
+                
+                
+                if (rs.getString("team_points") == null) {
+                    psIns.setInt(35, rs.getInt("team_points"));
+                } else {
+                    psIns.setNull(35, java.sql.Types.DECIMAL);
+                }
+                
+                if (rs.getString("team_id") == null) {
+                    psIns.setInt(36, rs.getInt("team_id"));
+                } else {
+                    psIns.setNull(36, java.sql.Types.DECIMAL);
+                }
+                
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
