@@ -97,7 +97,7 @@ public class TCLoadRank extends TCLoad {
             // determine if the round is regular or HS.
             int algoType = getRoundType(roundId);
             log.info("Round type=" + algoType);
-
+/*
             List l = getCurrentRatings(algoType);
             log.info("got " + l.size() + " records in " + (System.currentTimeMillis()-start) + " milliseconds");
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType,  l);
@@ -132,7 +132,7 @@ public class TCLoadRank extends TCLoad {
             }
 //            loadAgeGroupAvgRatingRank();
 
-
+*/
             int seasonId = getSeasonId(roundId);
 
             if (seasonId >= 0) {
@@ -1344,8 +1344,10 @@ public class TCLoadRank extends TCLoad {
         size = l.size();
         for (int i = 0; i < size; i++) {
             CountryRank r = (CountryRank) l.get(i);
+log.info("country " + r.getCountryCode() + ":" + r.getRating() + ". Previous="+rating);
 
             if (Math.abs(rating - r.getRating()) >= 0.01) {
+                log.info("different! " + Math.abs(rating - r.getRating()));
                 rank = i + 1;
             }
             rating = r.getRating();
