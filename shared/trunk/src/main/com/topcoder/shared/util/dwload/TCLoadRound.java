@@ -1683,7 +1683,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,num_ratings ");                     // 33
             query.append("       ,rated_flag ");                      // 34
             query.append("       ,team_points ");                     // 35
-            query.append("       ,team_id ");                         // 36
+            query.append("       ,team_id) ");                         // 36
             query.append("VALUES (?,?,?,?,?,?,?,?,?,?,");  // 10 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 20 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 30 values
