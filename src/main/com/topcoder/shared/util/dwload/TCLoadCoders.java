@@ -1799,7 +1799,8 @@ public class TCLoadCoders extends TCLoad {
 
             while (rs.next()) {
                 psDel.setInt(1, rs.getInt("coder_id"));
-                psDel.executeUpdate();
+                int erased = psDel.executeUpdate();
+                log.info("erased " + erased + " for coder " +  rs.getInt("coder_id"));
                 try {
                     psIns.setInt(1, rs.getInt("team_id"));
                     psIns.setInt(2, rs.getInt("coder_id"));
