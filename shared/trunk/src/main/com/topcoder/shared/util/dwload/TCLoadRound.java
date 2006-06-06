@@ -1194,6 +1194,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,r.short_name ");                       // 11
             query.append("       ,r.forum_id");                          // 12
             query.append("       ,r.rated_ind");                         // 13
+            query.append("       ,r.region_id");                         // 14
             query.append("  FROM round r ");
             query.append("       ,round_segment rs ");
             query.append(" WHERE r.round_id = ? ");
@@ -1220,10 +1221,11 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,round_type_desc ");  // 11
             query.append("       ,short_name ");       // 12
             query.append("       ,forum_id ");         // 13
-            query.append("       ,rated_ind)");         // 14
+            query.append("       ,rated_ind ");        // 14
+            query.append("       ,region_id ");        // 15
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");
-            query.append("?,?,?,?)");
+            query.append("?,?,?,?,?)");
 
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1241,8 +1243,9 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,round_type_desc = ? "); // 10
             query.append("       ,short_name = ? ");      // 11
             query.append("       ,forum_id = ? ");        // 12
-            query.append("       ,rated_ind = ? ");        // 13
-            query.append(" WHERE round_id = ? ");         // 14
+            query.append("       ,rated_ind = ? ");       // 13
+            query.append("       ,region_id = ? ");       // 14
+            query.append(" WHERE round_id = ? ");         // 15
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1279,7 +1282,8 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setString(11, rs.getString(11));   // shortname
                     psUpd.setInt(12, rs.getInt(12));   // forum_id
                     psUpd.setInt(13, rs.getInt(13));   // rated_ind
-                    psUpd.setInt(14, rs.getInt(1));  // round_id
+                    psUpd.setInt(14, rs.getInt(14));   // region_id
+                    psUpd.setInt(15, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -1304,6 +1308,7 @@ public class TCLoadRound extends TCLoad {
                     psIns.setString(12, rs.getString(11));  // short name
                     psIns.setString(13, rs.getString(12));  // forum_id
                     psIns.setInt(14, rs.getInt(13));  // rated_ind
+                    psIns.setInt(15, rs.getInt(14));  // region_id
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
@@ -1765,20 +1770,20 @@ public class TCLoadRound extends TCLoad {
                     numRatings = ((Integer) ratingsMap.get(tempCoderId)).intValue();
                 psIns.setInt(33, rs.getInt("rated_flag") == 1 ? numRatings + 1 : numRatings);
                 psIns.setInt(34, rs.getInt("rated_flag"));
-                
-                
+
+
                 if (rs.getString("team_points") == null) {
                     psIns.setNull(35, java.sql.Types.DECIMAL);
-                } else {                    
+                } else {
                     psIns.setInt(35, rs.getInt("team_points"));
                 }
-                
+
                 if (rs.getString("team_id") == null) {
                     psIns.setNull(36, java.sql.Types.DECIMAL);
                 } else {
-                    psIns.setInt(36, rs.getInt("team_id"));                    
+                    psIns.setInt(36, rs.getInt("team_id"));
                 }
-                
+
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
