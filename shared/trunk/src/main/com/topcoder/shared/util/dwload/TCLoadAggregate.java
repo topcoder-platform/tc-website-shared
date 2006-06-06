@@ -54,7 +54,10 @@ public class TCLoadAggregate extends TCLoad {
     private int STATUS_CHLNG_SUCCEEDED = 140;  // chlngsucceeded
     private int STATUS_PASSED_SYS_TEST = 150;  // passsystest
     private int STATUS_FAILED_SYS_TEST = 160;  // failsystest
+    private static final int TC_RATING_TYPE_ID = 1;
+
     private boolean FULL_LOAD = false;//fullload
+    private int algoType = 0; // 1 for regular, 2 for hs
 
     /**
      * Constructor. Set our usage message here.
@@ -165,7 +168,8 @@ public class TCLoadAggregate extends TCLoad {
      */
     public void performLoad() throws Exception {
         try {
-
+            algoType = getRoundType(fRoundId);
+            
             loadRoomResult2();
 
             loadCoderDivision();
@@ -178,16 +182,18 @@ public class TCLoadAggregate extends TCLoad {
 
             loadCoderLevel();
 
-            loadStreak();
-
-            loadRatingIncreaseStreak(true);
-
-            loadRatingIncreaseStreak(false);
-
-            loadRatingDecreaseStreak(true);
-
-            loadRatingDecreaseStreak(false);
-
+            if (algoType == TC_RATING_TYPE_ID) {
+                loadStreak();
+    
+                loadRatingIncreaseStreak(true);
+    
+                loadRatingIncreaseStreak(false);
+    
+                loadRatingDecreaseStreak(true);
+    
+                loadRatingDecreaseStreak(false);
+            }
+            
             loadRoundProblem();
 
             loadProblemLanguage();
@@ -222,7 +228,6 @@ public class TCLoadAggregate extends TCLoad {
         PreparedStatement psIns = null;
         ResultSet rs = null;
         StringBuffer query = null;
-        int algoType = getRoundType(fRoundId);
 
         try {
             // Get all the coders that participated in this round
@@ -584,7 +589,7 @@ public class TCLoadAggregate extends TCLoad {
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
-                query.append(" AND rt.algo_rating_type_id = " + getRoundType(fRoundId));
+                query.append(" AND rt.algo_rating_type_id = " + algoType);
             }
             query.append(" GROUP BY 1,2,3, 18");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
@@ -890,7 +895,7 @@ public class TCLoadAggregate extends TCLoad {
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
-                query.append(" AND rt.algo_rating_type_id = " + getRoundType(fRoundId));
+                query.append(" AND rt.algo_rating_type_id = " + algoType);
             }
             query.append(" GROUP BY coder_id, algo_rating_type_id ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
