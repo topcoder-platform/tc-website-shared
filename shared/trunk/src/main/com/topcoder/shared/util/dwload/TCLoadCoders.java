@@ -1785,7 +1785,7 @@ public class TCLoadCoders extends TCLoad {
             query = new StringBuffer(100);
             query.append("DELETE FROM team_coder_xref");
             query.append(" WHERE coder_id = ?");
-            psDel = prepareStatement(query.toString(), SOURCE_DB);
+            psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append("INSERT INTO team_coder_xref ");
@@ -1799,8 +1799,7 @@ public class TCLoadCoders extends TCLoad {
 
             while (rs.next()) {
                 psDel.setInt(1, rs.getInt("coder_id"));
-                int erased = psDel.executeUpdate();
-                log.info("erased " + erased + " for coder " +  rs.getInt("coder_id"));
+                psDel.executeUpdate();
                 try {
                     psIns.setInt(1, rs.getInt("team_id"));
                     psIns.setInt(2, rs.getInt("coder_id"));
