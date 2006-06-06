@@ -1766,6 +1766,7 @@ public class TCLoadCoders extends TCLoad {
         int count = 0;
         int retVal = 0;
         PreparedStatement psSel = null;
+        PreparedStatement psDel = null;
         PreparedStatement psIns = null;
         ResultSet rs = null;
         StringBuffer query = null;
@@ -1782,6 +1783,11 @@ public class TCLoadCoders extends TCLoad {
             psSel.setTimestamp(1, fLastLogTime);
 
             query = new StringBuffer(100);
+            query.append("DELETE FROM team_coder_xref");
+            query.append(" WHERE coder_id = ?");
+            psDel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
             query.append("INSERT INTO team_coder_xref ");
             query.append(" (team_id ");
             query.append(" ,coder_id) ");
@@ -1792,6 +1798,8 @@ public class TCLoadCoders extends TCLoad {
             rs = executeQuery(psSel, "loadTeamCoderXref");
 
             while (rs.next()) {
+                psDel.setInt(1, rs.getInt("coder_id"));
+                psDel.executeUpdate();
                 try {
                     psIns.setInt(1, rs.getInt("team_id"));
                     psIns.setInt(2, rs.getInt("coder_id"));
@@ -1811,6 +1819,10 @@ public class TCLoadCoders extends TCLoad {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'team_coder_xref' table failed.\n" +
                     sqle.getMessage());
+        } finally {
+            close(psSel);
+            close(psDel);
+            close(psIns);
         }
     }
 
