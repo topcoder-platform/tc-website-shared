@@ -184,7 +184,6 @@ public class TCLoadCoders extends TCLoad {
             query = new StringBuffer(100);
             query.append("SELECT s.state_code ");
             query.append(" ,s.state_name ");
-            query.append(" ,s.region_code ");
             query.append(" FROM state s ");
             query.append(" WHERE s.modify_date > ?");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
@@ -193,14 +192,13 @@ public class TCLoadCoders extends TCLoad {
             query = new StringBuffer(100);
             query.append("INSERT INTO state ");
             query.append(" (state_code ");
-            query.append(" ,state_name ");
-            query.append(" ,region_code) ");
+            query.append(" ,state_name) ");
             query.append("VALUES (");
-            query.append("?,?,?)");
+            query.append("?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append(" UPDATE state SET state_name = ?, region_code = ? WHERE state_code = ?");
+            query.append(" UPDATE state SET state_name = ? WHERE state_code = ?");
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             rs = executeQuery(psSel, "loadState");
@@ -211,13 +209,11 @@ public class TCLoadCoders extends TCLoad {
                 try {
                     psIns.setString(1, state_code);
                     psIns.setString(2, rs.getString("state_name"));
-                    psIns.setString(3, rs.getString("region_code"));
                     retVal = psIns.executeUpdate();
                 } catch (Exception e) {
                     // the insert failed, so try an update
                     psUpd.setString(1, rs.getString("state_name"));
-                    psUpd.setString(2, rs.getString("region_code"));
-                    psUpd.setString(3, state_code);
+                    psUpd.setString(2, state_code);
                     retVal = psUpd.executeUpdate();
                 }
 
