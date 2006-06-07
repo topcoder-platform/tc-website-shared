@@ -195,6 +195,8 @@ public class TCLoadRound extends TCLoad {
             loadRoomResult();
 
             loadRating();
+            
+            loadSeasonRating();
 
             loadCoderProblem();
 
@@ -2393,6 +2395,197 @@ public class TCLoadRound extends TCLoad {
         }
     }
 
+    /**
+     * Load the season_algo_rating table in DW.
+     * This is based in the table of the same name in transactional, but has some additional information for
+     * highest and lowest rating, first and last round rated and number of competitions.
+     * The number of competitions is counted from room_results.
+     * The other fields are the result of checking whether the previous values in the table in DW are smaller/bigger
+     * than the values being inserted.
+     * For example, if there is already a row for the coder in the season with highest rating = 2000 but the current
+     * rating is 2100, the highest rating will be replaced.
+     */
+    private void loadSeasonRating() throws Exception {
+        int count = 0;
+        int retVal = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psSel2 = null;
+        PreparedStatement psSelNumCompetitions = null;
+        PreparedStatement psIns = null;
+        PreparedStatement psDel = null;
+        ResultSet rs = null;
+        ResultSet rs2 = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT r.coder_id ");           // 1
+            query.append("       ,r.rating ");            // 2
+            query.append("       ,r.num_ratings ");       // 3
+            query.append("       ,r.vol ");               // 4
+            query.append("       ,r.season_id ");         // 5
+            query.append("       ,r.round_id ");          // 6
+            query.append("  FROM season_algo_rating r ");
+            query.append("  WHERE r.modify_date > ? ");
+            query.append("   AND NOT EXISTS ");
+            query.append("       (SELECT 'pops' ");
+            query.append("          FROM group_user gu ");
+            query.append("         WHERE gu.user_id = r.coder_id ");
+            query.append("           AND gu.group_id = 13)");
+            query.append("   AND NOT EXISTS ");
+            query.append("       (SELECT 'pops' ");
+            query.append("          FROM group_user gu ");
+            query.append("         WHERE gu.user_id = r.coder_id ");
+            query.append("           AND gu.group_id = 14)");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT first_rated_round_id ");  // 1
+            query.append("       ,last_rated_round_id ");  // 2
+            query.append("       ,lowest_rating ");        // 3
+            query.append("       ,highest_rating ");       // 4
+            query.append("  FROM season_algo_rating ");
+            query.append(" WHERE coder_id = ?");
+            query.append(" AND season_id  = ?");
+            psSel2 = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO season_algo_rating ");
+            query.append("      (coder_id ");               // 1
+            query.append("       ,season_id ");             // 2
+            query.append("       ,rating ");                // 3
+            query.append("       ,vol ");                   // 4
+            query.append("       ,num_ratings ");           // 5
+            query.append("       ,num_competitions ");      // 6
+            query.append("       ,highest_rating ");        // 7
+            query.append("       ,lowest_rating ");         // 8
+            query.append("       ,first_rated_round_id ");  // 9
+            query.append("       ,last_rated_round_id) ");   // 10
+            query.append("VALUES (");
+            query.append("?,?,?,?,?,?,?,?,?,?)");  // 10 values
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT count(*) ");     // 1
+            query.append("  FROM room_result rr ");
+            query.append("       ,round r ");
+            query.append("       ,contest c ");
+            query.append(" WHERE r.round_id = rr.round_id ");
+            query.append("   AND r.contest_id = c.contest_id ");
+            query.append("   AND rr.attended = 'Y' ");
+            query.append("   AND rr.coder_id = ? ");
+            query.append("   AND c.season_id = ? ");
+            psSelNumCompetitions = prepareStatement(query.toString(), TARGET_DB);
+
+
+            query = new StringBuffer(100);
+            query.append("DELETE FROM season_algo_rating where coder_id = ? ");
+            query.append(" AND season_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+
+            psSel.setTimestamp(1, fLastLogTime);
+            rs = executeQuery(psSel, "loadRating");
+
+            while (rs.next()) {
+                int coder_id = rs.getInt(1);
+                int rating = rs.getInt(2);
+                int num_ratings = rs.getInt(3);
+                int vol = rs.getInt(4);
+                int season_id = rs.getInt(5);
+                int round_id = rs.getInt(6);
+
+                int num_competitions = 0;
+
+
+                //use by default the loaded round id and rating, so that if there aren't other rounds, that round is the first and last
+                // and the rating is the lowest and highest.
+                int first_rated_round_id = round_id;
+                int last_rated_round_id = round_id;
+                int lowest_rating = rating;
+                int highest_rating = rating;
+
+                psSel2.clearParameters();
+                psSel2.setInt(1, coder_id);
+                psSel2.setInt(2, season_id);
+                rs2 = psSel2.executeQuery();
+
+                // if there was already a row for that coder in the season, check the min and max for round date and rating
+                if (rs2.next()) {
+                    if (rs2.getString(1) != null) {
+                        first_rated_round_id = rs2.getInt(1);
+                    }
+
+                    if (rs2.getString(2) != null)
+                    {
+                        last_rated_round_id = rs2.getInt(2);
+                    }
+                    lowest_rating = Math.min(rs2.getInt(3), rating);
+                    highest_rating = Math.max(rs2.getInt(4), rating);
+
+                    if (getRoundStart(round_id).compareTo(getRoundStart(first_rated_round_id)) < 0)
+                        first_rated_round_id = round_id;
+
+                    if (getRoundStart(round_id).compareTo(getRoundStart(last_rated_round_id)) > 0)
+                        last_rated_round_id = round_id;
+
+
+                    // clear the row
+                    psDel.clearParameters();
+                    psDel.setInt(1, coder_id);
+                    psDel.setInt(2, season_id);
+                    psDel.executeUpdate();
+                }
+
+                close(rs2);
+
+                // Get the number of competitions
+                psSelNumCompetitions.clearParameters();
+                psSelNumCompetitions.setInt(1, coder_id);
+                psSelNumCompetitions.setInt(2, season_id);
+                rs2 = psSelNumCompetitions.executeQuery();
+                if (rs2.next()) {
+                    num_competitions = rs2.getInt(1);
+                }
+
+                close(rs2);
+
+                psIns.clearParameters();
+                psIns.setInt(1, coder_id);
+                psIns.setInt(2, season_id);
+                psIns.setInt(3, rating);
+                psIns.setInt(4, vol);
+                psIns.setInt(5, num_ratings);
+                psIns.setInt(6, num_competitions);
+                psIns.setInt(7, highest_rating);
+                psIns.setInt(8, lowest_rating);
+                psIns.setInt(9, first_rated_round_id);
+                psIns.setInt(10, last_rated_round_id);
+
+                retVal = psIns.executeUpdate();
+                count = count + retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadCoders: Insert for coder_id " +
+                            coder_id +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                printLoadProgress(count, "season_algo_rating");
+            }
+
+            log.info("Season Rating records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_algo_rating' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psSel2);
+            close(psSelNumCompetitions);
+            close(psIns);
+            close(psDel);
+        }
+    }
 
     /**
      * This method places the start time of the load into the update_log table
