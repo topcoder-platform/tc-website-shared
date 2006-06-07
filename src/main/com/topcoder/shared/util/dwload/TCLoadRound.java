@@ -1284,7 +1284,12 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setString(11, rs.getString(11));   // shortname
                     psUpd.setInt(12, rs.getInt(12));   // forum_id
                     psUpd.setInt(13, rs.getInt(13));   // rated_ind
-                    psUpd.setInt(14, rs.getInt(14));   // region_id
+                    if (rs.getString(14) != null) {
+                        psUpd.setInt(14, rs.getInt(14));  // region_id
+                    } else {
+                        psUpd.setNull(14,java.sql.Types.DECIMAL);  // region_id
+                    }
+                    
                     psUpd.setInt(15, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
@@ -1310,7 +1315,11 @@ public class TCLoadRound extends TCLoad {
                     psIns.setString(12, rs.getString(11));  // short name
                     psIns.setString(13, rs.getString(12));  // forum_id
                     psIns.setInt(14, rs.getInt(13));  // rated_ind
-                    psIns.setInt(15, rs.getInt(14));  // region_id
+                    if (rs.getString(14) != null) {
+                        psIns.setInt(15, rs.getInt(14));  // region_id
+                    } else {
+                        psIns.setNull(15,java.sql.Types.DECIMAL);  // region_id
+                    }
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
