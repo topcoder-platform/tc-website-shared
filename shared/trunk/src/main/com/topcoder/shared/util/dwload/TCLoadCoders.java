@@ -1661,30 +1661,4 @@ public class TCLoadCoders extends TCLoad {
         }
     }
 
-    private java.sql.Date getRoundStart(int roundId)  throws SQLException
-    {
-        Integer iRoundId = new Integer(roundId);
-        StringBuffer query = null;
-        if (fRoundStartHT.get(iRoundId) != null)
-            return (java.sql.Date) fRoundStartHT.get(iRoundId);
-
-        query = new StringBuffer(100);
-        query.append("SELECT rs.start_time ");
-        query.append("  FROM round_segment rs ");
-        query.append(" WHERE rs.round_id = ? ");
-        query.append("   AND rs.segment_id = " + CODING_SEGMENT_ID);
-        PreparedStatement pSel = prepareStatement(query.toString(), SOURCE_DB);
-
-        pSel.setInt(1, roundId);
-        ResultSet rs = pSel.executeQuery();
-
-        if (rs.next()) {
-            java.sql.Date date = rs.getDate(1);
-            fRoundStartHT.put(new Integer(roundId), date);
-            return date;
-        } else {
-            throw new SQLException("Unable to determine start for " + roundId);
-        }
-    }
-
 }
