@@ -2426,17 +2426,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,r.season_id ");         // 5
             query.append("       ,r.round_id ");          // 6
             query.append("  FROM season_algo_rating r ");
-            query.append("  WHERE r.modify_date > ? ");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = r.coder_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = r.coder_id ");
-            query.append("           AND gu.group_id = 14)");
+            query.append("  WHERE r.round_id = ? ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -2483,7 +2473,7 @@ public class TCLoadRound extends TCLoad {
             query.append(" AND season_id = ?");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
-            psSel.setTimestamp(1, fLastLogTime);
+            psSel.setInt(1, fRoundId);
             rs = executeQuery(psSel, "loadRating");
 
             while (rs.next()) {
