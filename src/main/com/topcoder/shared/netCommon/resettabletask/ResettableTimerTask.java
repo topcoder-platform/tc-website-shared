@@ -62,7 +62,10 @@ public abstract class ResettableTimerTask implements Runnable {
                     wait(waitTime);
                 }
                 if (!stopped && !reset) {
-                    stopped |= doAction();
+                    boolean value = doAction();
+                    synchronized (this) {
+                        stopped |= value;
+                    }
                 }
             } catch (InterruptedException e) {
                 stopped = true;
