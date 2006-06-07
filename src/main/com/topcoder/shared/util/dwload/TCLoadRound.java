@@ -2436,6 +2436,16 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,r.round_id ");          // 6
             query.append("  FROM season_algo_rating r ");
             query.append("  WHERE r.round_id = ? ");
+            query.append("   AND NOT EXISTS ");
+            query.append("       (SELECT 'pops' ");
+            query.append("          FROM group_user gu ");
+            query.append("         WHERE gu.user_id = r.coder_id ");
+            query.append("           AND gu.group_id = 13)");
+            query.append("   AND NOT EXISTS ");
+            query.append("       (SELECT 'pops' ");
+            query.append("          FROM group_user gu ");
+            query.append("         WHERE gu.user_id = r.coder_id ");
+            query.append("           AND gu.group_id = 14)");            
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
