@@ -1222,7 +1222,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,short_name ");       // 12
             query.append("       ,forum_id ");         // 13
             query.append("       ,rated_ind ");        // 14
-            query.append("       ,region_id ");        // 15
+            query.append("       ,region_id) ");       // 15
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");
             query.append("?,?,?,?,?)");
