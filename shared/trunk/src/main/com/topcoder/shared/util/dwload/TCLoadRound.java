@@ -2475,7 +2475,7 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND rr.attended = 'Y' ");
             query.append("   AND rr.coder_id = ? ");
             query.append("   AND c.season_id = ? ");
-            psSelNumCompetitions = prepareStatement(query.toString(), TARGET_DB);
+            psSelNumCompetitions = prepareStatement(query.toString(), SOURCE_DB);
 
 
             query = new StringBuffer(100);
