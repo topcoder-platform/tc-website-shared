@@ -293,8 +293,8 @@ public class TCLoadAggregate extends TCLoad {
 
         try {
             query = new StringBuffer(100);
-            query.append("SELECT coder_id ");                              // 1
-            query.append("       ,division_id ");                          // 2
+            query.append("SELECT rr.coder_id ");                              // 1
+            query.append("       ,rr.division_id ");                          // 2
             query.append("       ,SUM(problems_presented) ");              // 3
             query.append("       ,SUM(problems_opened) ");                 // 4
             query.append("       ,SUM(problems_submitted) ");              // 5
@@ -313,16 +313,23 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,SUM(system_test_points) ");              // 18
             query.append("       ,SUM(final_points) ");                    // 19
             query.append("       ,SUM(defense_points) ");                  // 20
-            query.append("  FROM room_result ");
+            query.append("       ,rt.algo_rating_type_id ");               // 21
+            query.append("  FROM room_result rr, round r, round_type_lu rt ");
+            query.append("  WHERE rr.round_id = r.round_id ");
+            query.append("  AND r.round_type_id = rt.round_type_id ");
+
             if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
-                query.append(" WHERE coder_id IN");
+                query.append(" AND rr.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
+                query.append(" AND rt.algo_rating_type_id = " + algoType);
+                
             }
-            query.append(" GROUP BY coder_id ");
-            query.append("          ,division_id");
+            query.append(" GROUP BY rr.coder_id ");
+            query.append("          ,rr.division_id");
+            query.append("          ,rt.algo_rating_type_id");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -346,16 +353,18 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,challenge_points ");                // 17
             query.append("       ,system_test_points ");              // 18
             query.append("       ,final_points ");                    // 19
-            query.append("       ,defense_points) ");                  // 20
+            query.append("       ,defense_points  ");                 // 20
+            query.append("       ,algo_rating_type_id) ");            // 21            
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?,?,?,?,?,?,?,?)");  // 20 total values
+            query.append("?,?,?,?,?,?,?,?,?,?,?)");  // 21 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append("DELETE FROM coder_division ");
             query.append(" WHERE coder_id = ? ");
             query.append("   AND division_id = ?");
+            query.append("   AND algo_rating_type_id = ?");
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             // On to the load
@@ -364,10 +373,12 @@ public class TCLoadAggregate extends TCLoad {
             while (rs.next()) {
                 int coder_id = rs.getInt(1);
                 int division_id = rs.getInt(2);
+                int algo_rating_type_id = rs.getInt(21);
 
                 psDel.clearParameters();
                 psDel.setInt(1, coder_id);
                 psDel.setInt(2, division_id);
+                psDel.setInt(3, algo_rating_type_id);
                 psDel.executeUpdate();
 
                 psIns.clearParameters();
@@ -391,7 +402,8 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(18, rs.getFloat(18));  // system_test_points
                 psIns.setFloat(19, rs.getFloat(19));  // final_points
                 psIns.setFloat(20, rs.getFloat(20));  // defense_points
-
+                psIns.setInt(21, rs.getInt(21));  // algo_rating_type_id
+                
                 retVal = psIns.executeUpdate();
                 count += retVal;
                 if (retVal != 1) {
