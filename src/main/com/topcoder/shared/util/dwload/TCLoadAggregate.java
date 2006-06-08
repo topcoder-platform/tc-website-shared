@@ -168,12 +168,10 @@ public class TCLoadAggregate extends TCLoad {
      */
     public void performLoad() throws Exception {
         try {
-            algoType = getRoundType(fRoundId);          
-/*  
+            algoType = getRoundType(fRoundId);
             loadRoomResult2();
-*/ 
             loadCoderDivision();
-            /*
+
             loadRoundDivision();
 
             loadRoomResult3();
@@ -184,16 +182,16 @@ public class TCLoadAggregate extends TCLoad {
 
             if (algoType == TC_RATING_TYPE_ID) {
                 loadStreak();
-    
+
                 loadRatingIncreaseStreak(true);
-    
+
                 loadRatingIncreaseStreak(false);
-    
+
                 loadRatingDecreaseStreak(true);
-    
+
                 loadRatingDecreaseStreak(false);
             }
-            
+
             loadRoundProblem();
 
             loadProblemLanguage();
@@ -205,7 +203,6 @@ public class TCLoadAggregate extends TCLoad {
             //if running for an old round, the rating history load can not be run
             //don't forget to remove it from the clear round method as well.
             loadRatingHistory();
-*/
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
@@ -325,7 +322,7 @@ public class TCLoadAggregate extends TCLoad {
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
                 query.append(" AND rt.algo_rating_type_id = " + algoType);
-                
+
             }
             query.append(" GROUP BY rr.coder_id ");
             query.append("          ,rr.division_id");
@@ -354,7 +351,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,system_test_points ");              // 18
             query.append("       ,final_points ");                    // 19
             query.append("       ,defense_points  ");                 // 20
-            query.append("       ,algo_rating_type_id) ");            // 21            
+            query.append("       ,algo_rating_type_id) ");            // 21
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
             query.append("?,?,?,?,?,?,?,?,?,?,?)");  // 21 total values
@@ -403,7 +400,7 @@ public class TCLoadAggregate extends TCLoad {
                 psIns.setFloat(19, rs.getFloat(19));  // final_points
                 psIns.setFloat(20, rs.getFloat(20));  // defense_points
                 psIns.setInt(21, rs.getInt(21));  // algo_rating_type_id
-                
+
                 retVal = psIns.executeUpdate();
                 count += retVal;
                 if (retVal != 1) {
@@ -641,7 +638,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" FROM problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");      
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE p.round_id = rr.round_id ");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
@@ -650,14 +647,14 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" AND rr.division_id = p.division_id");
             query.append(" AND p.level_id = coder_level.level_id");
             query.append(" AND p.division_id = coder_level.division_id)");
-            
+
             query.append(" ,challenge_attempts_made = ");
             query.append(" (SELECT count(*) ");
             query.append(" FROM challenge c ");
             query.append(" ,problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");      
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE c.challenger_id = rr.coder_id");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
@@ -669,14 +666,14 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" AND p.problem_id = c.problem_id");
             query.append(" AND p.division_id = coder_level.division_id");
             query.append(" AND p.level_id = coder_level.level_id)");
-            
+
             query.append(" ,challenges_made_successful = ");
             query.append(" (SELECT count(*) ");
             query.append(" FROM challenge c ");
             query.append(" ,problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");      
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE c.challenger_id = rr.coder_id");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
@@ -696,7 +693,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");      
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE c.challenger_id = rr.coder_id");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
@@ -716,7 +713,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");      
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE c.defendant_id = rr.coder_id");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
@@ -735,7 +732,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");                  
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE c.defendant_id = rr.coder_id");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
@@ -755,7 +752,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,problem p ");
             query.append(" ,room_result rr ");
             query.append(" ,round r ");
-            query.append(" ,round_type_lu rt ");                  
+            query.append(" ,round_type_lu rt ");
             query.append(" WHERE c.defendant_id = rr.coder_id");
             query.append(" AND r.round_id = rr.round_id ");
             query.append(" AND r.round_type_id = rt.round_type_id ");
