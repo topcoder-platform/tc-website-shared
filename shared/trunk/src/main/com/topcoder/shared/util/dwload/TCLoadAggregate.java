@@ -169,7 +169,7 @@ public class TCLoadAggregate extends TCLoad {
     public void performLoad() throws Exception {
         try {
             algoType = getRoundType(fRoundId);
-/*            
+            
             loadRoomResult2();
 
             loadCoderDivision();
@@ -179,7 +179,7 @@ public class TCLoadAggregate extends TCLoad {
             loadRoomResult3();
 
             loadCoderProblemSummary();
-*/
+
             loadCoderLevel();
 
             if (algoType == TC_RATING_TYPE_ID) {
