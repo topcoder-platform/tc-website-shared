@@ -170,7 +170,7 @@ public class TCLoadAggregate extends TCLoad {
         try {
             algoType = getRoundType(fRoundId);
             
-            loadRoomResult2();
+/*            loadRoomResult2();
 
             loadCoderDivision();
 
@@ -179,9 +179,9 @@ public class TCLoadAggregate extends TCLoad {
             loadRoomResult3();
 
             loadCoderProblemSummary();
-
+*/
             loadCoderLevel();
-
+/*
             if (algoType == TC_RATING_TYPE_ID) {
                 loadStreak();
     
@@ -205,7 +205,7 @@ public class TCLoadAggregate extends TCLoad {
             //if running for an old round, the rating history load can not be run
             //don't forget to remove it from the clear round method as well.
             loadRatingHistory();
-
+*/
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
