@@ -342,11 +342,7 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,u.handle ");                   // 16
             query.append("       ,u.status ");                   // 17
             query.append("       ,e.address ");                  // 18
-            query.append("       ,(SELECT rs.region_code ");     // 19
-            query.append("           FROM region_state rs ");
-            query.append("          WHERE a.state_code = rs.state_code ");
-            query.append("          AND rs.user_type_id = 3) as region_code");
-            query.append("       ,c.comp_country_code");         // 20
+            query.append("       ,c.comp_country_code");         // 19
             query.append("  FROM coder c ");
             query.append("       ,user u ");
             query.append("       ,email e ");
@@ -392,11 +388,10 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,handle ");                    // 16
             query.append("       ,status ");                    // 17
             query.append("       ,email ");                     // 18
-            query.append("       ,coder_region_code ");         // 19
             query.append("       ,comp_country_code) ");         // 20
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
-            query.append("?,?,?,?,?,?,?,?,?,?)");  // 20
+            query.append("?,?,?,?,?,?,?,?,?)");  // 19
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // Our update statement
@@ -419,9 +414,8 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,handle = ? ");                    // 15
             query.append("       ,status = ? ");                    // 16
             query.append("       ,email = ? ");                     // 17
-            query.append("       ,coder_region_code = ? ");         // 18
-            query.append("       ,comp_country_code = ?");          // 19
-            query.append("WHERE coder_id = ?");                     // 20
+            query.append("       ,comp_country_code = ?");          // 18
+            query.append("WHERE coder_id = ?");                     // 19
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             // Our select statement to determine if a particular row is
@@ -468,9 +462,8 @@ public class TCLoadCoders extends TCLoad {
                     psUpd.setString(15, rs.getString("handle"));
                     psUpd.setString(16, rs.getString("status"));
                     psUpd.setString(17, rs.getString("address"));
-                    psUpd.setString(18, rs.getString("region_code"));
-                    psUpd.setString(19, rs.getString("comp_country_code"));
-                    psUpd.setLong(20, coder_id);
+                    psUpd.setString(18, rs.getString("comp_country_code"));
+                    psUpd.setLong(19, coder_id);
 
                     // Now, execute the insert of the new row
                     retVal = psUpd.executeUpdate();
@@ -500,8 +493,7 @@ public class TCLoadCoders extends TCLoad {
                     psIns.setString(16, rs.getString("handle"));
                     psIns.setString(17, rs.getString("status"));
                     psIns.setString(18, rs.getString("address"));
-                    psIns.setString(19, rs.getString("region_code"));
-                    psIns.setString(20, rs.getString("comp_country_code"));
+                    psIns.setString(19, rs.getString("comp_country_code"));
 
                     // Now, execute the insert of the new row
                     retVal = psIns.executeUpdate();
