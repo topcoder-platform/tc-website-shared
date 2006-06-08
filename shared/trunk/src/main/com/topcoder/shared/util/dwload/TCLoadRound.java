@@ -219,13 +219,15 @@ public class TCLoadRound extends TCLoad {
         try {
             a = new ArrayList();
 
+            int algoType = getRoundType(fRoundId);
 
             if (FULL_LOAD) {
-                a.add("DELETE FROM coder_level");
-                a.add("DELETE FROM coder_division");
+                String divs = algoType == 1? "1,2" : "-1";
+                a.add("DELETE FROM coder_level where algo_rating_type_id=" + algoType);
+                a.add("DELETE FROM coder_division where division_id in (" + divs + ")");
                 a.add("DELETE FROM room_result WHERE round_id = ?");
-                a.add("DELETE FROM round_division");
-                a.add("DELETE FROM coder_problem_summary");
+                a.add("DELETE FROM round_division where round_id=?");
+                a.add("DELETE FROM coder_problem_summary where algo_rating_type_id=" + algoType);
                 a.add("DELETE FROM system_test_case WHERE problem_id in (SELECT problem_id FROM round_problem WHERE round_id = ?)");
                 a.add("DELETE FROM round_problem");
                 a.add("DELETE FROM problem_language");
@@ -240,7 +242,6 @@ public class TCLoadRound extends TCLoad {
                 a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
                 a.add("DELETE FROM algo_rating_history WHERE round_id = ?");
             } else {
-                int algoType = getRoundType(fRoundId);
                 a.add("DELETE FROM coder_level WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?) AND algo_rating_type_id=" + algoType);
                 a.add("DELETE FROM coder_division WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
                 a.add("DELETE FROM coder_problem_summary WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?) AND algo_rating_type_id=" + algoType);
