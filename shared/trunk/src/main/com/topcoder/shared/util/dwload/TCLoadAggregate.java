@@ -168,20 +168,20 @@ public class TCLoadAggregate extends TCLoad {
      */
     public void performLoad() throws Exception {
         try {
-            algoType = getRoundType(fRoundId);
-            
-/*            loadRoomResult2();
-
+            algoType = getRoundType(fRoundId);          
+/*  
+            loadRoomResult2();
+*/ 
             loadCoderDivision();
-
+            /*
             loadRoundDivision();
 
             loadRoomResult3();
 
             loadCoderProblemSummary();
-*/
+
             loadCoderLevel();
-/*
+
             if (algoType == TC_RATING_TYPE_ID) {
                 loadStreak();
     
