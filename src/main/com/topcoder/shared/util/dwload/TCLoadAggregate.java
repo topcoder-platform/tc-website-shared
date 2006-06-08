@@ -169,7 +169,7 @@ public class TCLoadAggregate extends TCLoad {
     public void performLoad() throws Exception {
         try {
             algoType = getRoundType(fRoundId);
-            
+/*            
             loadRoomResult2();
 
             loadCoderDivision();
@@ -179,7 +179,7 @@ public class TCLoadAggregate extends TCLoad {
             loadRoomResult3();
 
             loadCoderProblemSummary();
-
+*/
             loadCoderLevel();
 
             if (algoType == TC_RATING_TYPE_ID) {
@@ -583,13 +583,14 @@ public class TCLoadAggregate extends TCLoad {
             query.append("    , round_type_lu rt ");
             query.append("     WHERE cp.round_id = r.round_id ");
             query.append("     AND r.round_type_id = rt.round_type_id ");
+            query.append("     AND rt.algo_rating_type_id = " + algoType);
+
             if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND cp.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
-                query.append(" AND rt.algo_rating_type_id = " + algoType);
             }
             query.append(" GROUP BY 1,2,3, 18");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
