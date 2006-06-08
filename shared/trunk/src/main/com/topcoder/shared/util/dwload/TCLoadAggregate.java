@@ -888,6 +888,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("      , round_type_lu rt ");
             query.append("      WHERE rr.round_id = r.round_id ");
             query.append("      AND r.round_type_id = rt.round_type_id ");
+            query.append("      AND rt.algo_rating_type_id = " + algoType);
 
             if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND coder_id IN");
@@ -895,7 +896,6 @@ public class TCLoadAggregate extends TCLoad {
                 query.append(" FROM room_result");
                 query.append(" WHERE attended = 'Y'");
                 query.append(" AND round_id = " + fRoundId + ")");
-                query.append(" AND rt.algo_rating_type_id = " + algoType);
             }
             query.append(" GROUP BY coder_id, algo_rating_type_id ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
