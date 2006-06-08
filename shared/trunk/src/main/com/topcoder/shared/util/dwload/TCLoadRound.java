@@ -2002,14 +2002,7 @@ public class TCLoadRound extends TCLoad {
                 component_id = rs.getInt("component_id");
                 // if they didn't submit, use the difference between open time and the end of the coding phase
                 // otherwise use the difference between open time and submit time
-                if (coder_id == 20525058) {
-                    log.info("submit time: " + rs.getLong(10));
-                    log.info("round end time: " + rs.getDate(16));
-                    log.info("round end time: " + rs.getDate(16).getTime());
-                    log.info("open time: " + rs.getLong(9));
-                    log.info("elapsed: " + rs.getLong(11));
-                }
-                long elapsed_time = rs.getLong(10) == 0 ? rs.getDate(16).getTime() - rs.getLong(9) : rs.getLong(11);
+                long elapsed_time = rs.getLong(10) == 0 ? rs.getTimestamp(16).getTime() - rs.getLong(9) : rs.getLong(11);
                 if (elapsed_time < 0) {
                     elapsed_time = 0;
                 }
