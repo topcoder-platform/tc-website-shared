@@ -1011,6 +1011,7 @@ public class TCLoadAggregate extends TCLoad {
         PreparedStatement psDel = null;
         PreparedStatement psIns = null;
         ResultSet rs = null;
+        ResultSet rs2 = null;
         StringBuffer query = null;
 
         try {
@@ -1044,9 +1045,9 @@ public class TCLoadAggregate extends TCLoad {
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("SELECT round_id FROM round");
-            query.append(" WHERE calendar_id = (SELECT MAX(calendar_id) FROM round)");
-
+            query.append("SELECT last_rated_round_id FROM algo_rating ");
+            query.append(" WHERE coder_id = ? and algo_rating_type_id=1 ");
+            
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1054,20 +1055,6 @@ public class TCLoadAggregate extends TCLoad {
 
 
             psDel = prepareStatement(query.toString(), TARGET_DB);
-
-            // Get the most recent round_id
-            // information We compare this against the ending round id for a
-            // streak. If they match, the streak is considered current.
-            rs = executeQuery(psSel2, "getMaxIdFromRoomResult");
-            int latest_round_id = -1;
-            if (rs.next()) {
-                latest_round_id = rs.getInt(1);
-            } else {
-                throw new SQLException("Unable to retrieve max(round_id) from " +
-                        "room_result");
-            }
-
-            close(rs);
 
             // On to the load. First, we want to delete the whole table so
             // we can reload it.
@@ -1109,7 +1096,20 @@ public class TCLoadAggregate extends TCLoad {
                         throw new SQLException("Unknown division_id " + cur_division_id +
                                 ". Code for streak table needs to be " +
                                 "modified to accomodate new division.");
-
+                    
+                    
+                    // Get the most recent round_id information for the coder.
+                    // We compare this against the ending round id for a
+                    // streak. If they match, the streak is considered current.
+                    psSel2.setInt(1, coder_id);
+                    rs2 = psSel2.executeQuery();
+                    int latest_round_id = -1;
+                    if (rs2.next()) {
+                        latest_round_id = rs2.getInt(1);
+                    } 
+                    close(rs2);
+                    
+                    
                     psIns.clearParameters();
                     psIns.setInt(1, cur_coder_id);
                     psIns.setInt(2, streak_type_id);
@@ -1177,6 +1177,7 @@ public class TCLoadAggregate extends TCLoad {
         PreparedStatement psDel = null;
         PreparedStatement psIns = null;
         ResultSet rs = null;
+        ResultSet rs2 = null;
         StringBuffer query = null;
 
         try {
@@ -1212,10 +1213,9 @@ public class TCLoadAggregate extends TCLoad {
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
 
-            //todo change the definition of current.  this doesn't make sense, it should be the user's last rated round
             query = new StringBuffer(100);
-            query.append("SELECT round_id FROM round");
-            query.append(" WHERE calendar_id = (SELECT MAX(calendar_id) FROM round)");
+            query.append("SELECT last_rated_round_id FROM algo_rating ");
+            query.append(" WHERE coder_id = ? and algo_rating_type_id=1 ");
 
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1226,20 +1226,6 @@ public class TCLoadAggregate extends TCLoad {
                 query.append("DELETE FROM streak WHERE streak_type_id in (" + RATING_INCREASE + ")");
 
             psDel = prepareStatement(query.toString(), TARGET_DB);
-
-            // Get the most recent round_id
-            // information We compare this against the ending round id for a
-            // streak. If they match, the streak is considered current.
-            rs = executeQuery(psSel2, "getMaxIdFromRoomResult");
-            int latest_round_id = -1;
-            if (rs.next()) {
-                latest_round_id = rs.getInt(1);
-            } else {
-                throw new SQLException("Unable to retrieve max(round_id) from " +
-                        "room_result");
-            }
-
-            close(rs);
 
             // On to the load. First, we want to delete the whole table so
             // we can reload it.
@@ -1271,6 +1257,18 @@ public class TCLoadAggregate extends TCLoad {
                 } else if (numConsecutive > 1) {  //we have a streak, load it up
                     int streak_type_id = -1;
                     streak_type_id = srmOnly ? RATING_INCREASE_SRM_ONLY : RATING_INCREASE;
+
+                    
+                    // Get the most recent round_id information for the coder.
+                    // We compare this against the ending round id for a
+                    // streak. If they match, the streak is considered current.
+                    psSel2.setInt(1, coder_id);
+                    rs2 = psSel2.executeQuery();
+                    int latest_round_id = -1;
+                    if (rs2.next()) {
+                        latest_round_id = rs2.getInt(1);
+                    } 
+                    close(rs2);
 
                     psIns.clearParameters();
                     psIns.setInt(1, cur_coder_id);
@@ -1336,6 +1334,7 @@ public class TCLoadAggregate extends TCLoad {
         PreparedStatement psDel = null;
         PreparedStatement psIns = null;
         ResultSet rs = null;
+        ResultSet rs2 = null;
         StringBuffer query = null;
 
         try {
@@ -1370,10 +1369,9 @@ public class TCLoadAggregate extends TCLoad {
             query.append("VALUES (?,?,?,?,?,?)");  // 6 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-            //todo change the definition of current.  this doesn't make sense, it should be the user's last rated round
             query = new StringBuffer(100);
-            query.append("SELECT round_id FROM round");
-            query.append(" WHERE calendar_id = (SELECT MAX(calendar_id) FROM round)");
+            query.append("SELECT last_rated_round_id FROM algo_rating ");
+            query.append(" WHERE coder_id = ? and algo_rating_type_id=1 ");
 
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1384,20 +1382,6 @@ public class TCLoadAggregate extends TCLoad {
                 query.append("DELETE FROM streak WHERE streak_type_id in (" + RATING_DECREASE + ")");
 
             psDel = prepareStatement(query.toString(), TARGET_DB);
-
-            // Get the most recent round_id
-            // information We compare this against the ending round id for a
-            // streak. If they match, the streak is considered current.
-            rs = executeQuery(psSel2, "getMaxIdFromRoomResult");
-            int latest_round_id = -1;
-            if (rs.next()) {
-                latest_round_id = rs.getInt(1);
-            } else {
-                throw new SQLException("Unable to retrieve max(round_id) from " +
-                        "room_result");
-            }
-
-            close(rs);
 
             // On to the load. First, we want to delete the whole table so
             // we can reload it.
@@ -1429,6 +1413,17 @@ public class TCLoadAggregate extends TCLoad {
                 } else if (numConsecutive > 1) {  //we have a streak, load it up
                     int streak_type_id = -1;
                     streak_type_id = srmOnly ? RATING_DECREASE_SRM_ONLY : RATING_DECREASE;
+
+                    // Get the most recent round_id information for the coder.
+                    // We compare this against the ending round id for a
+                    // streak. If they match, the streak is considered current.
+                    psSel2.setInt(1, coder_id);
+                    rs2 = psSel2.executeQuery();
+                    int latest_round_id = -1;
+                    if (rs2.next()) {
+                        latest_round_id = rs2.getInt(1);
+                    } 
+                    close(rs2);
 
                     psIns.clearParameters();
                     psIns.setInt(1, cur_coder_id);
