@@ -1045,9 +1045,12 @@ public class TCLoadAggregate extends TCLoad {
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("SELECT last_rated_round_id FROM algo_rating ");
-            query.append(" WHERE coder_id = ? and algo_rating_type_id=1 ");
-            
+            query.append("SELECT round_id FROM round ");
+            query.append("WHERE calendar_id=(SELECT max(r.calendar_id) ");
+            query.append("       FROM room_result rr ,round r ");
+            query.append("       WHERE rr.round_id = r.round_id ");
+            query.append(" AND r.round_type_id =" + SINGLE_ROUND_MATCH);
+            query.append("       AND rr.coder_id = ?)        ");             
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1214,8 +1217,16 @@ public class TCLoadAggregate extends TCLoad {
 
 
             query = new StringBuffer(100);
-            query.append("SELECT last_rated_round_id FROM algo_rating ");
-            query.append(" WHERE coder_id = ? and algo_rating_type_id=1 ");
+            query.append("SELECT round_id FROM round ");
+            query.append("WHERE calendar_id=(SELECT max(r.calendar_id) ");
+            query.append("       FROM room_result rr ,round r ");
+            query.append("       WHERE rr.round_id = r.round_id ");
+            if (srmOnly)
+                query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
+            else
+                query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");
+            
+            query.append("       AND rr.coder_id = ?)        ");    
 
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1370,9 +1381,15 @@ public class TCLoadAggregate extends TCLoad {
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("SELECT last_rated_round_id FROM algo_rating ");
-            query.append(" WHERE coder_id = ? and algo_rating_type_id=1 ");
-
+            query.append("SELECT round_id FROM round ");
+            query.append("WHERE calendar_id=(SELECT max(r.calendar_id) ");
+            query.append("       FROM room_result rr ,round r ");
+            query.append("       WHERE rr.round_id = r.round_id ");
+            if (srmOnly)
+                query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
+            else
+                query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");            
+            query.append("       AND rr.coder_id = ?)        "); 
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
