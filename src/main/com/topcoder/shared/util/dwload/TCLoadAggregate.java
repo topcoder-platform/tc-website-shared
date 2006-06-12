@@ -55,6 +55,7 @@ public class TCLoadAggregate extends TCLoad {
     private int STATUS_PASSED_SYS_TEST = 150;  // passsystest
     private int STATUS_FAILED_SYS_TEST = 160;  // failsystest
     private static final int TC_RATING_TYPE_ID = 1;
+    private static final int HS_RATING_TYPE_ID = 2;
 
     private boolean FULL_LOAD = false;//fullload
     private int algoType = 0; // 1 for regular, 2 for hs
@@ -198,7 +199,9 @@ public class TCLoadAggregate extends TCLoad {
 
             loadCoderProblem();
 
-            loadTeamRound();
+            if (algoType == HS_RATING_TYPE_ID) {
+                loadTeamRound();
+            }
 
             //if running for an old round, the rating history load can not be run
             //don't forget to remove it from the clear round method as well.
