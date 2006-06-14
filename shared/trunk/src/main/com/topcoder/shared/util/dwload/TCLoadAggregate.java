@@ -66,18 +66,18 @@ public class TCLoadAggregate extends TCLoad {
     public TCLoadAggregate() {
         USAGE_MESSAGE = new String(
                 "TCLoadAggregate parameters - defaults in ():\n" +
-                "  -roundid number       : Round ID to load\n" +
-                "  [-failed number]         : Failed status for succeeded column    (0)\n" +
-                "  [-succeeded number]      : Succeeded status for succeeded column (1)\n" +
-                "  [-singrndmatch number]   : Round_type_id for single round matches   (1)\n" +
-                "  [-conswinsdiv1 number]   : Streak_type_id for consecutive div1 wins (1)\n" +
-                "  [-conswinsdiv2 number]   : Streak_type_id for consecutive div2 wins (2)\n" +
-                "  [-opened number]         : Problem_status of opened              (120)\n" +
-                "  [-submitted number]      : Problem_status of submitted           (130)\n" +
-                "  [-chlngsucceeded number] : Problem_status of challenge succeeded (140)\n" +
-                "  [-passsystest number]    : Problem_status of passed system test  (150)\n" +
-                "  [-failsystest number]    : Problem_status of failed system test  (160)\n" +
-                "  [-fullload boolean] : true-clean round load, false-selective  (false)\n");
+                        "  -roundid number       : Round ID to load\n" +
+                        "  [-failed number]         : Failed status for succeeded column    (0)\n" +
+                        "  [-succeeded number]      : Succeeded status for succeeded column (1)\n" +
+                        "  [-singrndmatch number]   : Round_type_id for single round matches   (1)\n" +
+                        "  [-conswinsdiv1 number]   : Streak_type_id for consecutive div1 wins (1)\n" +
+                        "  [-conswinsdiv2 number]   : Streak_type_id for consecutive div2 wins (2)\n" +
+                        "  [-opened number]         : Problem_status of opened              (120)\n" +
+                        "  [-submitted number]      : Problem_status of submitted           (130)\n" +
+                        "  [-chlngsucceeded number] : Problem_status of challenge succeeded (140)\n" +
+                        "  [-passsystest number]    : Problem_status of passed system test  (150)\n" +
+                        "  [-failsystest number]    : Problem_status of failed system test  (160)\n" +
+                        "  [-fullload boolean] : true-clean round load, false-selective  (false)\n");
     }
 
     /**
@@ -214,11 +214,12 @@ public class TCLoadAggregate extends TCLoad {
     }
 
 
-        /**
+    /**
      * This method CANNOT be run after the fact; meaning, if the
      * rating table in the transactional database has the rating
      * for a match that is not the one we're running the load for
      * then rating history will get hosed up.
+     *
      * @throws Exception
      */
     private void loadRatingHistory() throws Exception {
@@ -278,7 +279,6 @@ public class TCLoadAggregate extends TCLoad {
     }
 
 
-
     /**
      * This method loads the 'coder_division' table
      */
@@ -318,7 +318,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append("  WHERE rr.round_id = r.round_id ");
             query.append("  AND r.round_type_id = rt.round_type_id ");
 
-            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD)
+            {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND rr.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -597,7 +598,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append("     AND r.round_type_id = rt.round_type_id ");
             query.append("     AND rt.algo_rating_type_id = " + algoType);
 
-            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD)
+            {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND cp.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -903,7 +905,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append("      AND r.round_type_id = rt.round_type_id ");
             query.append("      AND rt.algo_rating_type_id = " + algoType);
 
-            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD)
+            {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -1053,7 +1056,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       FROM room_result rr ,round r ");
             query.append("       WHERE rr.round_id = r.round_id ");
             query.append(" AND r.round_type_id =" + SINGLE_ROUND_MATCH);
-            query.append("       AND rr.coder_id = ?)        ");             
+            query.append("       AND rr.coder_id = ?)        ");
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1102,8 +1105,7 @@ public class TCLoadAggregate extends TCLoad {
                         throw new SQLException("Unknown division_id " + cur_division_id +
                                 ". Code for streak table needs to be " +
                                 "modified to accomodate new division.");
-                    
-                    
+
                     // Get the most recent round_id information for the coder.
                     // We compare this against the ending round id for a
                     // streak. If they match, the streak is considered current.
@@ -1112,10 +1114,10 @@ public class TCLoadAggregate extends TCLoad {
                     int latest_round_id = -1;
                     if (rs2.next()) {
                         latest_round_id = rs2.getInt(1);
-                    } 
+                    }
                     close(rs2);
-                    
-                    
+
+
                     psIns.clearParameters();
                     psIns.setInt(1, cur_coder_id);
                     psIns.setInt(2, streak_type_id);
@@ -1228,8 +1230,8 @@ public class TCLoadAggregate extends TCLoad {
                 query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
             else
                 query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");
-            
-            query.append("       AND rr.coder_id = ?)        ");    
+
+            query.append("       AND rr.coder_id = ?)        ");
 
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1272,7 +1274,6 @@ public class TCLoadAggregate extends TCLoad {
                     int streak_type_id = -1;
                     streak_type_id = srmOnly ? RATING_INCREASE_SRM_ONLY : RATING_INCREASE;
 
-                    
                     // Get the most recent round_id information for the coder.
                     // We compare this against the ending round id for a
                     // streak. If they match, the streak is considered current.
@@ -1281,7 +1282,7 @@ public class TCLoadAggregate extends TCLoad {
                     int latest_round_id = -1;
                     if (rs2.next()) {
                         latest_round_id = rs2.getInt(1);
-                    } 
+                    }
                     close(rs2);
 
                     psIns.clearParameters();
@@ -1364,7 +1365,7 @@ public class TCLoadAggregate extends TCLoad {
             if (srmOnly)
                 query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
             else
-                query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND+ ")");
+                query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");
             query.append("   AND r.round_id = rr.round_id ");
             query.append("   AND rr.rated_flag = 1 ");  // --csj
             query.append(" ORDER BY rr.coder_id ");
@@ -1391,8 +1392,8 @@ public class TCLoadAggregate extends TCLoad {
             if (srmOnly)
                 query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
             else
-                query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");            
-            query.append("       AND rr.coder_id = ?)        "); 
+                query.append(" AND r.round_type_id in (" + SINGLE_ROUND_MATCH + ", " + TOURNAMENT_ROUND + ", " + LONG_ROUND + ")");
+            query.append("       AND rr.coder_id = ?)        ");
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1442,7 +1443,7 @@ public class TCLoadAggregate extends TCLoad {
                     int latest_round_id = -1;
                     if (rs2.next()) {
                         latest_round_id = rs2.getInt(1);
-                    } 
+                    }
                     close(rs2);
 
                     psIns.clearParameters();
@@ -1519,7 +1520,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,SUM(cp.submission_points) ");
             query.append(" ,SUM(CASE WHEN cp.end_status_id >= " + STATUS_SUBMITTED + " THEN 1 ELSE 0 END)");
             query.append(" FROM coder_problem cp");
-            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD)
+            {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" WHERE cp.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -1640,7 +1642,7 @@ public class TCLoadAggregate extends TCLoad {
                     float final_points = rs2.getFloat(2);
                     float coder_pstddev = ((final_points - avgpts) / pstddev);
 
-                    if (pstddev  < 0.00001) {
+                    if (pstddev < 0.00001) {
                         // this should happen only if all the coders got the same points.
                         coder_pstddev = 0;
                         log.warn("pstddev too small in round " + round_id + " for coder " + coder_id);
@@ -2102,21 +2104,21 @@ public class TCLoadAggregate extends TCLoad {
 
     private static final String PROBLEM_QUERY =
             " select problem_id, division_id" +
-            " from problem" +
-            " where round_id = ?";
+                    " from problem" +
+                    " where round_id = ?";
 
 
     private static final String POINT_QUERY =
             " select coder_id, round_id, division_id, problem_id, final_points" +
-            " from coder_problem" +
-            " where round_id = ?" +
-            " and problem_id = ?" +
-            " and division_id = ?" +
-            " order by final_points desc";
+                    " from coder_problem" +
+                    " where round_id = ?" +
+                    " and problem_id = ?" +
+                    " and division_id = ?" +
+                    " order by final_points desc";
 
     private static final String PROBLEM_RANK_UPDATE =
             "update coder_problem set placed = ? " +
-            " where round_id = ? and coder_id = ? and division_id = ? and problem_id = ?";
+                    " where round_id = ? and coder_id = ? and division_id = ? and problem_id = ?";
 
 
     /**
@@ -2232,7 +2234,8 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,SUM(team_points) team_points");          // 24
             query.append("  FROM room_result ");
             query.append("  WHERE team_id is not null ");
-            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD)
+            {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND round_id = " + fRoundId);
             }
             query.append(" GROUP BY round_id ");
@@ -2276,9 +2279,14 @@ public class TCLoadAggregate extends TCLoad {
 
             query = new StringBuffer(100);
             query.append("DELETE FROM team_round ");
-            query.append(" WHERE round_id = ? ");
-            query.append("   AND team_id = ?");
+            if (!FULL_LOAD) {
+                query.append(" WHERE round_id = ?");
+            }
             psDel = prepareStatement(query.toString(), TARGET_DB);
+            if (!FULL_LOAD) {
+                psDel.setInt(1, fRoundId);
+            }
+            psDel.executeUpdate();
 
             // On to the load
             rs = psSel.executeQuery();
@@ -2292,8 +2300,8 @@ public class TCLoadAggregate extends TCLoad {
                 int round_id = rs.getInt(1);
                 int team_id = rs.getInt(2);
                 int points = rs.getInt(24);
-                boolean nullPoints = rs.getString(24)== null;
-                    
+                boolean nullPoints = rs.getString(24) == null;
+
                 // when starting with another round, start again with placed
                 if (round_id != previousRound) {
                     placedNoTie = 1;
@@ -2305,16 +2313,11 @@ public class TCLoadAggregate extends TCLoad {
                 }
 
                 previousRound = round_id;
-                
+
                 if (!nullPoints) {
                     previousPoints = points;
                     placedNoTie++;
                 }
-
-                psDel.clearParameters();
-                psDel.setInt(1, round_id);
-                psDel.setInt(2, team_id);
-                psDel.executeUpdate();
 
                 psIns.clearParameters();
                 psIns.setInt(1, rs.getInt(1));  // coder_id
@@ -2347,8 +2350,7 @@ public class TCLoadAggregate extends TCLoad {
                     psIns.setInt(24, rs.getInt(24));  // team_points
                     psIns.setInt(25, placed);  // placed
                 }
-                
-                
+
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
