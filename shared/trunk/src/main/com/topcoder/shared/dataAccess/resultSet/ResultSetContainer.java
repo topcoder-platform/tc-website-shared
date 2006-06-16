@@ -18,13 +18,13 @@ import java.util.*;
  * list interface implemented by this class operates upon the data.
  * Unless specified otherwise, row and column indices are 0-based
  * for all methods in this class. <p>
- *
+ * <p/>
  * This class has only been tested with Informix, and if other databases
  * are subsequently used, will need to be revisited. <p>
- *
+ * <p/>
  * The complete list of Informix data types and the java.sql.Types constant
  * they map to when retrieved under the EJB drivers is as follows: <p>
- *
+ * <p/>
  * Blob - BLOB.  Currently unsupported by this class. <br>
  * Boolean - OTHER <br>
  * Byte - LONGVARBINARY <br>
@@ -55,8 +55,8 @@ import java.util.*;
  * Text - LONGVARCHAR <br>
  * Varchar - VARCHAR
  *
- * @author  Dave Pecora
- * @author  Tony Barrile
+ * @author Dave Pecora
+ * @author Tony Barrile
  * @version 1.01, 02/14/2002
  */
 public class ResultSetContainer implements Serializable, List, Cloneable {
@@ -76,7 +76,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /*******************************************************************/
     // Constructor section
-    /*******************************************************************/
+
+    /**
+     * ***************************************************************
+     */
 
     private ResultSetContainer() {
         data = new ArrayList();
@@ -95,8 +98,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * value is "" for strings, 0 for numbers, false for booleans, and the
      * current date/time for date and time fields.
      *
-     * @param   rs  A ResultSet containing data to be added to the container
-     * @throws  Exception If there is some problem retrieving the data
+     * @param rs A ResultSet containing data to be added to the container
+     * @throws Exception If there is some problem retrieving the data
      */
     public ResultSetContainer(ResultSet rs) throws Exception {
         this();
@@ -114,10 +117,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * not to replace nulls retrieved from the database with a default value
      * (see above constructor for default values).
      *
-     * @param   rs  A ResultSet containing data to be added to the container
-     * @param   replaceNulls A boolean parameter specifying whether or not to
-     * replace nulls with default values
-     * @throws  Exception If there is some problem retrieving the data
+     * @param rs           A ResultSet containing data to be added to the container
+     * @param replaceNulls A boolean parameter specifying whether or not to
+     *                     replace nulls with default values
+     * @throws Exception If there is some problem retrieving the data
      */
     public ResultSetContainer(ResultSet rs, boolean replaceNulls) throws Exception {
         this();
@@ -142,19 +145,19 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * specifying whether or not to include a row in the container.
      * The constructor would then call this function on each row of
      * data. <p>
-     *
+     * <p/>
      * This constructor version replaces nulls retrieved from the
      * database with default values.
-     *
+     * <p/>
      * If start > end, an IllegalArgumentException is thrown.
      *
-     * @param   rs  A ResultSet containing data to be added to the container
-     * @param   start The 1-based row number at which to start adding data.
-     *                Thus, a start number of 1 begins adding with the first row.
-     * @param   end   The 1-based row number which indicates the final row of
-     *                data to be added.  Thus, an end number of 5 will stop adding
-     *                at the fifth row.
-     * @throws  Exception If there is some problem retrieving the data
+     * @param rs    A ResultSet containing data to be added to the container
+     * @param start The 1-based row number at which to start adding data.
+     *              Thus, a start number of 1 begins adding with the first row.
+     * @param end   The 1-based row number which indicates the final row of
+     *              data to be added.  Thus, an end number of 5 will stop adding
+     *              at the fifth row.
+     * @throws Exception If there is some problem retrieving the data
      */
     public ResultSetContainer(ResultSet rs, int start, int end) throws Exception {
         this();
@@ -188,18 +191,18 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * specifying whether or not to include a row in the container.
      * The constructor would then call this function on each row of
      * data. <p>
-     *
+     * <p/>
      * If start > end, an IllegalArgumentException is thrown.
      *
-     * @param   rs  A ResultSet containing data to be added to the container
-     * @param   start The 1-based row number at which to start adding data.
-     *                Thus, a start number of 1 begins adding with the first row.
-     * @param   end   The 1-based row number which indicates the final row of
-     *                data to be added.  Thus, an end number of 5 will stop adding
-     *                at the fifth row.
-     * @param   replaceNulls A boolean parameter specifying whether or not to
-     * replace nulls with default values
-     * @throws  Exception If there is some problem retrieving the data
+     * @param rs           A ResultSet containing data to be added to the container
+     * @param start        The 1-based row number at which to start adding data.
+     *                     Thus, a start number of 1 begins adding with the first row.
+     * @param end          The 1-based row number which indicates the final row of
+     *                     data to be added.  Thus, an end number of 5 will stop adding
+     *                     at the fifth row.
+     * @param replaceNulls A boolean parameter specifying whether or not to
+     *                     replace nulls with default values
+     * @throws Exception If there is some problem retrieving the data
      */
     public ResultSetContainer(ResultSet rs, int start, int end, boolean replaceNulls) throws Exception {
         this();
@@ -234,20 +237,20 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * row control as above, also enables the construction of a ranklist.
      * The extra ranklist column created by this function will assign
      * numerical ranks, assigning equal rank to any ties.  <p>
-     *
+     * <p/>
      * This constructor version replaces nulls retrieved from the
      * database with default values.
      *
-     * @param   rs  A ResultSet containing data to be added to the container
-     * @param   start The 1-based row number at which to start adding data.
-     *                Thus, a start number of 1 begins adding with the first row.
-     * @param   end   The 1-based row number which indicates the final row of
-     *                data to be added.  Thus, an end number of 5 will stop adding
-     *                at the fifth row.
-     * @param   ranklistCol The 1-based index of the column to assign ranks by.  It is
-     *                      assumed this column is already sorted from a
-     *                      suitable ORDER BY clause.
-     * @throws  Exception If there is some problem retrieving the data
+     * @param rs          A ResultSet containing data to be added to the container
+     * @param start       The 1-based row number at which to start adding data.
+     *                    Thus, a start number of 1 begins adding with the first row.
+     * @param end         The 1-based row number which indicates the final row of
+     *                    data to be added.  Thus, an end number of 5 will stop adding
+     *                    at the fifth row.
+     * @param ranklistCol The 1-based index of the column to assign ranks by.  It is
+     *                    assumed this column is already sorted from a
+     *                    suitable ORDER BY clause.
+     * @throws Exception If there is some problem retrieving the data
      */
     public ResultSetContainer(ResultSet rs, int start, int end,
                               int ranklistCol) throws Exception {
@@ -303,18 +306,18 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * The extra ranklist column created by this function will assign
      * numerical ranks, assigning equal rank to any ties.  <p>
      *
-     * @param   rs  A ResultSet containing data to be added to the container
-     * @param   start The 1-based row number at which to start adding data.
-     *                Thus, a start number of 1 begins adding with the first row.
-     * @param   end   The 1-based row number which indicates the final row of
-     *                data to be added.  Thus, an end number of 5 will stop adding
-     *                at the fifth row.
-     * @param   ranklistCol The 1-based index of the column to assign ranks by.  It is
-     *                      assumed this column is already sorted from a
-     *                      suitable ORDER BY clause.
-     * @param   replaceNulls A boolean parameter specifying whether or not to
-     * replace nulls with default values*
-     * @throws  Exception If there is some problem retrieving the data
+     * @param rs           A ResultSet containing data to be added to the container
+     * @param start        The 1-based row number at which to start adding data.
+     *                     Thus, a start number of 1 begins adding with the first row.
+     * @param end          The 1-based row number which indicates the final row of
+     *                     data to be added.  Thus, an end number of 5 will stop adding
+     *                     at the fifth row.
+     * @param ranklistCol  The 1-based index of the column to assign ranks by.  It is
+     *                     assumed this column is already sorted from a
+     *                     suitable ORDER BY clause.
+     * @param replaceNulls A boolean parameter specifying whether or not to
+     *                     replace nulls with default values*
+     * @throws Exception If there is some problem retrieving the data
      */
     public ResultSetContainer(ResultSet rs, int start, int end,
                               int ranklistCol, boolean replaceNulls) throws Exception {
@@ -375,7 +378,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
         ResultSetRow rsr = null;
         for (Iterator it = rs.iterator(); it.hasNext();) {
-            rsr = (ResultSetRow)it.next();
+            rsr = (ResultSetRow) it.next();
             if (f.include(rsr)) {
                 addRow(rsr);
             }
@@ -390,9 +393,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
         ResultSetRow rsr = null;
         for (Iterator it = rs.iterator(); it.hasNext();) {
-            rsr = (ResultSetRow)it.next();
+            rsr = (ResultSetRow) it.next();
             boolean include = true;
-            for (int i=0; i<f.length&&include; i++) {
+            for (int i = 0; i < f.length && include; i++) {
                 include = f[i].include(rsr);
             }
             //log.debug("include " + include);
@@ -412,7 +415,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         int row = 1;
         ResultSetRow rsr = null;
         for (Iterator it = rs.iterator(); it.hasNext(); row++) {
-            rsr = (ResultSetRow)it.next();
+            rsr = (ResultSetRow) it.next();
             if (row < start) {
                 dataBefore = true;
                 continue;
@@ -698,10 +701,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
                         return new TCBooleanResult(null);
                     return new TCBooleanResult(rv);
                 }
-                throw new SQLException("Unsupported data type "+columns[i].getSourceType()+" in ResultSetContainer.getItem()");
+                throw new SQLException("Unsupported data type " + columns[i].getSourceType() + " in ResultSetContainer.getItem()");
 
             default:
-                throw new SQLException("Unsupported data type "+columns[i].getSourceType()+" in ResultSetContainer.getItem()");
+                throw new SQLException("Unsupported data type " + columns[i].getSourceType() + " in ResultSetContainer.getItem()");
 
         } // end switch statement
     }
@@ -770,14 +773,17 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     private void initializeMetaData(ResultSetContainer rs) {
         columns = new ResultColumn[rs.columns.length];
         System.arraycopy(rs.columns, 0, columns, 0, rs.columns.length);
-        for (int i=0; i<columns.length; i++) {
+        for (int i = 0; i < columns.length; i++) {
             columnNameMap.put(rs.getColumnName(i), new Integer(i));
         }
     }
 
     /********************************************************************/
     // Inner class section
-    /********************************************************************/
+
+    /**
+     * ****************************************************************
+     */
 
     // This class is used for comparison purposes; it is called by the
     // sortByColumn() function
@@ -813,7 +819,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
             TCResultItem ri1 = rsr1.getItem(columnToCompare);
             TCResultItem ri2 = rsr2.getItem(columnToCompare);
             int temp = ri1.compareTo(ri2);
-            if (temp==0) {
+            if (temp == 0) {
                 ri1 = rsr1.getItem(secondaryColumn);
                 ri2 = rsr2.getItem(secondaryColumn);
                 temp = ri1.compareTo(ri2);
@@ -853,10 +859,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * Constructs a read-only list iterator, with iteration starting
          * from the indicated element.
          *
-         * @param   index to start from.
-         * @throws  IndexOutOfBoundsException if the passed-in index is
-         *          not in range (less than zero or greater than the size
-         *          of the data)
+         * @param index to start from.
+         * @throws IndexOutOfBoundsException if the passed-in index is
+         *                                   not in range (less than zero or greater than the size
+         *                                   of the data)
          */
         ReadOnlyListIterator(int index) {
             if (index < 0 || index > data.size()) {
@@ -866,7 +872,6 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         }
 
         /**
-         *
          * @param o
          */
         public void add(Object o) {
@@ -877,8 +882,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * This function will return true iff a call to the <tt>next()</tt> function
          * will return valid data.
          *
-         * @return  Whether or not there is more data which can be retrieved by a call
-         * to <tt>next()</tt>.
+         * @return Whether or not there is more data which can be retrieved by a call
+         *         to <tt>next()</tt>.
          */
         public boolean hasNext() {
             return (nextIndex < data.size());
@@ -888,8 +893,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * This function will return true iff a call to the <tt>previous()</tt> function
          * will return valid data.
          *
-         * @return  Whether or not there is more data which can be retrieved by a call
-         * to <tt>previous()</tt>.
+         * @return Whether or not there is more data which can be retrieved by a call
+         *         to <tt>previous()</tt>.
          */
         public boolean hasPrevious() {
             return (nextIndex > 0);
@@ -898,8 +903,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * This function will return the next item in the list.
          *
-         * @return  The next item in the list.
-         * @throws  NoSuchElementException If we are already at the end of the list.
+         * @return The next item in the list.
+         * @throws NoSuchElementException If we are already at the end of the list.
          */
         public Object next() {
             if (nextIndex >= data.size()) {
@@ -911,7 +916,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * This function will return the index of the next item in the list.
          *
-         * @return  The index of the next item in the list.
+         * @return The index of the next item in the list.
          */
         public int nextIndex() {
             return nextIndex;
@@ -920,8 +925,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * This function will return the previous item in the list.
          *
-         * @return  The previous item in the list.
-         * @throws  NoSuchElementException If we are already at the beginning of the list.
+         * @return The previous item in the list.
+         * @throws NoSuchElementException If we are already at the beginning of the list.
          */
         public Object previous() {
             if (nextIndex <= 0) {
@@ -933,7 +938,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * This function will return the index of the previous item in the list.
          *
-         * @return  The index of the previous item in the list.
+         * @return The index of the previous item in the list.
          */
         public int previousIndex() {
             return nextIndex - 1;
@@ -947,7 +952,6 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         }
 
         /**
-         *
          * @param o
          */
         public void set(Object o) {
@@ -959,15 +963,15 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * This class is meant to be a container for specific rows of data.
      * It provides methods for getting specific elements out.
      */
-    public class    ResultSetRow implements Cloneable, Serializable {
+    public class ResultSetRow implements Cloneable, Serializable {
         private TCResultItem[] mtcItems;
 
         /**
          * Constructor to initialize the row data container
          *
          * @param tcri Contains an array of data elements which
-         * together comprise the row.  Each element should be an
-         * instance of a subclass of <tt>TCResultItem</tt>.
+         *             together comprise the row.  Each element should be an
+         *             instance of a subclass of <tt>TCResultItem</tt>.
          */
         public ResultSetRow(TCResultItem tcri[]) {
             mtcItems = tcri;
@@ -978,8 +982,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * if the index is out of range.
          *
          * @param iIndex Index of the requested element
-         * @return  Item at the requested index
-         * @throws  IllegalArgumentException if the specified index is out of range.
+         * @return Item at the requested index
+         * @throws IllegalArgumentException if the specified index is out of range.
          */
         public TCResultItem getItem(int iIndex) {
             if (!isValidColumn(iIndex))
@@ -993,8 +997,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * the column name is invalid.
          *
          * @param sCol Name of the column for the requested element
-         * @return  Item at the requested index
-         * @throws  IllegalArgumentException if the specified column does not exist.
+         * @return Item at the requested index
+         * @throws IllegalArgumentException if the specified column does not exist.
          */
         public TCResultItem getItem(String sCol) {
             if (!isValidColumn(sCol))
@@ -1004,93 +1008,102 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         }
 
         /**
-         *
          * @param index
          * @return
          * @throws NullPointerException if the item is null
          */
         public int getIntItem(int index) throws NullPointerException {
-            return ((Number)getItem(index).getResultData()).intValue();
+            return ((Number) getItem(index).getResultData()).intValue();
         }
 
         /**
-         *
          * @param col
          * @return
          * @throws NullPointerException if the item is null
          */
         public int getIntItem(String col) throws NullPointerException {
-            return ((Number)getItem(col).getResultData()).intValue();
+            return ((Number) getItem(col).getResultData()).intValue();
         }
 
         public float getFloatItem(int index) throws NullPointerException {
-            return ((Number)getItem(index).getResultData()).floatValue();
+            return ((Number) getItem(index).getResultData()).floatValue();
         }
 
         public float getFloatItem(String col) throws NullPointerException {
-            return ((Number)getItem(col).getResultData()).floatValue();
+            return ((Number) getItem(col).getResultData()).floatValue();
         }
 
         public double getDoubleItem(int index) throws NullPointerException {
-            return ((Number)getItem(index).getResultData()).doubleValue();
+            return ((Number) getItem(index).getResultData()).doubleValue();
         }
 
         public double getDoubleItem(String col) throws NullPointerException {
-            return ((Number)getItem(col).getResultData()).doubleValue();
+            return ((Number) getItem(col).getResultData()).doubleValue();
         }
 
         public boolean getBooleanItem(int index) throws NullPointerException {
-            return ((Boolean)getItem(index).getResultData()).booleanValue();
+            return ((Boolean) getItem(index).getResultData()).booleanValue();
         }
 
         public boolean getBooleanItem(String col) throws NullPointerException {
-            return ((Boolean)getItem(col).getResultData()).booleanValue();
+            return ((Boolean) getItem(col).getResultData()).booleanValue();
         }
 
         /**
-         *
          * @param index
          * @return
          * @throws NullPointerException if the item is null
          */
         public long getLongItem(int index) throws NullPointerException {
-            return ((Number)getItem(index).getResultData()).longValue();
+            return ((Number) getItem(index).getResultData()).longValue();
         }
 
         /**
-         *
          * @param col
          * @return
          * @throws NullPointerException if the item is null
          */
         public long getLongItem(String col) throws NullPointerException {
-            return ((Number)getItem(col).getResultData()).longValue();
+            return ((Number) getItem(col).getResultData()).longValue();
         }
 
         /**
-         *
          * @param index
          * @return String
          */
         public String getStringItem(int index) {
             Object ret = getItem(index).getResultData();
-            return ret==null?null:ret.toString();
+            return ret == null ? null : ret.toString();
         }
 
         /**
-         *
+         * @param col
+         * @return String
+         */
+        public Timestamp getTimestampItem(String col) {
+            Object ret = getItem(col).getResultData();
+            return ret == null ? null : (Timestamp) ret;
+        }
+
+        public Timestamp getTimestampItem(int index) {
+            Object ret = getItem(index).getResultData();
+            return ret == null ? null : (Timestamp) ret;
+        }
+
+        /**
          * @param col
          * @return String
          */
         public String getStringItem(String col) {
             Object ret = getItem(col).getResultData();
-            return ret==null?null:ret.toString();
+            return ret == null ? null : ret.toString();
         }
+
 
         /**
          * This method creates a cloned copy of this row.
          *
-         * @return  A cloned ResultSetRow instance.
+         * @return A cloned ResultSetRow instance.
          */
         public Object clone() {
             try {
@@ -1108,7 +1121,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * ResultSetContainer.ResultSetRow implementation of toString.
          * This method will output all data, separated by \t
          *
-         * @return	The row data in string form.
+         * @return The row data in string form.
          */
         public String toString() {
             return toString("\t");
@@ -1117,8 +1130,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * ResultSetContainer.ResultSetRow implementation of toString.
          * This method will output all data, separated by colDelim
+         *
          * @param colDelim
-         * @return	The row data in string form.
+         * @return The row data in string form.
          */
         public String toString(String colDelim) {
             StringBuffer sbReturn = new StringBuffer();
@@ -1133,7 +1147,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * Validates that the column specified is valid
          *
          * @param i The column index accessed
-         * @return  True iff the column index is valid.
+         * @return True iff the column index is valid.
          */
         public boolean isValidColumn(int i) {
             return (i >= 0 && i < columns.length);
@@ -1162,6 +1176,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param index
      * @param element
      */
@@ -1171,6 +1186,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param o
      * @return boolean
      */
@@ -1180,6 +1196,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param c
      * @return boolean
      */
@@ -1189,6 +1206,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param index
      * @param c
      * @return boolean
@@ -1207,8 +1225,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns true iff this collection contains the element specified.
      *
-     * @param   o  Element to be checked for containment in this collection.
-     * @return  true iff this collection contains the element specified
+     * @param o Element to be checked for containment in this collection.
+     * @return true iff this collection contains the element specified
      */
     public boolean contains(Object o) {
         return data.contains(o);
@@ -1217,8 +1235,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns true iff this collection contains all of the elements in the specified collection.
      *
-     * @param   c  Elements to be checked for containment in this collection.
-     * @return  true iff this collection contains all of the elements in the specified collection
+     * @param c Elements to be checked for containment in this collection.
+     * @return true iff this collection contains all of the elements in the specified collection
      */
     public boolean containsAll(Collection c) {
         return data.containsAll(c);
@@ -1230,7 +1248,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param index index of element to return.
      * @return the element at the specified position in this list.
      * @throws IndexOutOfBoundsException if the specified index is out of
-     *		  range (<tt>index &lt; 0 || index &gt; size()</tt>).
+     *                                   range (<tt>index &lt; 0 || index &gt; size()</tt>).
      */
     public Object get(int index) {
         return data.get(index);
@@ -1240,9 +1258,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Returns the index in this list of the first occurence of the specified
      * element, or -1 if the list does not contain this element.
      *
-     * @param o    element to search for.
-     * @return  The index in this list of the first occurence of the specified
-     * 	       element, or -1 if the list does not contain this element.
+     * @param o element to search for.
+     * @return The index in this list of the first occurence of the specified
+     *         element, or -1 if the list does not contain this element.
      */
     public int indexOf(Object o) {
         return data.indexOf(o);
@@ -1251,7 +1269,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns true iff this collection contains no elements.
      *
-     * @return  Whether or not this collection contains elements.
+     * @return Whether or not this collection contains elements.
      */
     public boolean isEmpty() {
         return data.isEmpty();
@@ -1260,7 +1278,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns an iterator over the elements (rows) in this collection.
      *
-     * @return  A data iterator starting at the first element in the list.
+     * @return A data iterator starting at the first element in the list.
      */
     public Iterator iterator() {
         return data.iterator();
@@ -1272,7 +1290,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      *
      * @param o element to search for.
      * @return The index in this list of the last occurence of the specified
-     * 	       element, or -1 if the list does not contain this element.
+     *         element, or -1 if the list does not contain this element.
      */
     public int lastIndexOf(Object o) {
         return data.lastIndexOf(o);
@@ -1292,11 +1310,11 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * sequence), starting at the specified position in the list.
      *
      * @param index index of the first element to be returned from the list
-     *		    iterator (by a call to the <tt>next</tt> method).
+     *              iterator (by a call to the <tt>next</tt> method).
      * @return a list iterator of the elements in this list (in proper
-     * 	       sequence), starting at the specified position in the list.
+     *         sequence), starting at the specified position in the list.
      * @throws IndexOutOfBoundsException if the specified index is out of
-     *		  range (<tt>index &lt; 0 || index &gt; size()</tt>).
+     *                                   range (<tt>index &lt; 0 || index &gt; size()</tt>).
      */
     public ListIterator listIterator(final int index) {
         return new ReadOnlyListIterator(index);
@@ -1304,6 +1322,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param index
      * @return Object
      */
@@ -1313,6 +1332,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param o
      * @return boolean
      */
@@ -1322,6 +1342,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param c
      * @return boolean
      */
@@ -1331,6 +1352,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param c
      * @return boolean
      */
@@ -1340,6 +1362,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * Unsupported mutator function - throws an <tt>UnsupportedOperationException</tt>
+     *
      * @param index
      * @param element
      * @return Object
@@ -1351,7 +1374,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns the number of items in the list.
      *
-     * @return  The number of items in the list.
+     * @return The number of items in the list.
      */
     public int size() {
         return data.size();
@@ -1362,10 +1385,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * and toIndex, exclusive.  This method behaves much like a shallow clone, in that all
      * properties of this instance are backed by this instance.
      *
-     * @param   fromIndex Low endpoint (inclusive) of the subList.
-     * @param   toIndex high endpoint (exclusive) of the subList.
-     * @return  List    a view of the specified range within this list.
-     * @throws  IllegalArgumentException If fromIndex > toIndex
+     * @param fromIndex Low endpoint (inclusive) of the subList.
+     * @param toIndex   high endpoint (exclusive) of the subList.
+     * @return List    a view of the specified range within this list.
+     * @throws IllegalArgumentException If fromIndex > toIndex
      */
     public List subList(int fromIndex, int toIndex) {
         if (fromIndex < 0) {
@@ -1377,8 +1400,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         ResultSetContainer rsc = new ResultSetContainer();
         rsc.columns = this.columns;
         rsc.columnNameMap = this.columnNameMap;
-        rsc.dataBefore = fromIndex>0;
-        rsc.dataAfter = toIndex<data.size();
+        rsc.dataBefore = fromIndex > 0;
+        rsc.dataAfter = toIndex < data.size();
         rsc.data = new ArrayList(this.data.subList(fromIndex, toIndex));
         return rsc;
     }
@@ -1386,7 +1409,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns an array containing all of the elements (row data) in this collection.
      *
-     * @return  Array of row data
+     * @return Array of row data
      */
     public Object[] toArray() {
         return data.toArray();
@@ -1395,8 +1418,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns an array containing all of the elements (row data) in this collection.
      *
-     * @param   a Runtime type of the return array will be that of the specified array
-     * @return  Array of row data
+     * @param a Runtime type of the return array will be that of the specified array
+     * @return Array of row data
      */
     public Object[] toArray(Object[] a) {
         return data.toArray(a);
@@ -1432,8 +1455,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns the column information for the data in this container.
      *
-     * @return  An array of <tt>ResultColumn</tt>, where each array entry
-     * contains information for the corresponding column.
+     * @return An array of <tt>ResultColumn</tt>, where each array entry
+     *         contains information for the corresponding column.
      */
     public ResultColumn[] getColumns() {
         return columns;
@@ -1442,8 +1465,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns the column information for the data in this container.
      *
-     * @return  An array of <tt>ResultColumn</tt>, where each array entry
-     * contains information for the corresponding column.
+     * @return An array of <tt>ResultColumn</tt>, where each array entry
+     *         contains information for the corresponding column.
      */
     public int getColumnCount() {
         return columns.length;
@@ -1453,7 +1476,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Returns the column index of the name provided, or -1 if no such
      * name exists.
      *
-     * @param name  Column name to look up
+     * @param name Column name to look up
      * @return The corresponding column index
      */
     public int getColumnIndex(String name) {
@@ -1467,11 +1490,11 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns the column information for the column specified.
      *
-     * @param   i the column for which to retrieve information
-     * @return  A <tt>ResultColumn</tt> object containing information
-     * for the given column.
-     * @throws  IllegalArgumentException if the column index specified
-     * is invalid.
+     * @param i the column for which to retrieve information
+     * @return A <tt>ResultColumn</tt> object containing information
+     *         for the given column.
+     * @throws IllegalArgumentException if the column index specified
+     *                                  is invalid.
      */
     public ResultColumn getColumnInfo(int i) {
         if (!isValidColumn(i))
@@ -1482,8 +1505,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns the name of the column at the specified location
      *
-     * @param   i The column number
-     * @return  String  The column name
+     * @param i The column number
+     * @return String  The column name
      */
     public String getColumnName(int i) {
         return columns[i].getName();
@@ -1512,6 +1535,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         return this.getRow(iRow).getStringItem(iCol);
     }
 
+    public Timestamp getTimestampItem(int iRow, int iCol) {
+        return this.getRow(iRow).getTimestampItem(iCol);
+    }
+
     public float getFloatItem(int iRow, int iCol) {
         return this.getRow(iRow).getFloatItem(iCol);
     }
@@ -1529,7 +1556,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      *
      * @param iRow The row index of the item
      * @param sCol The column name from which to retrieve the item
-     * @return  The specified item
+     * @return The specified item
      */
     public TCResultItem getItem(int iRow, String sCol) {
         return this.getRow(iRow).getItem(sCol);
@@ -1545,6 +1572,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     public String getStringItem(int iRow, String sCol) {
         return this.getRow(iRow).getStringItem(sCol);
+    }
+
+    public Timestamp getTimestampItem(int iRow, String sCol) {
+        return this.getRow(iRow).getTimestampItem(sCol);
     }
 
     public float getFloatItem(int iRow, String sCol) {
@@ -1563,7 +1594,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Returns the <tt>ResultSetContainer.ResultSetRow</tt> at the specified index
      *
      * @param iRow Row index
-     * @return  The <tt>ResultSetContainer.ResultSetRow</tt> instance at this location
+     * @return The <tt>ResultSetContainer.ResultSetRow</tt> instance at this location
      */
     public ResultSetRow getRow(int iRow) {
         return (ResultSetRow) data.get(iRow);
@@ -1582,6 +1613,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Gets the 1 based index of the first row in the container with respect to what
      * the full set might be.  If > 1, this means that a
      * start rank > 1 was provided to the contructor
+     *
      * @return int
      */
     public int getStartRow() {
@@ -1592,6 +1624,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Gets the 1 based infex of the last row in the container with respect to what
      * the full set might be.  If an end rank was provided in the contructor
      * that what will be returned, otherwise, it'll be the size of the data set.
+     *
      * @return int
      */
     public int getEndRow() {
@@ -1604,7 +1637,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * This method performs a clone of the object.
      *
-     * @return	A cloned ResultSetContainer instance.
+     * @return A cloned ResultSetContainer instance.
      */
     public Object clone() {
         ResultSetContainer rsc = new ResultSetContainer();
@@ -1623,7 +1656,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Validates that the column specified is valid
      *
      * @param i The column index accessed
-     * @return  True iff the column index is valid.
+     * @return True iff the column index is valid.
      */
     public boolean isValidColumn(int i) {
         return (i >= 0 && i < columns.length);
@@ -1643,7 +1676,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * Validates that the row specified is valid
      *
      * @param i The row index accessed
-     * @return  True iff the row index is valid.
+     * @return True iff the row index is valid.
      */
     public boolean isValidRow(int i) {
         return (i >= 0 && i < data.size());
@@ -1653,7 +1686,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * This routine sorts the data in the container by the given column,
      * in the given direction.
      *
-     * @param i The column index to sort by.
+     * @param i         The column index to sort by.
      * @param ascending whether to sort the data in ascending or descending order.
      */
     public void sortByColumn(int i, boolean ascending) {
@@ -1664,7 +1697,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * This routine sorts the data in the container by the given column,
      * in the given direction.
      *
-     * @param sCol The column to sort by.
+     * @param sCol      The column to sort by.
      * @param ascending whether to sort the data in ascending or descending order.
      */
     public void sortByColumn(String sCol, boolean ascending) {
@@ -1678,9 +1711,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * in the given direction, if two rows are equal on this crteria, it
      * uses the second column to break the tie.
      *
-     * @param i The column index to sort by.
-     * @param otherCol The column index to break ties.
-     * @param ascending whether to sort the data in ascending or descending order.
+     * @param i             The column index to sort by.
+     * @param otherCol      The column index to break ties.
+     * @param ascending     whether to sort the data in ascending or descending order.
      * @param backAscending whether to sort the data in ascending or descending order.
      */
     public void sortByColumn(int i, int otherCol, boolean ascending, boolean backAscending) {
@@ -1692,9 +1725,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * in the given direction, if two rows are equal on this crteria, it
      * uses the second column to break the tie.
      *
-     * @param sCol The column to sort by.
-     * @param sBackCol The column to break ties.
-     * @param ascending whether to sort the data in ascending or descending order.
+     * @param sCol          The column to sort by.
+     * @param sBackCol      The column to break ties.
+     * @param ascending     whether to sort the data in ascending or descending order.
      * @param backAscending whether to sort the data in ascending or descending order.
      */
     public void sortByColumn(String sCol, String sBackCol, boolean ascending, boolean backAscending) {
@@ -1708,7 +1741,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * This method will output all columns and data, rows separated by \n, columns separated by \t
      *
-     * @return	The columns and data, in string form.
+     * @return The columns and data, in string form.
      */
     public String toString() {
         return toString("\n", "\t");
@@ -1716,9 +1749,10 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
     /**
      * This method will output all columns and data.
+     *
      * @param rowDelim
      * @param colDelim
-     * @return	The columns and data, in string form.
+     * @return The columns and data, in string form.
      */
     public String toString(String rowDelim, String colDelim) {
 
@@ -1741,6 +1775,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns a RecordTag that will allow us to get XML for
      * this ResultSetContainer
+     *
      * @param rootName
      * @param rowName
      * @return The data contained in this result set within a <tt>RecordTag</tt>
@@ -1770,6 +1805,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     /**
      * Returns a RecordTag that will allow us to get XML for
      * this ResultSetContainer
+     *
      * @return The data contained in this result set within a <tt>RecordTag</tt>
      * @throws Exception
      */
