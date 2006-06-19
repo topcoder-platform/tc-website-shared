@@ -3,13 +3,13 @@ package com.topcoder.shared.util.dwload;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
-import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
 
 /**
  * @author dok
@@ -554,7 +554,6 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,c.end_date ");     // 4
             query.append("       ,c.status ");       // 5
             query.append("       ,c.group_id ");     // 6
-            query.append("       ,c.region_code ");  // 7
             query.append("       ,c.ad_text ");      // 8
             query.append("       ,c.ad_start ");     // 9
             query.append("       ,c.ad_end ");       // 10
@@ -574,7 +573,6 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,end_date ");     // 4
             query.append("       ,status ");       // 5
             query.append("       ,group_id ");     // 6
-            query.append("       ,region_code ");  // 7
             query.append("       ,ad_text ");      // 8
             query.append("       ,ad_start ");     // 9
             query.append("       ,ad_end ");       // 10
@@ -592,7 +590,6 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,end_date = ? ");     // 3
             query.append("       ,status = ? ");       // 4
             query.append("       ,group_id = ? ");     // 5
-            query.append("       ,region_code = ? ");  // 6
             query.append("       ,ad_text = ? ");      // 7
             query.append("       ,ad_start = ? ");     // 8
             query.append("       ,ad_end = ? ");       // 9
@@ -626,13 +623,12 @@ public class TCLoadLong extends TCLoad {
                     psUpd.setTimestamp(3, rs.getTimestamp(4));  // end_date
                     psUpd.setString(4, rs.getString(5));  // status
                     psUpd.setInt(5, rs.getInt(6));  // group_id
-                    psUpd.setString(6, rs.getString(7));  // region_code
-                    psUpd.setString(7, rs.getString(8));  // ad_text
-                    psUpd.setTimestamp(8, rs.getTimestamp(9));  // ad_start
-                    psUpd.setTimestamp(9, rs.getTimestamp(10));  // ad_end
-                    psUpd.setString(10, rs.getString(11));  // ad_task
-                    psUpd.setString(11, rs.getString(12));  // ad_command
-                    psUpd.setInt(12, rs.getInt(1));  // contest_id
+                    psUpd.setString(6, rs.getString(7));  // ad_text
+                    psUpd.setTimestamp(7, rs.getTimestamp(8));  // ad_start
+                    psUpd.setTimestamp(8, rs.getTimestamp(9));  // ad_end
+                    psUpd.setString(9, rs.getString(10));  // ad_task
+                    psUpd.setString(10, rs.getString(11));  // ad_command
+                    psUpd.setInt(11, rs.getInt(1));  // contest_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -996,7 +992,7 @@ public class TCLoadLong extends TCLoad {
                     psIns.setString(10, rs.getString(10));    // round_type_desc
                     psIns.setString(11, rs.getString("short_name"));  // short name
                     psIns.setString(12, rs.getString("forum_id"));  // forum_id
-                    psIns.setInt(13,0); //rating ind
+                    psIns.setInt(13, 0); //rating ind
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
