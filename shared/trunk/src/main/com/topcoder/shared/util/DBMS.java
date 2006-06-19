@@ -1,19 +1,20 @@
 package com.topcoder.shared.util;
 
 //import com.topcoder.web.common.BaseProcessor;
+
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 
-import javax.sql.DataSource;
-import javax.naming.NamingException;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
+import javax.sql.DataSource;
 import java.io.*;
 import java.sql.*;
 
-import java.util.Date;
 /**
  * A class to hold constants related to the database, and some convenience methods.
+ *
  * @author Jason Evans
  * @author ademich
  */
@@ -84,11 +85,11 @@ public class DBMS {
     public final static String REFERENCE_TESTING_QUEUE = getProperty("REFERENCE_TESTING_QUEUE", "referenceTestingQueue");
     public final static String TOPIC = getProperty("TOPIC", "contestTopic");
     public final static String PACTS_QUEUE = getProperty("PACTS_QUEUE", "queue/pactsQueue");
-    public final static String WEB_SERVICE_QUEUE = getProperty("WEB_SERVICE_QUEUE","webServiceGeneratorQueue");
-    public final static String LONG_RESPONSE_QUEUE = getProperty("LONG_RESPONSE_QUEUE","queue/longResponseQueue");
-    public final static String LONG_TEST_QUEUE = getProperty("LONG_TEST_QUEUE","queue/longTestQueue");
-    public final static String RESPONSE_QUEUE = getProperty("RESPONSE_QUEUE","queue/screeningResponseQueue");
-    public final static String REQUEST_QUEUE = getProperty("REQUEST_QUEUE","queue/screeningRequestQueue");
+    public final static String WEB_SERVICE_QUEUE = getProperty("WEB_SERVICE_QUEUE", "webServiceGeneratorQueue");
+    public final static String LONG_RESPONSE_QUEUE = getProperty("LONG_RESPONSE_QUEUE", "queue/longResponseQueue");
+    public final static String LONG_TEST_QUEUE = getProperty("LONG_TEST_QUEUE", "queue/longTestQueue");
+    public final static String RESPONSE_QUEUE = getProperty("RESPONSE_QUEUE", "queue/screeningResponseQueue");
+    public final static String REQUEST_QUEUE = getProperty("REQUEST_QUEUE", "queue/screeningRequestQueue");
 
     //formats used by informix for converting string to date(time)
     public final static String INFORMIX_DATE_FORMAT = bundle.getProperty("INFORMIX_DATE_FORMAT", "MM/dd/yy");
@@ -97,34 +98,24 @@ public class DBMS {
     // Sequence Ids
     public static final int JMA_SEQ = getIntProperty("MAIN_SEQ", 200);
 //    public static final int JMA_SEQ = getIntProperty("JMA_SEQ", 1);
-    public static final int CORPORATE_SEQ = getIntProperty("CORPORATE_SEQ", 2);
     public static final int SCHOOL_SEQ = getIntProperty("SCHOOL_SEQ", 3);
     public static final int PROBLEM_SEQ = getIntProperty("PROBLEM_SEQ", 4);
     public static final int CHALLENGE_SEQ = getIntProperty("CHALLENGE_SEQ", 5);
-    public static final int RTABLE_SEQ = getIntProperty("RTABLE_SEQ", 6);
     public static final int EXPERIENCE_SEQ = getIntProperty("EXPERIENCE_SEQ", 7);
     public static final int EDUCATION_SEQ = getIntProperty("EDUCATION_SEQ", 8);
     public static final int RESPONSE_SEQ = getIntProperty("RESPONSE_SEQ", 9);
     public static final int COMPONENT_STATE_SEQ = getIntProperty("COMPONENT_STATE_SEQ", 11);
     public static final int SURVEY_SEQ = getIntProperty("SURVEY_SEQ", 12);
     public static final int SECTOR_SEQ = getIntProperty("SECTOR_SEQ", 13);
-    public static final int ROOM_SEQ = getIntProperty("ROOM_SEQ",14);
-    public static final int SERVER_SEQ = getIntProperty("SERVER_SEQ",15);
+    public static final int ROOM_SEQ = getIntProperty("ROOM_SEQ", 14);
+    public static final int SERVER_SEQ = getIntProperty("SERVER_SEQ", 15);
     public static final int REQUEST_SEQ = getIntProperty("REQUEST_SEQ", 16);
-    public static final int BROADCAST_SEQ = getIntProperty("BROADCAST_SEQ",17);
-    public static final int CODER_SEQ = getIntProperty("CODER_SEQ",18);
-    public static final int PT_LOGIN_SEQ = getIntProperty("PT_LOGIN_SEQ", 20);
-    public static final int PT_PROJ_SEQ = getIntProperty("PT_PROJ_SEQ", 21);
-    public static final int PT_PROJ_TASK_SEQ = getIntProperty("PT_PROJ_TASK_SEQ", 22);
-    public static final int PT_PROJ_USR_UPDATE_SEQ = getIntProperty("PT_PROJ_USR_UPDATE_SEQ", 23);
-    public static final int PT_PROJ_USR_SEQ = getIntProperty("PT_PROJ_USR_SEQ", 24);
-    public static final int PT_PROJ_USR_TASK_SEQ = getIntProperty("PT_PROJ_USR_TASK_SEQ", 25);
-    public static final int PT_USR_MESSAGE_SEQ = getIntProperty("PT_USR_MESSAGE_SEQ", 26);
-    public static final int PT_PROJ_ISSUE_SEQ = getIntProperty("PT_PROJ_ISSUE_SEQ", 27);
-    public static final int PARAMETER_SEQ = getIntProperty("PARAMETER_SEQ",30);
-    public static final int COMPONENT_SEQ = getIntProperty("COMPONENT_SEQ",31);
-    public static final int WEB_SERVICE_SEQ = getIntProperty("WEB_SERVICE_SEQ",40);
-    public static final int WEB_SERVICE_SOURCE_FILE_SEQ = getIntProperty("WEB_SERVICE_SOURCE_FILE_SEQ",41);
+    public static final int BROADCAST_SEQ = getIntProperty("BROADCAST_SEQ", 17);
+    public static final int CODER_SEQ = getIntProperty("CODER_SEQ", 18);
+    public static final int PARAMETER_SEQ = getIntProperty("PARAMETER_SEQ", 30);
+    public static final int COMPONENT_SEQ = getIntProperty("COMPONENT_SEQ", 31);
+    public static final int WEB_SERVICE_SEQ = getIntProperty("WEB_SERVICE_SEQ", 40);
+    public static final int WEB_SERVICE_SOURCE_FILE_SEQ = getIntProperty("WEB_SERVICE_SOURCE_FILE_SEQ", 41);
     public static final int AFFIDAVIT_SEQ = getIntProperty("AFFIDAVIT_SEQ", 50);
     public static final int CONTRACT_SEQ = getIntProperty("CONTRACT_SEQ", 51);
     public static final int NOTE_SEQ = getIntProperty("NOTE_SEQ", 52);
@@ -132,24 +123,23 @@ public class DBMS {
     public static final int PAYMENT_ADDRESS_SEQ = getIntProperty("PAYMENT_ADDRESS_SEQ", 54);
     public static final int PAYMENT_DETAIL_SEQ = getIntProperty("PAYMENT_DETAIL_SEQ", 55);
     public static final int TAX_FORM_SEQ = getIntProperty("TAX_FORM_SEQ", 56);
-    public static final int RESUME_SEQ = getIntProperty("RESUME_SEQ", 81);
     public static final int INPUT_SEQ = getIntProperty("INPUT_SEQ", 82);
     public static final int QUERY_SEQ = getIntProperty("QUERY_SEQ", 83);
     public static final int COMMAND_SEQ = getIntProperty("COMMAND_SEQ", 84);
     public static final int COMMAND_GROUP_SEQ = getIntProperty("COMMAND_GROUP_SEQ", 85);
-    public static final int WEB_SERVICE_JAVA_DOC_SEQ = getIntProperty("WEB_SERVICE_JAVA_DOC_SEQ",90);
-    public static final int ROUND_SEQ = getIntProperty("ROUND_SEQ",95);
-    public static final int CONTEST_SEQ = getIntProperty("CONTEST_SEQ",96);
-    public static final int MESSAGE_SEQ = getIntProperty("MESSAGE_SEQ",98);
-    public static final int BACKUP_SEQ = getIntProperty("BACKUP_SEQ",97);
-    public static final int MAIN_SEQ = getIntProperty("MAIN_SEQ",200);
-    public static final int LONG_TEST_GROUP_SEQ = getIntProperty("LONG_TEST_GROUP_SEQ",102);
-    public static final int LONG_TEST_CASE_SEQ = getIntProperty("LONG_TEST_CASE_SEQ",103);
+    public static final int WEB_SERVICE_JAVA_DOC_SEQ = getIntProperty("WEB_SERVICE_JAVA_DOC_SEQ", 90);
+    public static final int ROUND_SEQ = getIntProperty("ROUND_SEQ", 95);
+    public static final int CONTEST_SEQ = getIntProperty("CONTEST_SEQ", 96);
+    public static final int MESSAGE_SEQ = getIntProperty("MESSAGE_SEQ", 98);
+    public static final int BACKUP_SEQ = getIntProperty("BACKUP_SEQ", 97);
+    public static final int MAIN_SEQ = getIntProperty("MAIN_SEQ", 200);
+    public static final int LONG_TEST_GROUP_SEQ = getIntProperty("LONG_TEST_GROUP_SEQ", 102);
+    public static final int LONG_TEST_CASE_SEQ = getIntProperty("LONG_TEST_CASE_SEQ", 103);
 
-    public final static String INFORMIX_CONNECT_STRING = getProperty("INFORMIX_CONNECT_STRING","");
-    public final static String EVENT_TOPIC = getProperty("EVENT_TOPIC","eventTopic");
-    public final static String MPSQAS_TOPIC = getProperty("MPSQAS_TOPIC","mpsqasTopic");
-    public final static String RESTART_TOPIC = getProperty("RESTART_TOPIC","restartTopic");
+    public final static String INFORMIX_CONNECT_STRING = getProperty("INFORMIX_CONNECT_STRING", "");
+    public final static String EVENT_TOPIC = getProperty("EVENT_TOPIC", "eventTopic");
+    public final static String MPSQAS_TOPIC = getProperty("MPSQAS_TOPIC", "mpsqasTopic");
+    public final static String RESTART_TOPIC = getProperty("RESTART_TOPIC", "restartTopic");
     public final static String EVENT_QUEUE = getProperty("EVENT_QUEUE", "eventQueue");
     public final static String LONG_TEST_SVC_EVENT_TOPIC = getProperty("LONG_TEST_SVC_EVENT_TOPIC", "servicesEventTopic");
     public final static String MPSQAS_SVC_EVENT_TOPIC = getProperty("MPSQAS_SVC_EVENT_TOPIC", "servicesEventTopic");
@@ -163,7 +153,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @return
      * @throws SQLException
      */
@@ -172,7 +161,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @return
      * @throws SQLException
      */
@@ -186,7 +174,7 @@ public class DBMS {
             e.printStackTrace();
             throw new SQLException(e.getMessage());
         } finally {
-            if (ctx!=null) {
+            if (ctx != null) {
                 try {
                     ctx.close();
                 } catch (NamingException ne) {
@@ -199,7 +187,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @return
      * @throws SQLException
      */
@@ -212,7 +199,7 @@ public class DBMS {
         DataSource ds = null;
         try {
             ds = (DataSource) PortableRemoteObject.narrow(
-                    context.lookup(dataSourceName),DataSource.class);
+                    context.lookup(dataSourceName), DataSource.class);
         } catch (NamingException e) {
             e.printStackTrace();
             throw new SQLException(e.getMessage());
@@ -225,7 +212,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @return
      * @throws SQLException
      */
@@ -237,7 +223,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @param qconn
      * @param sequence_name
      * @return
@@ -251,7 +236,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @param sequence_name
      * @return
      * @throws SQLException
@@ -276,7 +260,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @param qconn
      * @param sequence
      * @return
@@ -290,16 +273,12 @@ public class DBMS {
         //Why all this code?!
         if (sequence == JMA_SEQ)
             query = " execute procedure nextval(" + JMA_SEQ + ") ";
-        else if (sequence == CORPORATE_SEQ)
-            query = " execute procedure nextval(" + CORPORATE_SEQ + ") ";
         else if (sequence == SCHOOL_SEQ)
             query = " execute procedure nextval(" + SCHOOL_SEQ + ") ";
         else if (sequence == PROBLEM_SEQ)
             query = " execute procedure nextval(" + PROBLEM_SEQ + ") ";
         else if (sequence == CHALLENGE_SEQ)
             query = " execute procedure nextval(" + CHALLENGE_SEQ + ") ";
-        else if (sequence == RTABLE_SEQ)
-            query = " execute procedure nextval(" + RTABLE_SEQ + ") ";
         else if (sequence == EXPERIENCE_SEQ)
             query = " execute procedure nextval(" + EXPERIENCE_SEQ + ") ";
         else if (sequence == EDUCATION_SEQ)
@@ -310,22 +289,6 @@ public class DBMS {
             query = " execute procedure nextval(" + COMPONENT_STATE_SEQ + ") ";
         else if (sequence == SECTOR_SEQ)
             query = " execute procedure nextval(" + SECTOR_SEQ + ") ";
-        else if (sequence == PT_LOGIN_SEQ)
-            query = " execute procedure nextval(" + PT_LOGIN_SEQ + ") ";
-        else if (sequence == PT_PROJ_SEQ)
-            query = " execute procedure nextval(" + PT_PROJ_SEQ + ") ";
-        else if (sequence == PT_PROJ_TASK_SEQ)
-            query = " execute procedure nextval(" + PT_PROJ_TASK_SEQ + ") ";
-        else if (sequence == PT_PROJ_USR_UPDATE_SEQ)
-            query = " execute procedure nextval(" + PT_PROJ_USR_UPDATE_SEQ + ") ";
-        else if (sequence == PT_PROJ_USR_SEQ)
-            query = " execute procedure nextval(" + PT_PROJ_USR_SEQ + ") ";
-        else if (sequence == PT_PROJ_USR_TASK_SEQ)
-            query = " execute procedure nextval(" + PT_PROJ_USR_TASK_SEQ + ") ";
-        else if (sequence == PT_USR_MESSAGE_SEQ)
-            query = " execute procedure nextval(" + PT_USR_MESSAGE_SEQ + ") ";
-        else if (sequence == PT_PROJ_ISSUE_SEQ)
-            query = " execute procedure nextval(" + PT_PROJ_ISSUE_SEQ + ") ";
         else if (sequence == AFFIDAVIT_SEQ)
             query = " execute procedure nextval(" + AFFIDAVIT_SEQ + ") ";
         else if (sequence == CONTRACT_SEQ)
@@ -340,11 +303,9 @@ public class DBMS {
             query = " execute procedure nextval(" + PAYMENT_DETAIL_SEQ + ") ";
         else if (sequence == TAX_FORM_SEQ)
             query = " execute procedure nextval(" + TAX_FORM_SEQ + ") ";
-        else if (sequence == RESUME_SEQ)
-            query = " execute procedure nextval(" + RESUME_SEQ + ") ";
         else
             query = " execute procedure nextval(" + sequence + ") ";
-            //getSeqId = false;
+        //getSeqId = false;
 
         if (getSeqId)
             return retVal(qconn, query);
@@ -353,7 +314,6 @@ public class DBMS {
     }
 
     /**
-     *
      * @param qconn
      * @param query
      * @return
@@ -397,9 +357,9 @@ public class DBMS {
      * This generic method deserializes a Blob from the ResultSet and returns the
      * deserialized object.
      *
-     * @param rs - ResultSet - The ResultSet that the blob should be retrieved from
+     * @param rs     - ResultSet - The ResultSet that the blob should be retrieved from
      * @param column - int - The number of the column in the ResultSet that the blob should be
-     *                       retrieved from.
+     *               retrieved from.
      * @return Object - the blob object retrieved from the ResultSet
      * @throws SQLException
      */
@@ -518,13 +478,13 @@ public class DBMS {
      * String text = "text";
      * PreparedStatement ps = connectionVariable.prepareStatement(insertOrUpdateStatement);
      * if (DBMS.DB == DBMS.INFORMIX) {
-     *    ps.setBytes(column, DBMS.serializeTextString(text);
+     * ps.setBytes(column, DBMS.serializeTextString(text);
      * }
      *
      * @param text - String - the text String to be serialized.
      * @return byte[] - the serialized text String as a byte array
      */
-    public static byte[] serializeTextString(String text){
+    public static byte[] serializeTextString(String text) {
         if (text == null)
             throw new IllegalArgumentException("DBMS.serializeTextString:ERROR text is NULL");
 
@@ -539,12 +499,12 @@ public class DBMS {
      * Example Usage:
      * String text = DBMS.getTextString(rs, columnNum);
      *
-     * @param rs - ResultSet - The ResultSet that the String should be retrieved from
+     * @param rs     - ResultSet - The ResultSet that the String should be retrieved from
      * @param column - int - The number of the column in the ResultSet that the String should be
-     *                       retrieved from.
+     *               retrieved from.
      * @return String - the String retrieved from the Result Set at the column
-     * @exception SQLException
-     **/
+     * @throws SQLException
+     */
     public static String getTextString(ResultSet rs, int column)
             throws SQLException {
         if (rs == null)
@@ -565,6 +525,7 @@ public class DBMS {
             throw sqle;
         }
     }
+
     public static String getTextString(ResultSet rs, String columnName) throws SQLException {
         if (rs == null)
             throw new IllegalArgumentException("ResultSet is NULL");
@@ -576,13 +537,13 @@ public class DBMS {
     }
 
 
-
     /**
      * printSqlException()
      * Iterate through and print out informix sql exception information.  Can be called
      * on non-informix sql exceptions.
+     *
      * @param verbose - whether or not it should print the stack trace
-     * @param sqle - a SQL exception
+     * @param sqle    - a SQL exception
      */
     public static void printSqlException(boolean verbose, SQLException sqle) {
         int i = 1;
@@ -606,13 +567,13 @@ public class DBMS {
      * deserialized String. This method should be called when retrieving a text data type from
      * ANY database.  Unlike the getTextString() method, this method will return a null String
      * if the database value is null (the getTextString() method returns an empty String).
-     *
+     * <p/>
      * Example Usage:
      * String text = DBMS.getTextStringWithNulls(rs, columnNum);
      *
-     * @param rs - ResultSet - The ResultSet that the String should be retrieved from
+     * @param rs     - ResultSet - The ResultSet that the String should be retrieved from
      * @param column - int - The number of the column in the ResultSet that the String should be
-     *                       retrieved from.
+     *               retrieved from.
      * @return String - the String retrieved from the Result Set at the column
      * @throws Exception
      */
@@ -637,7 +598,7 @@ public class DBMS {
      * getSqlExceptionString()
      * Iterate through and collect sql exception information.  Can be called
      * on non-informix sql exceptions.  Returns a string containing the information. <p>
-     *
+     * <p/>
      * One use for this method is with log4j when it is desired to collect exception
      * information into a logfile.
      *
@@ -699,6 +660,7 @@ public class DBMS {
             printException(e);
         }
     }
+
     public static void printException(Exception e) {
         try {
             if (e instanceof SQLException) {
@@ -711,12 +673,15 @@ public class DBMS {
             log.error("EJB: Error printing exception!", ex);
         }
     }
+
     private static DataSource directDataSource;
+
     public static Connection getDirectConnection() throws SQLException {
         DataSource dataSource = getDirectDataSource();
         Connection connection = dataSource.getConnection();
         return connection;
     }
+
     private static synchronized DataSource getDirectDataSource() {
         if (directDataSource == null) {
             try {
@@ -727,6 +692,7 @@ public class DBMS {
         }
         return directDataSource;
     }
+
     private static void error(Object message) {
         log.error(message);
     }
