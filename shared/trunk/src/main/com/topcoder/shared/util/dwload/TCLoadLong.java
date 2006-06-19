@@ -624,7 +624,6 @@ public class TCLoadLong extends TCLoad {
                     psIns.setTimestamp(4, rs.getTimestamp(4));  // end_date
                     psIns.setString(5, rs.getString(5));  // status
                     psIns.setInt(6, rs.getInt(6));  // group_id
-                    psIns.setString(7, rs.getString(7));  // region_code
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
