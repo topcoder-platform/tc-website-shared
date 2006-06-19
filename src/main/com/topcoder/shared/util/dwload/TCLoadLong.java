@@ -580,7 +580,7 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,ad_command) ");  // 12
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?)");                  // 12 total values
+            query.append("?)");                  // 11 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
