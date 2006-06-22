@@ -3,13 +3,13 @@ package com.topcoder.shared.util;
 import com.topcoder.shared.util.logging.Logger;
 
 import javax.naming.Context;
-import java.util.StringTokenizer;
-import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  * A class to hold application wide constants
+ *
  * @author Steve Burrows
  * @version $Revision$
  */
@@ -32,7 +32,6 @@ public class ApplicationServer {
     public static String HOST_URL = bundle.getProperty("HOST_URL", "t3://172.16.20.41:7030");
     public static String JMS_HOST_URL = bundle.getProperty("JMS_HOST_URL", "jnp://172.16.210.55:1100,jnp://172.16.210.56:1100");
     public static String CONTEST_HOST_URL = bundle.getProperty("CONTEST_HOST_URL", "t3://172.16.20.40:9003");
-    public static String[] WEBLOGIC_CLUSTER_IP = getClusterArray(bundle.getProperty("WEBLOGIC_CLUSTER_IP", "172.16.20.41"));
     public static String BASE_DIR = bundle.getProperty("BASE_DIR", "/usr/web/build/classes");
     public static String SECURITY_PROVIDER_URL = bundle.getProperty("SECURITY_PROVIDER_URL", "172.16.20.40:1099");
     public static String FILE_CONVERSION_PROVIDER_URL = bundle.getProperty("FILE_CONVERSION_PROVIDER_URL", "172.16.210.53:1099");
@@ -47,18 +46,6 @@ public class ApplicationServer {
     public final static int SESSION_ID_LENGTH = bundle.getIntProperty("SESSION_ID_LENGTH", 50);
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
-
-    private static String[] getClusterArray(String s) {
-        StringTokenizer st = new StringTokenizer(s, ",");
-        String[] ret = new String[st.countTokens()];
-        int i = 0;
-        while (st.hasMoreTokens()) {
-            ret[i] = st.nextToken();
-            i++;
-        }
-        return ret;
-    }
-
 
     public static void close(ResultSet rs) {
         if (rs != null) {
