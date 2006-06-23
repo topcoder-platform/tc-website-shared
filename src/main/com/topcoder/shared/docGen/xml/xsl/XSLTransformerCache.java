@@ -1,16 +1,17 @@
 package com.topcoder.shared.docGen.xml.xsl;
 
-import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.distCache.Cache;
+import com.topcoder.shared.util.logging.Logger;
+
+import java.io.FileNotFoundException;
 
 /**
  * XSLTransformerCache.java
- *
+ * <p/>
  * Description: A Singleton Cache for XSLTransformerWrappers
  *
- * @author      Steve Burrows (chuck)
- * @version     1.0
- *
+ * @author Steve Burrows (chuck)
+ * @version 1.0
  */
 
 public class XSLTransformerCache {
@@ -30,6 +31,7 @@ public class XSLTransformerCache {
 
     /**
      * Singleton method for getting the one instance of this class (per VM)
+     *
      * @return
      */
     public static XSLTransformerCache getInstance() {
@@ -46,9 +48,7 @@ public class XSLTransformerCache {
      * a template stream.
      *
      * @param fileName the unique identifier for the XSLTransformerWrapper possibly in the cache.
-     *
      * @return a XSLTransformerWrapper identified by the cacheKey.
-     *
      * @throws Exception
      */
     public XSLTransformerWrapper getXSLTransformerWrapper(String fileName)
@@ -59,7 +59,7 @@ public class XSLTransformerCache {
         result = (XSLTransformerWrapper) (cache.get(fileName));
         if (result == null) {
             java.io.File file = new java.io.File(fileName);
-            if (!file.exists()) throw new Exception("Unable to find file " + fileName + ".");
+            if (!file.exists()) throw new FileNotFoundException("Unable to find file " + fileName + ".");
             result = new XSLTransformerWrapper(file);
         }
         log.debug("adding " + fileName + " to cache.");
@@ -80,12 +80,10 @@ public class XSLTransformerCache {
      * The number of objects in the cache.
      *
      * @return the integer number of entries in the cache.
-     *
      */
     public int size() {
         return cache.size();
     }
-
 
 
 }
