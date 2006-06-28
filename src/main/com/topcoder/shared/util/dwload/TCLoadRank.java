@@ -20,19 +20,13 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
+import java.util.*;
 
 public class TCLoadRank extends TCLoad {
     private int roundId = 0;
@@ -57,8 +51,8 @@ public class TCLoadRank extends TCLoad {
         log.debug("TCLoadRank constructor called...");
         USAGE_MESSAGE = new String(
                 "TCLoadRank parameters - defaults in ():\n" +
-                "  -roundid number       : Round ID to load\n" +
-                "  [-fullload boolean] : true-clean rank load, false-selective  (false)\n");
+                        "  -roundid number       : Round ID to load\n" +
+                        "  [-fullload boolean] : true-clean rank load, false-selective  (false)\n");
     }
 
 
@@ -99,8 +93,8 @@ public class TCLoadRank extends TCLoad {
             log.info("Round type=" + algoType);
 
             List l = getCurrentRatings(algoType);
-            log.info("got " + l.size() + " records in " + (System.currentTimeMillis()-start) + " milliseconds");
-            loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType,  l);
+            log.info("got " + l.size() + " records in " + (System.currentTimeMillis() - start) + " milliseconds");
+            loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
 
 //            loadOverallRatingRankHistory(l);
             //beware, this stuff can't be run be run on old rounds because of teh active flag.  you'll need to
@@ -203,10 +197,10 @@ public class TCLoadRank extends TCLoad {
             CoderRating cr = null;
             for (int i = 0; i < list.size(); i++) {
                 cr = (CoderRating) list.get(i);
-                    if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && cr.isActive()) ||
-                            rankType != ACTIVE_RATING_RANK_TYPE_ID) {
-                        ratings.add(cr);
-                    }
+                if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && cr.isActive()) ||
+                        rankType != ACTIVE_RATING_RANK_TYPE_ID) {
+                    ratings.add(cr);
+                }
             }
             Collections.sort(ratings);
             coderCount = ratings.size();
@@ -341,7 +335,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(2, cr.getMemberCount());
                 psIns.setDouble(3, cr.getRating());
                 psIns.setInt(4, cr.getRank());
-                psIns.setDouble(5,  cr.getPercentile());
+                psIns.setDouble(5, cr.getPercentile());
                 psIns.setInt(6, ratingType);
                 psIns.setDouble(7, roundId);
                 count += psIns.executeUpdate();
@@ -569,7 +563,6 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, 1)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-
             // delete all the records for the overall rating rank type
             psDel.executeUpdate();
 
@@ -636,7 +629,6 @@ public class TCLoadRank extends TCLoad {
             query.append(" INTO season_team_rank_history (team_id, season_id, rank, percentile, round_id, team_rank_type_id)");
             query.append(" VALUES (?, ?, ?, ?, ?, 1)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
-
 
             // delete all the records for the overall rating rank type
             psDel.executeUpdate();
@@ -781,13 +773,12 @@ public class TCLoadRank extends TCLoad {
             if (rankType == ACTIVE_RATING_RANK_TYPE_ID) {
                 ratings = new ArrayList();
                 for (Iterator i = list.iterator(); i.hasNext();) {
-                    CoderRating rating = (CoderRating)i.next();
+                    CoderRating rating = (CoderRating) i.next();
                     if (rating.active) {
                         ratings.add(rating);
                     }
                 }
-            }
-            else {
+            } else {
                 ratings = list;
             }
 
@@ -877,20 +868,19 @@ public class TCLoadRank extends TCLoad {
 
             for (int i = 0; i < list.size(); i++) {
                 temp = (CoderRating) list.get(i);
-                    if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && temp.isActive()) ||
-                            rankType != ACTIVE_RATING_RANK_TYPE_ID) {
-                        tempCode = temp.getCountryCode();
-                        if (countries.containsKey(tempCode)) {
-                            tempList = (List) countries.get(tempCode);
-                        } else {
-                            tempList = new ArrayList(100);
-                        }
-                        tempList.add(list.get(i));
-                        countries.put(tempCode, tempList);
-                        tempList = null;
+                if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && temp.isActive()) ||
+                        rankType != ACTIVE_RATING_RANK_TYPE_ID) {
+                    tempCode = temp.getCountryCode();
+                    if (countries.containsKey(tempCode)) {
+                        tempList = (List) countries.get(tempCode);
+                    } else {
+                        tempList = new ArrayList(100);
                     }
+                    tempList.add(list.get(i));
+                    countries.put(tempCode, tempList);
+                    tempList = null;
+                }
             }
-
 
 
             for (Iterator it = countries.entrySet().iterator(); it.hasNext();) {
@@ -969,10 +959,8 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-
             // delete all the records from the country ranking table
             psDel.executeUpdate();
-
 
 
             HashMap states = new HashMap();
@@ -982,22 +970,21 @@ public class TCLoadRank extends TCLoad {
 
             for (int i = 0; i < list.size(); i++) {
                 temp = (CoderRating) list.get(i);
-                    if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && temp.isActive()) ||
-                            rankType != ACTIVE_RATING_RANK_TYPE_ID) {
-                        tempCode = temp.getStateCode();
-                        if (tempCode!=null && !tempCode.trim().equals("")) {
-                            if (states.containsKey(tempCode)) {
-                                tempList = (List) states.get(tempCode);
-                            } else {
-                                tempList = new ArrayList(100);
-                            }
-                            tempList.add(list.get(i));
-                            states.put(tempCode, tempList);
-                            tempList = null;
+                if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && temp.isActive()) ||
+                        rankType != ACTIVE_RATING_RANK_TYPE_ID) {
+                    tempCode = temp.getStateCode();
+                    if (tempCode != null && !tempCode.trim().equals("")) {
+                        if (states.containsKey(tempCode)) {
+                            tempList = (List) states.get(tempCode);
+                        } else {
+                            tempList = new ArrayList(100);
                         }
+                        tempList.add(list.get(i));
+                        states.put(tempCode, tempList);
+                        tempList = null;
                     }
+                }
             }
-
 
 
             for (Iterator it = states.entrySet().iterator(); it.hasNext();) {
@@ -1079,10 +1066,8 @@ public class TCLoadRank extends TCLoad {
             query.append(" VALUES (?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-
             // delete all the records from the country ranking table
             psDel.executeUpdate();
-
 
 
             HashMap schools = new HashMap();
@@ -1092,20 +1077,20 @@ public class TCLoadRank extends TCLoad {
 
             for (int i = 0; i < list.size(); i++) {
                 temp = (CoderRating) list.get(i);
-                    if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && temp.isActive()) ||
+                if ((rankType == ACTIVE_RATING_RANK_TYPE_ID && temp.isActive()) ||
                         rankType != ACTIVE_RATING_RANK_TYPE_ID) {
-                        if (temp.getSchoolId()>0) {
-                            tempId = new Long(temp.getSchoolId());
-                            if (schools.containsKey(tempId)) {
-                                tempList = (List) schools.get(tempId);
-                            } else {
-                                tempList = new ArrayList(10);
-                            }
-                            tempList.add(list.get(i));
-                            schools.put(tempId, tempList);
-                            tempList = null;
+                    if (temp.getSchoolId() > 0) {
+                        tempId = new Long(temp.getSchoolId());
+                        if (schools.containsKey(tempId)) {
+                            tempList = (List) schools.get(tempId);
+                        } else {
+                            tempList = new ArrayList(10);
                         }
+                        tempList.add(list.get(i));
+                        schools.put(tempId, tempList);
+                        tempList = null;
                     }
+                }
             }
 
             for (Iterator it = schools.entrySet().iterator(); it.hasNext();) {
@@ -1164,7 +1149,7 @@ public class TCLoadRank extends TCLoad {
 
         try {
 
-            String activeMembers = algoType == TC_RATING_TYPE_ID? "active_members" : "active_hs_members";
+            String activeMembers = algoType == TC_RATING_TYPE_ID ? "active_members" : "active_hs_members";
             query = new StringBuffer(200);
             query.append(" select r.coder_id");
             query.append(" , r.rating");
@@ -1190,12 +1175,12 @@ public class TCLoadRank extends TCLoad {
                 //pros
                 if (rs.getInt("coder_type_id") == 2) {
                     ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                        0, rs.getInt("active")==1, rs.getString("country_code"),
-                        rs.getString("state_code")));
+                            0, rs.getInt("active") == 1, rs.getString("country_code"),
+                            rs.getString("state_code")));
                 } else {
                     ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                        rs.getInt("school_id"), rs.getInt("active")==1, rs.getString("country_code"),
-                        rs.getString("state_code")));
+                            rs.getInt("school_id"), rs.getInt("active") == 1, rs.getString("country_code"),
+                            rs.getString("state_code")));
                 }
             }
 
@@ -1237,7 +1222,7 @@ public class TCLoadRank extends TCLoad {
             ret = new ArrayList();
             while (rs.next()) {
                 ret.add(new CoderRating(rs.getLong("coder_id"), rs.getInt("rating"),
-                    0, true, rs.getString("country_code"), "NA"));
+                        0, true, rs.getString("country_code"), "NA"));
             }
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
@@ -1317,7 +1302,7 @@ public class TCLoadRank extends TCLoad {
         for (int i = 0; i < size; i++) {
             cr = (CoderRating) ratings.get(i);
             String cc = cr.getCountryCode();
-            
+
             if (cc == null || (cc.trim().length() == 0)) continue;
 
             CountryRank r = (CountryRank) countryRating.get(cc);
@@ -1331,8 +1316,7 @@ public class TCLoadRank extends TCLoad {
         // copy to l just the countries with at least 10 coders
         ArrayList l = new ArrayList();
 
-        for(Iterator it = countryRating.values().iterator(); it.hasNext(); )
-        {
+        for (Iterator it = countryRating.values().iterator(); it.hasNext();) {
             CountryRank r = (CountryRank) it.next();
             if (r.getMemberCount() >= 10) {
                 l.add(r);
@@ -1421,7 +1405,7 @@ public class TCLoadRank extends TCLoad {
             return stateCode;
         }
 
-         void setStateCode(String stateCode) {
+        void setStateCode(String stateCode) {
             this.stateCode = stateCode;
         }
 
@@ -1434,7 +1418,7 @@ public class TCLoadRank extends TCLoad {
         }
 
         public String toString() {
-            return new String(coderId + ":" + rating + ":" + schoolId + ":" + active + ":" + stateCode);
+            return new String(coderId + ":" + rating + ":" + schoolId + ":" + active + ":" + stateCode + ":" + countryCode);
         }
 
     }
@@ -1452,12 +1436,15 @@ public class TCLoadRank extends TCLoad {
         public double getPoints() {
             return points;
         }
+
         public void setPoints(double points) {
             this.points = points;
         }
+
         public long getTeamId() {
             return teamId;
         }
+
         public void setTeamId(long teamId) {
             this.teamId = teamId;
         }
@@ -1498,18 +1485,23 @@ public class TCLoadRank extends TCLoad {
         public int getMemberCount() {
             return memberCount;
         }
+
         public void setMemberCount(int memberCount) {
             this.memberCount = memberCount;
         }
+
         public double getPercentile() {
             return percentile;
         }
+
         public void setPercentile(double percentile) {
             this.percentile = percentile;
         }
+
         public int getRank() {
             return rank;
         }
+
         public void setRank(int rank) {
             this.rank = rank;
         }
@@ -1526,8 +1518,7 @@ public class TCLoadRank extends TCLoad {
             return rating;
         }
 
-        public void addCoder(int coderRating)
-        {
+        public void addCoder(int coderRating) {
             ratingSum += coderRating * Math.pow(R, memberCount);
             memberCount++;
         }
