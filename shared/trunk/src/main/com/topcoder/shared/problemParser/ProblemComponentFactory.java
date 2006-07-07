@@ -1,23 +1,30 @@
 package com.topcoder.shared.problemParser;
 
-import com.topcoder.shared.problem.*;
-import com.topcoder.shared.util.logging.Logger;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xerces.parsers.StandardParserConfiguration;
-
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.io.*;
-
-import java.util.*;
+import com.topcoder.shared.problem.Constraint;
+import com.topcoder.shared.problem.DataType;
+import com.topcoder.shared.problem.DataTypeFactory;
+import com.topcoder.shared.problem.Element;
+import com.topcoder.shared.problem.InvalidTypeException;
+import com.topcoder.shared.problem.ProblemComponent;
+import com.topcoder.shared.problem.ProblemMessage;
+import com.topcoder.shared.problem.TestCase;
+import com.topcoder.shared.util.logging.Logger;
 
 /**
  * This factory does all of the work of parsing an XML description of a problem statement and constructing
@@ -147,7 +154,7 @@ public class ProblemComponentFactory
         NodeList nl = node.getChildNodes();
 
         System.out.println("<" + node.getNodeName() + ">");
-        if(node.getNodeType() != node.ELEMENT_NODE)
+        if(node.getNodeType() != Node.ELEMENT_NODE)
             System.out.println("<text>" + node.getNodeValue() + "</text>");
         for(int i = 0; i < nl.getLength(); i++)
             traverse(nl.item(i));
@@ -228,7 +235,7 @@ public class ProblemComponentFactory
     {
         if(node == null)
             return null;
-        if(node.getNodeType() != node.ELEMENT_NODE)
+        if(node.getNodeType() != Node.ELEMENT_NODE)
             return null;
 
         NodeList nl = node.getChildNodes();
@@ -238,7 +245,7 @@ public class ProblemComponentFactory
 
         Node n = nl.item(0);
 
-        if(n.getNodeType() != node.TEXT_NODE)
+        if(n.getNodeType() != Node.TEXT_NODE)
             return null;
 
         return n.getNodeValue();
@@ -251,7 +258,7 @@ public class ProblemComponentFactory
         for(int i = 0; i < nl.getLength(); i++) {
             Node subnode = nl.item(i);
 
-            if(subnode.getNodeType() == subnode.ELEMENT_NODE) {
+            if(subnode.getNodeType() == Node.ELEMENT_NODE) {
                 if(subnode.getNodeName().equals(TYPE)) {
                     String text = getText(subnode);
 
@@ -303,7 +310,7 @@ public class ProblemComponentFactory
     {
         for(Node n = node.getFirstChild(), next; n != null; n = next) {
             next = n.getNextSibling();
-            if(n.getNodeType() == n.TEXT_NODE)
+            if(n.getNodeType() == Node.TEXT_NODE)
                 node.removeChild(n);
         }
     }
