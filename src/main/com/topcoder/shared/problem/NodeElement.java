@@ -1,11 +1,13 @@
 package com.topcoder.shared.problem;
 
-import com.topcoder.shared.netCommon.CSReader;
-import com.topcoder.shared.netCommon.CSWriter;
-
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import com.topcoder.shared.netCommon.CSReader;
+import com.topcoder.shared.netCommon.CSWriter;
 
 /**
  * A <code>NodeElement</code> represents an XML element.  It has a name, a (possibly empty) set
@@ -132,6 +134,34 @@ public class NodeElement extends BaseElement implements Element {
 
     }
 
+    public String toString() {
+        StringBuffer buf = new StringBuffer(64 * children.size());
+        boolean print = USER_ONLY_TAGS_LIST.contains(name);
+        if (print) {
+            buf.append('<');
+            buf.append(name);
+            for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
+                String key = (String) i.next();
+    
+                buf.append(' ');
+                buf.append(key);
+                buf.append("=\"");
+                buf.append(ProblemComponent.encodeHTML((String) attributes.get(key)));
+                buf.append('"');
+            }
+            buf.append('>');
+        }
+        for (int i = 0; i < children.size(); i++) {
+            Element e = (Element) children.get(i);
+            buf.append(e.toString());
+        }
+        if (print) {
+            buf.append("</");
+            buf.append(name);
+            buf.append('>');
+        }
+        return buf.toString();
+    }
 }
 
 

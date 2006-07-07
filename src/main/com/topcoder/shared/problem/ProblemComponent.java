@@ -1,11 +1,13 @@
 package com.topcoder.shared.problem;
 
-import com.topcoder.shared.netCommon.*;
-import com.topcoder.shared.language.JavaLanguage;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import com.topcoder.shared.language.JavaLanguage;
+import com.topcoder.shared.netCommon.CSReader;
+import com.topcoder.shared.netCommon.CSWriter;
+import com.topcoder.shared.netCommon.CustomSerializable;
 
 /**
  * This class fully represents a problem statement.  This consists of the following elements:
@@ -64,6 +66,7 @@ public class ProblemComponent extends BaseElement
     private WebService[] webServices = new WebService[0];
     private int memLimitMB = DEFAULT_MEM_LIMIT; 
     private int roundType = -1;
+    private ArrayList categories = new ArrayList();
 
     public ProblemComponent() {
     }
@@ -157,6 +160,7 @@ public class ProblemComponent extends BaseElement
         writer.writeObjectArray(webServices);
         writer.writeInt(memLimitMB);
         writer.writeInt(roundType);
+        writer.writeArrayList(categories);
     }
 
     /**
@@ -188,6 +192,7 @@ public class ProblemComponent extends BaseElement
         webServices = (WebService[])reader.readObjectArray(WebService.class);
         memLimitMB = reader.readInt();
         roundType = reader.readInt();
+        categories = reader.readArrayList();
     }
 
     /**
@@ -256,7 +261,7 @@ public class ProblemComponent extends BaseElement
      * @param message
      */
     public void addMessage(ProblemMessage message) {
-        if (message.getType() != message.WARNING)
+        if (message.getType() != ProblemMessage.WARNING)
             valid = false;
         messages.add(message);
     }
@@ -527,8 +532,9 @@ public class ProblemComponent extends BaseElement
      * @return
      */
     public static String handleTextElement(String name, Element elem) {
-        if (elem instanceof TextElement)
+        if (elem instanceof TextElement) {
             return "<" + name + ">" + elem.toString() + "</" + name + ">";
+        } 
         return elem.toXML();
     }
 
@@ -758,5 +764,13 @@ public class ProblemComponent extends BaseElement
     }
     public String[][] getAllParamNames(){
         return paramNames;
+    }
+
+    public void setCategories(ArrayList categories) {
+        this.categories = categories;
+    }
+
+    public ArrayList getCategories() {
+        return categories;
     }
 }

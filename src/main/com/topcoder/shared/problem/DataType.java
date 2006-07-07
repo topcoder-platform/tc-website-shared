@@ -205,5 +205,9 @@ public class DataType extends BaseElement implements Element {
     public int getID() {
         return id;
     }
+    
+    public String toString() {
+        return toXML();
+    }
 }
 
