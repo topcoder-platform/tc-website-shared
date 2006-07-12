@@ -275,6 +275,7 @@ public class TCLoadAggregate extends TCLoad {
         } finally {
             close(rs);
             close(psSel);
+            close(psIns);
         }
     }
 
