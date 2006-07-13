@@ -2224,7 +2224,7 @@ public class TCLoadAggregate extends TCLoad {
             psSelLang.setLong(1, fRoundId);
             rsLang = psSelLang.executeQuery();
 
-            psSelLangPoint = prepareStatement(POINT_QUERY, TARGET_DB);
+            psSelLangPoint = prepareStatement(LANGUAGE_POINT_QUERY, TARGET_DB);
 
             psUpdLang = prepareStatement(LANGUAGE_PROBLEM_RANK_UPDATE, TARGET_DB);
 
