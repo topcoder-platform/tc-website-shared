@@ -29,6 +29,7 @@ import com.topcoder.shared.util.logging.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -2155,6 +2156,9 @@ public class TCLoadAggregate extends TCLoad {
             "update coder_problem set language_placed = ? " +
                     " where round_id = ? and coder_id = ? and division_id = ? and problem_id = ?";
 
+    private static final String ROUNDS = "select round_id from round r, round_type_lu rt " +
+            "where r.round_type_id = rt.round_type_id " +
+            "and rt.algo_rating_type_id in ( " + TC_RATING_TYPE_ID + ", " + HS_RATING_TYPE_ID + ")";
 
     /**
      * This populates the 'coder_problem' table
@@ -2162,7 +2166,8 @@ public class TCLoadAggregate extends TCLoad {
     private void loadCoderProblem() throws Exception {
         int retVal;
         int count = 0;
-        PreparedStatement psSel = null;
+        PreparedStatement psSelProblem = null;
+        PreparedStatement psSelPoint = null;
         PreparedStatement psUpd = null;
         PreparedStatement psSelLang = null;
         PreparedStatement psSelLangPoint = null;
@@ -2170,122 +2175,151 @@ public class TCLoadAggregate extends TCLoad {
         ResultSet rsLang = null;
         ResultSet rsLangPoint = null;
         PreparedStatement psUpdLang = null;
+        PreparedStatement psSelRounds = null;
+        ResultSet roundRs = null;
+        ResultSet problemRs = null;
+        ResultSet pointRs = null;
 
         try {
-            psSel = prepareStatement(PROBLEM_QUERY, TARGET_DB);
-            psSel.setLong(1, fRoundId);
-            rs = psSel.executeQuery();
 
-            ResultSetContainer problems = new ResultSetContainer(rs);
-
-            rs.close();
-            psSel.close();
-            psSel = prepareStatement(POINT_QUERY, TARGET_DB);
-
-            psUpd = prepareStatement(PROBLEM_RANK_UPDATE, TARGET_DB);
-
-            ResultSetContainer rankList = null;
-            ResultSetContainer.ResultSetRow row = null;
-            ResultSetContainer.ResultSetRow innerRow = null;
-            for (Iterator it = problems.iterator(); it.hasNext();) {
-                row = (ResultSetContainer.ResultSetRow) it.next();
-                psSel.setLong(1, fRoundId);
-                psSel.setLong(2, row.getLongItem("problem_id"));
-                psSel.setInt(3, row.getIntItem("division_id"));
-                rs = psSel.executeQuery();
-                rankList = new ResultSetContainer(rs, 0, Integer.MAX_VALUE, 5);
-
-                for (Iterator it1 = rankList.iterator(); it1.hasNext();) {
-                    innerRow = (ResultSetContainer.ResultSetRow) it1.next();
-                    psUpd.setInt(1, innerRow.getIntItem("rank"));
-                    psUpd.setLong(2, fRoundId);
-                    psUpd.setLong(3, innerRow.getLongItem("coder_id"));
-                    psUpd.setInt(4, innerRow.getIntItem("division_id"));
-                    psUpd.setLong(5, innerRow.getLongItem("problem_id"));
-                    retVal = psUpd.executeUpdate();
-                    count += retVal;
-                    if (retVal != 1) {
-                        throw new SQLException("TCLoadAggregate: Update for round_id " +
-                                fRoundId +
-                                ", problem_id " + innerRow.getLongItem("round_id") +
-                                ", division_id " + innerRow.getLongItem("division_id") +
-                                ", coder" + innerRow.getLongItem("coder_id") +
-                                " modified " + retVal + " rows, not one.");
-                    }
-                    printLoadProgress(count, "coder_problem");
-                    psUpd.clearParameters();
+            ArrayList rounds = new ArrayList();
+            if (!FULL_LOAD) {
+                //get rounds
+                psSelRounds = prepareStatement(ROUNDS, TARGET_DB);
+                roundRs = psSelRounds.executeQuery();
+                while (roundRs.next()) {
+                    rounds.add(new Long(roundRs.getLong("round_id")));
                 }
-                rs.close();
-                psSel.clearParameters();
+            } else {
+                rounds.add(new Long(fRoundId));
             }
 
-            //for each lanuage
+            long roundId;
+
+            psSelProblem = prepareStatement(PROBLEM_QUERY, TARGET_DB);
+            psSelPoint = prepareStatement(POINT_QUERY, TARGET_DB);
+            psUpd = prepareStatement(PROBLEM_RANK_UPDATE, TARGET_DB);
             psSelLang = prepareStatement(LANGUAGE_QUERY, TARGET_DB);
-            psSelLang.setLong(1, fRoundId);
-            rsLang = psSelLang.executeQuery();
-
             psSelLangPoint = prepareStatement(LANGUAGE_POINT_QUERY, TARGET_DB);
-
             psUpdLang = prepareStatement(LANGUAGE_PROBLEM_RANK_UPDATE, TARGET_DB);
 
-            ResultSetContainer languages = new ResultSetContainer(rsLang);
-            ResultSetContainer langProblemRankList;
-            ResultSetContainer.ResultSetRow probLangRow;
-            ResultSetContainer.ResultSetRow langProblemInnerRow;
-            ResultSetContainer.ResultSetRow langRow;
 
-            //for each language and problem, rank the scores
-            for (Iterator it = languages.iterator(); it.hasNext();) {
-                langRow = (ResultSetContainer.ResultSetRow) it.next();
-                for (Iterator it1 = problems.iterator(); it1.hasNext();) {
-                    probLangRow = (ResultSetContainer.ResultSetRow) it1.next();
-                    psSelLangPoint.setLong(1, fRoundId);
-                    psSelLangPoint.setLong(2, probLangRow.getLongItem("problem_id"));
-                    psSelLangPoint.setInt(3, probLangRow.getIntItem("division_id"));
-                    psSelLangPoint.setInt(4, langRow.getIntItem("language_id"));
-                    rsLangPoint = psSelLangPoint.executeQuery();
-                    langProblemRankList = new ResultSetContainer(rsLangPoint, 0, Integer.MAX_VALUE, 5);
+            for (Iterator roundIterator = rounds.iterator(); roundIterator.hasNext();) {
+                roundId = ((Long) roundIterator.next()).longValue();
 
-                    for (Iterator it2 = langProblemRankList.iterator(); it2.hasNext();) {
-                        langProblemInnerRow = (ResultSetContainer.ResultSetRow) it2.next();
-                        psUpdLang.setInt(1, langProblemInnerRow.getIntItem("rank"));
-                        psUpdLang.setLong(2, fRoundId);
-                        psUpdLang.setLong(3, langProblemInnerRow.getLongItem("coder_id"));
-                        psUpdLang.setInt(4, langProblemInnerRow.getIntItem("division_id"));
-                        psUpdLang.setLong(5, langProblemInnerRow.getLongItem("problem_id"));
-                        retVal = psUpdLang.executeUpdate();
+                psSelProblem.clearParameters();
+                psSelProblem.setLong(1, roundId);
+
+                problemRs = psSelProblem.executeQuery();
+
+                ResultSetContainer problems = new ResultSetContainer(problemRs);
+
+                rs.close();
+
+                ResultSetContainer rankList;
+                ResultSetContainer.ResultSetRow row;
+                ResultSetContainer.ResultSetRow innerRow;
+                for (Iterator it = problems.iterator(); it.hasNext();) {
+                    row = (ResultSetContainer.ResultSetRow) it.next();
+                    psSelPoint.clearParameters();
+                    psSelPoint.setLong(1, roundId);
+                    psSelPoint.setLong(2, row.getLongItem("problem_id"));
+                    psSelPoint.setInt(3, row.getIntItem("division_id"));
+                    pointRs = psSelPoint.executeQuery();
+                    rankList = new ResultSetContainer(pointRs, 0, Integer.MAX_VALUE, 5);
+                    pointRs.close();
+
+                    for (Iterator it1 = rankList.iterator(); it1.hasNext();) {
+                        innerRow = (ResultSetContainer.ResultSetRow) it1.next();
+                        psUpd.clearParameters();
+                        psUpd.setInt(1, innerRow.getIntItem("rank"));
+                        psUpd.setLong(2, roundId);
+                        psUpd.setLong(3, innerRow.getLongItem("coder_id"));
+                        psUpd.setInt(4, innerRow.getIntItem("division_id"));
+                        psUpd.setLong(5, innerRow.getLongItem("problem_id"));
+                        retVal = psUpd.executeUpdate();
                         count += retVal;
                         if (retVal != 1) {
                             throw new SQLException("TCLoadAggregate: Update for round_id " +
-                                    fRoundId +
-                                    ", problem_id " + langProblemInnerRow.getLongItem("round_id") +
-                                    ", division_id " + langProblemInnerRow.getLongItem("division_id") +
-                                    ", coder" + langProblemInnerRow.getLongItem("coder_id") +
+                                    roundId +
+                                    ", problem_id " + innerRow.getLongItem("round_id") +
+                                    ", division_id " + innerRow.getLongItem("division_id") +
+                                    ", coder" + innerRow.getLongItem("coder_id") +
                                     " modified " + retVal + " rows, not one.");
                         }
                         printLoadProgress(count, "coder_problem");
-                        psUpd.clearParameters();
                     }
-                    rs.close();
-                    psSel.clearParameters();
+                }
+
+                //for each lanuage
+                psSelLang.clearParameters();
+                psSelLang.setLong(1, roundId);
+
+                rsLang = psSelLang.executeQuery();
+
+                ResultSetContainer languages = new ResultSetContainer(rsLang);
+                rsLang.close();
+
+                ResultSetContainer langProblemRankList;
+                ResultSetContainer.ResultSetRow probLangRow;
+                ResultSetContainer.ResultSetRow langProblemInnerRow;
+                ResultSetContainer.ResultSetRow langRow;
+
+                //for each language and problem, rank the scores
+                for (Iterator it = languages.iterator(); it.hasNext();) {
+                    langRow = (ResultSetContainer.ResultSetRow) it.next();
+                    for (Iterator it1 = problems.iterator(); it1.hasNext();) {
+                        probLangRow = (ResultSetContainer.ResultSetRow) it1.next();
+                        psSelLangPoint.clearParameters();
+                        psSelLangPoint.setLong(1, roundId);
+                        psSelLangPoint.setLong(2, probLangRow.getLongItem("problem_id"));
+                        psSelLangPoint.setInt(3, probLangRow.getIntItem("division_id"));
+                        psSelLangPoint.setInt(4, langRow.getIntItem("language_id"));
+                        rsLangPoint = psSelLangPoint.executeQuery();
+                        langProblemRankList = new ResultSetContainer(rsLangPoint, 0, Integer.MAX_VALUE, 5);
+
+                        for (Iterator it2 = langProblemRankList.iterator(); it2.hasNext();) {
+                            langProblemInnerRow = (ResultSetContainer.ResultSetRow) it2.next();
+                            psUpdLang.clearParameters();
+                            psUpdLang.setInt(1, langProblemInnerRow.getIntItem("rank"));
+                            psUpdLang.setLong(2, roundId);
+                            psUpdLang.setLong(3, langProblemInnerRow.getLongItem("coder_id"));
+                            psUpdLang.setInt(4, langProblemInnerRow.getIntItem("division_id"));
+                            psUpdLang.setLong(5, langProblemInnerRow.getLongItem("problem_id"));
+                            retVal = psUpdLang.executeUpdate();
+                            count += retVal;
+                            if (retVal != 1) {
+                                throw new SQLException("TCLoadAggregate: Update for round_id " +
+                                        roundId +
+                                        ", problem_id " + langProblemInnerRow.getLongItem("round_id") +
+                                        ", division_id " + langProblemInnerRow.getLongItem("division_id") +
+                                        ", coder" + langProblemInnerRow.getLongItem("coder_id") +
+                                        " modified " + retVal + " rows, not one.");
+                            }
+                            printLoadProgress(count, "coder_problem");
+                        }
+                    }
                 }
             }
-
-
             log.info("coder_problem records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'coder_problem' table failed.\n" +
                     sqle.getMessage());
         } finally {
-            close(rs);
-            close(rsLang);
-            close(rsLangPoint);
-            close(psSel);
+            close(psSelProblem);
+            close(psSelPoint);
             close(psUpd);
             close(psSelLang);
             close(psSelLangPoint);
+            close(rs);
+            close(rsLang);
+            close(rsLangPoint);
             close(psUpdLang);
+            close(psSelRounds);
+            close(roundRs);
+            close(problemRs);
+            close(pointRs);
         }
     }
 
