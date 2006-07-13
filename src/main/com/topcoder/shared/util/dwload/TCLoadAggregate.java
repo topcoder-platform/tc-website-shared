@@ -1956,6 +1956,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" WHERE round_id = cp.round_id ");
             query.append(" and problem_id = cp.problem_id ");
             query.append(" and division_id = cp.division_id ");
+            query.append("and language_id = cp.language_id ");
             query.append(" and end_status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //16"
             query.append("  FROM coder_problem cp ");
             query.append(" WHERE cp.end_status_id >= " + STATUS_SUBMITTED);
