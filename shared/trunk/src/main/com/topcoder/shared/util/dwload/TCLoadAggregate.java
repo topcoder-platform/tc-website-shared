@@ -2146,7 +2146,7 @@ public class TCLoadAggregate extends TCLoad {
 
     private static final String LANGUAGE_QUERY = "select distinct language_id " +
             "from coder_problem " +
-            "where round_id = ?";
+            "where round_id = ? and language_id >0";
     private static final String PROBLEM_RANK_UPDATE =
             "update coder_problem set placed = ? " +
                     " where round_id = ? and coder_id = ? and division_id = ? and problem_id = ?";
