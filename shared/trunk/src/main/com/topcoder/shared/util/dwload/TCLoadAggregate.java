@@ -2183,7 +2183,7 @@ public class TCLoadAggregate extends TCLoad {
         try {
 
             ArrayList rounds = new ArrayList();
-            if (!FULL_LOAD) {
+            if (FULL_LOAD) {
                 //get rounds
                 psSelRounds = prepareStatement(ROUNDS, TARGET_DB);
                 roundRs = psSelRounds.executeQuery();
@@ -2214,7 +2214,7 @@ public class TCLoadAggregate extends TCLoad {
 
                 ResultSetContainer problems = new ResultSetContainer(problemRs);
 
-                rs.close();
+                problemRs.close();
 
                 ResultSetContainer rankList;
                 ResultSetContainer.ResultSetRow row;
