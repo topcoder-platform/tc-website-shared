@@ -590,15 +590,15 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,SUM(cp.final_points)");   //14
             query.append(" ,STDEV(cp.final_points)");   //15
             query.append(" ,SUM(cp.defense_points)");   //16
-            query.append(" ,(SELECT AVG(time_elapsed) ");
-            query.append(" FROM coder_problem, round r1, round_type_lu rt1 ");
-            query.append(" WHERE level_id = cp.level_id ");
-            query.append(" and r1.round_id = round_id ");
+            query.append(" ,(SELECT AVG(cp1.time_elapsed) ");
+            query.append(" FROM coder_problem cp1, round r1, round_type_lu rt1 ");
+            query.append(" WHERE cp1.level_id = cp.level_id ");
+            query.append(" and r1.round_id = cp1.round_id ");
             query.append(" and r1.round_type_id = rt1.round_type_id ");
             query.append(" and rt1.algo_rating_type_id = ").append(algoType);
-            query.append(" and coder_id = cp.coder_id ");
-            query.append(" and division_id = cp.division_id ");
-            query.append(" and status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
+            query.append(" and cp1.coder_id = cp.coder_id ");
+            query.append(" and cp1.division_id = cp.division_id ");
+            query.append(" and cp1.status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
             query.append(" ,rt.algo_rating_type_id ");  //18
             query.append(" FROM coder_problem cp");
             query.append("    , round r ");
