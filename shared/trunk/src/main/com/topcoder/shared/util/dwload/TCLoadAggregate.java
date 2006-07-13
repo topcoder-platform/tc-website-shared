@@ -590,7 +590,15 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,SUM(cp.final_points)");   //14
             query.append(" ,STDEV(cp.final_points)");   //15
             query.append(" ,SUM(cp.defense_points)");   //16
-            query.append(" ,AVG(cp.time_elapsed)");     //17
+            query.append(" ,(SELECT AVG(time_elapsed) ");
+            query.append(" FROM coder_problem, round r1, round_type_lu rt1 ");
+            query.append(" WHERE level_id = cp.level_id ");
+            query.append(" and r1.round_id = round_id ");
+            query.append(" and r1.round_type_id = rt1.round_type_id ");
+            query.append(" and rt1.algo_rating_type_id = ").append(algoType);
+            query.append(" and coder_id = cp.coder_id ");
+            query.append(" and division_id = cp.division_id ");
+            query.append(" and status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
             query.append(" ,rt.algo_rating_type_id ");  //18
             query.append(" FROM coder_problem cp");
             query.append("    , round r ");
@@ -1732,7 +1740,12 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,AVG(cp.final_points)"); // 14: average_points
             query.append("       ,STDEV(final_points) "); // 15: point_standard_deviation
             query.append("       ,SUM(final_points) "); // 16: final_points
-            query.append("       ,AVG(time_elapsed) ");     //17
+            query.append(" ,(SELECT AVG(time_elapsed) ");
+            query.append(" FROM coder_problem");
+            query.append(" WHERE round_id = cp.round_id ");
+            query.append(" and problem_id = cp.problem_id ");
+            query.append(" and division_id = cp.division_id ");
+            query.append(" and status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
             query.append("  FROM coder_problem cp ");
             if (!FULL_LOAD) {   //if it's not a full load, just load up the problems from this round
                 query.append(" WHERE cp.round_id =" + fRoundId);
@@ -1937,7 +1950,12 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,AVG(cp.final_points)"); // 13: average_points
             query.append(" ,STDEV(final_points) "); // 14: point_standard_deviation
             query.append(" ,SUM(final_points) "); // 15: final_points
-            query.append(" ,AVG(time_elapsed) ");     //16
+            query.append(" ,(SELECT AVG(time_elapsed) ");
+            query.append(" FROM coder_problem ");
+            query.append(" WHERE round_id = cp.round_id ");
+            query.append(" and problem_id = cp.problem_id ");
+            query.append(" and division_id = cp.division_id ");
+            query.append(" and status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //16"
             query.append("  FROM coder_problem cp ");
             query.append(" WHERE cp.end_status_id >= " + STATUS_SUBMITTED);
             if (!FULL_LOAD) {   //if it's not a full load, just load up the problems from this round
@@ -2117,8 +2135,24 @@ public class TCLoadAggregate extends TCLoad {
                     " and division_id = ?" +
                     " order by final_points desc";
 
+    private static final String LANGUAGE_POINT_QUERY =
+            " select coder_id, round_id, division_id, problem_id, final_points" +
+                    " from coder_problem" +
+                    " where round_id = ?" +
+                    " and problem_id = ?" +
+                    " and division_id = ?" +
+                    " and language_id = ?" +
+                    " order by final_points desc";
+
+    private static final String LANGUAGE_QUERY = "select distinct language_id " +
+            "from coder_problem " +
+            "where round_id = ?";
     private static final String PROBLEM_RANK_UPDATE =
             "update coder_problem set placed = ? " +
+                    " where round_id = ? and coder_id = ? and division_id = ? and problem_id = ?";
+
+    private static final String LANGUAGE_PROBLEM_RANK_UPDATE =
+            "update coder_problem set language_placed = ? " +
                     " where round_id = ? and coder_id = ? and division_id = ? and problem_id = ?";
 
 
@@ -2126,11 +2160,16 @@ public class TCLoadAggregate extends TCLoad {
      * This populates the 'coder_problem' table
      */
     private void loadCoderProblem() throws Exception {
-        int retVal = 0;
+        int retVal;
         int count = 0;
         PreparedStatement psSel = null;
         PreparedStatement psUpd = null;
+        PreparedStatement psSelLang = null;
+        PreparedStatement psSelLangPoint = null;
         ResultSet rs = null;
+        ResultSet rsLang = null;
+        ResultSet rsLangPoint = null;
+        PreparedStatement psUpdLang = null;
 
         try {
             psSel = prepareStatement(PROBLEM_QUERY, TARGET_DB);
@@ -2166,7 +2205,7 @@ public class TCLoadAggregate extends TCLoad {
                     retVal = psUpd.executeUpdate();
                     count += retVal;
                     if (retVal != 1) {
-                        throw new SQLException("TCLoadAggregate: Insert for round_id " +
+                        throw new SQLException("TCLoadAggregate: Update for round_id " +
                                 fRoundId +
                                 ", problem_id " + innerRow.getLongItem("round_id") +
                                 ", division_id " + innerRow.getLongItem("division_id") +
@@ -2176,9 +2215,60 @@ public class TCLoadAggregate extends TCLoad {
                     printLoadProgress(count, "coder_problem");
                     psUpd.clearParameters();
                 }
-
                 rs.close();
                 psSel.clearParameters();
+            }
+
+            //for each lanuage
+            psSelLang = prepareStatement(LANGUAGE_QUERY, TARGET_DB);
+            psSelLang.setLong(1, fRoundId);
+            rsLang = psSelLang.executeQuery();
+
+            psSelLangPoint = prepareStatement(POINT_QUERY, TARGET_DB);
+
+            psUpdLang = prepareStatement(LANGUAGE_PROBLEM_RANK_UPDATE, TARGET_DB);
+
+            ResultSetContainer languages = new ResultSetContainer(rsLang);
+            ResultSetContainer langProblemRankList;
+            ResultSetContainer.ResultSetRow probLangRow;
+            ResultSetContainer.ResultSetRow langProblemInnerRow;
+            ResultSetContainer.ResultSetRow langRow;
+
+            //for each language and problem, rank the scores
+            for (Iterator it = languages.iterator(); it.hasNext();) {
+                langRow = (ResultSetContainer.ResultSetRow) it.next();
+                for (Iterator it1 = problems.iterator(); it1.hasNext();) {
+                    probLangRow = (ResultSetContainer.ResultSetRow) it1.next();
+                    psSelLangPoint.setLong(1, fRoundId);
+                    psSelLangPoint.setLong(2, probLangRow.getLongItem("problem_id"));
+                    psSelLangPoint.setInt(3, probLangRow.getIntItem("division_id"));
+                    psSelLangPoint.setInt(4, langRow.getIntItem("language_id"));
+                    rsLangPoint = psSelLangPoint.executeQuery();
+                    langProblemRankList = new ResultSetContainer(rsLangPoint, 0, Integer.MAX_VALUE, 5);
+
+                    for (Iterator it2 = langProblemRankList.iterator(); it2.hasNext();) {
+                        langProblemInnerRow = (ResultSetContainer.ResultSetRow) it2.next();
+                        psUpdLang.setInt(1, langProblemInnerRow.getIntItem("rank"));
+                        psUpdLang.setLong(2, fRoundId);
+                        psUpdLang.setLong(3, langProblemInnerRow.getLongItem("coder_id"));
+                        psUpdLang.setInt(4, langProblemInnerRow.getIntItem("division_id"));
+                        psUpdLang.setLong(5, langProblemInnerRow.getLongItem("problem_id"));
+                        retVal = psUpdLang.executeUpdate();
+                        count += retVal;
+                        if (retVal != 1) {
+                            throw new SQLException("TCLoadAggregate: Update for round_id " +
+                                    fRoundId +
+                                    ", problem_id " + langProblemInnerRow.getLongItem("round_id") +
+                                    ", division_id " + langProblemInnerRow.getLongItem("division_id") +
+                                    ", coder" + langProblemInnerRow.getLongItem("coder_id") +
+                                    " modified " + retVal + " rows, not one.");
+                        }
+                        printLoadProgress(count, "coder_problem");
+                        psUpd.clearParameters();
+                    }
+                    rs.close();
+                    psSel.clearParameters();
+                }
             }
 
 
@@ -2189,8 +2279,13 @@ public class TCLoadAggregate extends TCLoad {
                     sqle.getMessage());
         } finally {
             close(rs);
+            close(rsLang);
+            close(rsLangPoint);
             close(psSel);
             close(psUpd);
+            close(psSelLang);
+            close(psSelLangPoint);
+            close(psUpdLang);
         }
     }
 
