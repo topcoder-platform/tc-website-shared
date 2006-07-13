@@ -598,7 +598,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" and rt1.algo_rating_type_id = ").append(algoType);
             query.append(" and cp1.coder_id = cp.coder_id ");
             query.append(" and cp1.division_id = cp.division_id ");
-            query.append(" and cp1.status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
+            query.append(" and cp1.end_status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
             query.append(" ,rt.algo_rating_type_id ");  //18
             query.append(" FROM coder_problem cp");
             query.append("    , round r ");
@@ -1745,7 +1745,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" WHERE round_id = cp.round_id ");
             query.append(" and problem_id = cp.problem_id ");
             query.append(" and division_id = cp.division_id ");
-            query.append(" and status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
+            query.append(" and end_status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //17
             query.append("  FROM coder_problem cp ");
             if (!FULL_LOAD) {   //if it's not a full load, just load up the problems from this round
                 query.append(" WHERE cp.round_id =" + fRoundId);
@@ -1955,7 +1955,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" WHERE round_id = cp.round_id ");
             query.append(" and problem_id = cp.problem_id ");
             query.append(" and division_id = cp.division_id ");
-            query.append(" and status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //16"
+            query.append(" and end_status_id = ").append(STATUS_PASSED_SYS_TEST).append(")");     //16"
             query.append("  FROM coder_problem cp ");
             query.append(" WHERE cp.end_status_id >= " + STATUS_SUBMITTED);
             if (!FULL_LOAD) {   //if it's not a full load, just load up the problems from this round
