@@ -92,7 +92,7 @@ public class BlobFixUtility extends DBUtility{
 
             for (int i = 0; i < whereColumns.size(); i++) {
                 psSel.setString(i + 1, (String)whereValues.get(i));
-                log.debug("param (" + i + ") : " + query.toString());
+                log.debug("param (" + i + 1 + ") : " + (String)whereValues.get(i));
             }
 
             rs = psSel.executeQuery();
@@ -129,7 +129,7 @@ public class BlobFixUtility extends DBUtility{
 
                 for (int i = 0; i < whereColumns.size(); i++) {
                     psUpd.setString(i + 2, (String)whereValues.get(i));
-                    log.debug("param (" + (i + 2) + ") : " + query.toString());
+                    log.debug("param (" + (i + 2) + ") : " + (String)whereValues.get(i));
                 }
 
                 retVal = psUpd.executeUpdate();
