@@ -57,6 +57,8 @@ public class DBUtilityLauncher {
             log.info("extend DBUtility to create a Database Utility.");
         }
 
+        log.info("Launching " + dbUtilityClass + "...");
+        
         DBUtility utility = (DBUtility) ob;
         utility.process(args);
     }
