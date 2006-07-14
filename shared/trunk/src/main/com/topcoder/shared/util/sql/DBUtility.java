@@ -233,6 +233,10 @@ public abstract class DBUtility {
             setUsageError("Please specify a database url.\n");
 
         params.remove("sourcedb");
+
+        log.debug("processParams");
+        log.debug("sDriverName : " + sDriverName);
+        log.debug("sourcedb" + sourcedb);
     }
 
     /**

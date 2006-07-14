@@ -59,6 +59,7 @@ public class BlobFixUtility extends DBUtility{
             String key = (String) e.nextElement();
             whereColumns.add(key);
             whereValues.add(params.get(key));
+            log.debug("Column: " + key + ", value: " + params.get(key));
         }
 
         PreparedStatement psSel = null;
@@ -86,15 +87,21 @@ public class BlobFixUtility extends DBUtility{
             query.append(table);
             query.append(where);
 
+            log.debug("selectStatement: " + query.toString());
             psSel = prepareStatement(query.toString());
 
             for (int i = 0; i < whereColumns.size(); i++) {
                 psSel.setString(i + 1, (String)whereValues.get(i));
+                log.debug("param (" + i + ") : " + query.toString());
             }
 
             rs = psSel.executeQuery();
             if (rs.next()) {
+                log.debug("Row found");
+
                 String problem_text = DBMS.getTextString(rs, 1);
+
+                log.debug("Blob content:" + problem_text);
 
                 if (rs.next()) {
                     // cant return more than one result
@@ -102,6 +109,10 @@ public class BlobFixUtility extends DBUtility{
                 }
 
                 problem_text = problem_text.replaceAll(regex, replaceText);
+
+                log.debug("regex:" + regex);
+                log.debug("replaceText:" + replaceText);
+                log.debug("Updated Blob:" + problem_text);
 
                 query = new StringBuffer(100);
                 query.append("UPDATE ");
@@ -112,11 +123,13 @@ public class BlobFixUtility extends DBUtility{
                 query.append(where);
 
                 psUpd = prepareStatement(query.toString());
+                log.debug("updateStatement: " + query.toString());
 
                 psUpd.setBytes(1, DBMS.serializeTextString(problem_text));
 
                 for (int i = 0; i < whereColumns.size(); i++) {
                     psUpd.setString(i + 2, (String)whereValues.get(i));
+                    log.debug("param (" + (i + 2) + ") : " + query.toString());
                 }
 
                 retVal = psUpd.executeUpdate();
@@ -167,6 +180,12 @@ public class BlobFixUtility extends DBUtility{
             setUsageError("Please specify a replaceText.\n");
 
         params.remove("replaceText");
+        
+        log.debug("blobColumn : " + blobColumn);
+        log.debug("table : " + table);
+        log.debug("regex : " + regex);
+        log.debug("replaceText : " + replaceText);
+
     }
 
     /**
