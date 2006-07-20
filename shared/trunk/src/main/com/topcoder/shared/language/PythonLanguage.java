@@ -12,7 +12,7 @@ public class PythonLanguage extends BaseLanguage {
     public final static int ID = 6;
     public final static String DESCRIPTION = "Python";
 
-    public final static CSharpLanguage CSHARP_LANGUAGE = new CSharpLanguage();
+    public final static CSharpLanguage PYTHON_LANGUAGE = new CSharpLanguage();
 
     public PythonLanguage() {
         super(ID, DESCRIPTION);
