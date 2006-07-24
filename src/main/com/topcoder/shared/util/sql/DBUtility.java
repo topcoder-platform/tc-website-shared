@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,6 +41,11 @@ public abstract class DBUtility {
     protected Hashtable params = new Hashtable();
 
     /**
+     * This holds all the sources that have been parsed from the XML.
+     */
+    protected Hashtable sources = new Hashtable();
+
+    /**
      * This holds any error message that might occur when performing a particular
      * task.
      */
@@ -52,14 +58,9 @@ public abstract class DBUtility {
     private String sDriverName = "com.informix.jdbc.IfxDriver";
 
     /**
-     * This variable holds the source DB url.
+     * This variable holds the connections to the DB.
      */
-    private String sourcedb = null;
-
-    /**
-     * This variable holds the connection to the DB.
-     */
-    private Connection conn;
+    private Hashtable conn = new Hashtable();
 
     /**
      * Runs the DBUtility.
@@ -101,12 +102,12 @@ public abstract class DBUtility {
      *
      * @param sqlStr The sql query.
      */
-    protected PreparedStatement prepareStatement(String sqlStr) throws SQLException {
+    protected PreparedStatement prepareStatement(String source, String sqlStr) throws SQLException {
         if (conn == null)
             return null;
         PreparedStatement ps = null;
         try {
-            ps = conn.prepareStatement(sqlStr);
+            ps = ((Connection) conn.get(source)).prepareStatement(sqlStr);
         } catch (SQLException sqle) {
             throw sqle;
         }
@@ -179,7 +180,20 @@ public abstract class DBUtility {
                                     nnm.getNamedItem("value").getNodeValue());
                         }
                     } else {
-                        params.put(node.getNodeName(), node.getFirstChild().getNodeValue());
+                        if (node.getNodeName().equals("sourcesList")) {
+                            log.debug("SourcesList:");
+                            NodeList nl2 = node.getChildNodes();
+                            for (int j = 1; j < nl2.getLength(); j += 2) {
+                                Node n2 = nl2.item(j);
+                                NamedNodeMap nnm = n2.getAttributes();
+                                sources.put(nnm.getNamedItem("name").getNodeValue(),
+                                        nnm.getNamedItem("value").getNodeValue());
+                                log.debug("name: " + nnm.getNamedItem("name").getNodeValue() +
+                                        " value: " + nnm.getNamedItem("value").getNodeValue());
+                            }
+                        } else {
+                            params.put(node.getNodeName(), node.getFirstChild().getNodeValue());
+                        }
                     }
                 }
             }
@@ -228,26 +242,22 @@ public abstract class DBUtility {
             params.remove("driver");
         }
 
-        sourcedb = (String) params.get("sourcedb");
-        if (sourcedb == null)
-            setUsageError("Please specify a database url.\n");
-
-        params.remove("sourcedb");
-
         log.debug("processParams");
         log.debug("sDriverName : " + sDriverName);
-        log.debug("sourcedb" + sourcedb);
     }
 
     /**
-     * This method creates the connection and invoke the particular DBUtility method.
+     * This method creates the connections and invoke the particular DBUtility method.
      */
     protected void startUtility() {
         try {
-            log.info("Creating source database connection...");
-            conn = DriverManager.getConnection(sourcedb);
-            System.out.println(conn);
-            log.info("Success!");
+            for (Enumeration e = sources.keys() ; e.hasMoreElements() ;) {
+                String key = (String) e.nextElement();
+                log.info("Creating source database connection...: " + key);
+                Connection tmpConn = DriverManager.getConnection((String)(sources.get(key)));
+                log.info("Success!");
+                conn.put(key, tmpConn);
+            }
         } catch (SQLException sqle) {
             sErrorMsg.setLength(0);
             sErrorMsg.append("Creation of source DB connection failed. ");
