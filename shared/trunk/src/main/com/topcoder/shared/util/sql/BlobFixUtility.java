@@ -88,7 +88,7 @@ public class BlobFixUtility extends DBUtility{
             query.append(where);
 
             log.debug("selectStatement: " + query.toString());
-            psSel = prepareStatement(query.toString());
+            psSel = prepareStatement("topcoder_dw", query.toString());
 
             for (int i = 0; i < whereColumns.size(); i++) {
                 psSel.setString(i + 1, (String)whereValues.get(i));
@@ -122,7 +122,7 @@ public class BlobFixUtility extends DBUtility{
                 query.append(" = ? ");
                 query.append(where);
 
-                psUpd = prepareStatement(query.toString());
+                psUpd = prepareStatement("topcoder_dw", query.toString());
                 log.debug("updateStatement: " + query.toString());
 
                 psUpd.setBytes(1, DBMS.serializeTextString(problem_text));
@@ -180,7 +180,7 @@ public class BlobFixUtility extends DBUtility{
             setUsageError("Please specify a replaceText.\n");
 
         params.remove("replaceText");
-        
+
         log.debug("blobColumn : " + blobColumn);
         log.debug("table : " + table);
         log.debug("regex : " + regex);
