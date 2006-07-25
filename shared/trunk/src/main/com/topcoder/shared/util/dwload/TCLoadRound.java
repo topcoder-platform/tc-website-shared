@@ -1646,6 +1646,8 @@ public class TCLoadRound extends TCLoad {
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
+            int algoType = getRoundType(fRoundId);
+
             query = new StringBuffer(100);
             query.append(" select count(*) as count");
             query.append(" , rr2.coder_id");
@@ -1654,9 +1656,12 @@ public class TCLoadRound extends TCLoad {
             query.append(" , calendar c2");
             query.append(" , round r1");
             query.append(" , round r2");
+            query.append(" , round_type_lu rt ");
             query.append(" where rr2.round_id = r2.round_id");
             query.append(" and r1.calendar_id = c1.calendar_id");
             query.append(" and r2.calendar_id = c2.calendar_id");
+            query.append(" and r2.round_type_id = rt.round_type_id");
+            query.append(" and rt.algo_rating_type_id = " + algoType);
             query.append(" and r1.round_id = ?");
             query.append(" and rr2.rated_flag = 1");
             query.append(" and c2.date < c1.date");
@@ -2443,7 +2448,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,r.season_id ");         // 5
             query.append("       ,r.round_id ");          // 6
             query.append("  FROM season_algo_rating r ");
-			query.append("  WHERE r.modify_date > ? ");
+            query.append("  WHERE r.modify_date > ? ");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
