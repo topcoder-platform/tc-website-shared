@@ -129,13 +129,14 @@ public class TCFixNumRatings extends TCLoad {
                 	if (r!= 1) {
                 		throw new Exception("Expected 1 record to be updated for coder " + cr);
                 	}
-                }               
+                }
+        	}
           
 
           } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
             throw ex;
-        }
-    }
+         }
+     }
 
 }
