@@ -3,6 +3,11 @@
  */
 package com.topcoder.shared.util.sql;
 
+import com.topcoder.shared.util.logging.Logger;
+import org.w3c.dom.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,17 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Hashtable;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.topcoder.shared.util.logging.Logger;
 
 /**
  * <strong>Purpose</strong>:
@@ -64,7 +58,7 @@ public abstract class DBUtility {
 
     /**
      * Runs the DBUtility.
-     *
+     * <p/>
      * Subclasses should implemente this method to do whatever the utility needs to do. there will
      * be a parameters collection to look for and the connection to the DB will be resolved.
      */
@@ -72,7 +66,7 @@ public abstract class DBUtility {
 
     /**
      * Show usage of the DBUtility.
-     *
+     * <p/>
      * Subclasses should implemente this method to show how the final user should call them.
      *
      * @param msg The error message.
@@ -81,7 +75,7 @@ public abstract class DBUtility {
 
     /**
      * Process the DBUtility.
-     *
+     * <p/>
      * The utility first parses the xml and then the command line (overriting duplicated parameters),
      * then validates the parameters, checks the driver and starts the utility.
      *
@@ -159,6 +153,7 @@ public abstract class DBUtility {
      * @param xmlFileName The xml file name.
      */
     protected void parseXML(String xmlFileName) {
+        log.debug("parse xml: " + xmlFileName);
         try {
             FileInputStream f = new FileInputStream(xmlFileName);
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -251,10 +246,10 @@ public abstract class DBUtility {
      */
     protected void startUtility() {
         try {
-            for (Enumeration e = sources.keys() ; e.hasMoreElements() ;) {
+            for (Enumeration e = sources.keys(); e.hasMoreElements();) {
                 String key = (String) e.nextElement();
                 log.info("Creating source database connection...: " + key);
-                Connection tmpConn = DriverManager.getConnection((String)(sources.get(key)));
+                Connection tmpConn = DriverManager.getConnection((String) (sources.get(key)));
                 log.info("Success!");
                 conn.put(key, tmpConn);
             }
@@ -263,7 +258,8 @@ public abstract class DBUtility {
             sErrorMsg.append("Creation of source DB connection failed. ");
             sErrorMsg.append("Cannot continue.\n");
             sErrorMsg.append(sqle.getMessage());
-            fatal_error(sqle);;
+            fatal_error(sqle);
+            ;
         }
 
         try {
