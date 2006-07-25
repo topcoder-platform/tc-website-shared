@@ -76,7 +76,7 @@ public class TCFixNumRatings extends TCLoad {
         	
         	
         	while (rsRound.next()) {
-        		int roundId = rsRound.getInt(0);
+        		int roundId = rsRound.getInt(1);
         		int algoType = getRoundType(roundId);
         		log.info("Fixing round " + roundId + " - type: " + algoType);
 
@@ -115,7 +115,7 @@ public class TCFixNumRatings extends TCLoad {
                 rsCod = psCod.executeQuery();
                 
                 while (rsCod.next()) {
-                	int cr = rsCod.getInt(0);
+                	int cr = rsCod.getInt(1);
 
                 	int numRatings = 0;
                     Long tempCoderId = new Long(cr);
@@ -130,7 +130,6 @@ public class TCFixNumRatings extends TCLoad {
                 		throw new Exception("Expected 1 record to be updated for coder " + cr);
                 	}
                 }               
-        	}        	
           
 
           } catch (Exception ex) {
