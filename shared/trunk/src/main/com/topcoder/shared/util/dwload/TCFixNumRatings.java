@@ -122,9 +122,9 @@ public class TCFixNumRatings extends TCLoad {
                     if (ratingsMap.containsKey(tempCoderId))
                         numRatings = ((Integer) ratingsMap.get(tempCoderId)).intValue();
                 	
-                	psUpd.setInt(0, numRatings + 1);
-                	psUpd.setInt(1, cr);
-                	psUpd.setInt(2, roundId);
+                	psUpd.setInt(1, numRatings + 1);
+                	psUpd.setInt(2, cr);
+                	psUpd.setInt(3, roundId);
                 	int r = psUpd.executeUpdate();
                 	if (r!= 1) {
                 		throw new Exception("Expected 1 record to be updated for coder " + cr);
