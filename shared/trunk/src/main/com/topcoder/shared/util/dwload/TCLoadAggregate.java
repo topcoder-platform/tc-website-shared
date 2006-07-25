@@ -2135,6 +2135,7 @@ public class TCLoadAggregate extends TCLoad {
                     " where round_id = ?" +
                     " and problem_id = ?" +
                     " and division_id = ?" +
+                    " and end_status_id = 150 " +
                     " order by final_points desc";
 
     private static final String LANGUAGE_POINT_QUERY =
@@ -2144,6 +2145,7 @@ public class TCLoadAggregate extends TCLoad {
                     " and problem_id = ?" +
                     " and division_id = ?" +
                     " and language_id = ?" +
+                    " and end_status_id = 150 " +
                     " order by final_points desc";
 
     private static final String LANGUAGE_QUERY = "select distinct language_id " +
