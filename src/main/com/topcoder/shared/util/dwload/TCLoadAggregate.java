@@ -202,6 +202,7 @@ public class TCLoadAggregate extends TCLoad {
 
             if (algoType == HS_RATING_TYPE_ID) {
                 loadTeamRound();
+                loadSeasonRatingHistory();
             }
 
             //if running for an old round, the rating history load can not be run
@@ -277,6 +278,71 @@ public class TCLoadAggregate extends TCLoad {
             close(rs);
             close(psSel);
             close(psIns);
+        }
+    }
+
+    /**
+     * This method CANNOT be run after the fact; meaning, if the
+     * rating table in the transactional database has the rating
+     * for a match that is not the one we're running the load for
+     * then rating history will get hosed up.
+     *
+     * @throws Exception
+     */
+    private void loadSeasonRatingHistory() throws Exception {
+        int count = 0;
+        int retVal = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+        	int seasonId = getSeasonId(fRoundId);
+            // Get all the coders that participated in this round
+            query = new StringBuffer(100);
+            query.append(" select coder_id, rating, vol, num_ratings");
+            query.append(" from season_algo_rating");
+            query.append(" where num_ratings > 0");
+            query.append(" and season_id = " + seasonId);
+
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
+            query.append("insert into season_algo_rating_history (coder_id, round_id, rating, vol, num_ratings, season_id)");
+            query.append("values (?,?,?,?,?,?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            rs = psSel.executeQuery();
+
+            while (rs.next()) {
+                psIns.clearParameters();
+                psIns.setLong(1, rs.getLong("coder_id"));
+                psIns.setLong(2, fRoundId);
+                psIns.setInt(3, rs.getInt("rating"));
+                psIns.setInt(4, rs.getInt("vol"));
+                psIns.setInt(5, rs.getInt("num_ratings"));
+                psIns.setInt(6, seasonId);
+
+                retVal = psIns.executeUpdate();
+                count = count + retVal;
+                if (retVal != 1) {
+                    throw new SQLException("TCLoadCoders: Insert for coderId " +
+                            rs.getLong("coder_id") +
+                            " modified " + retVal + " rows, not one.");
+                }
+
+                printLoadProgress(count, "season_algo_rating_history");
+            }
+
+            log.info("Season Rating History records updated = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'season_algo_rating_history' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
         }
     }
 
