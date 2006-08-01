@@ -22,16 +22,13 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
-import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
+
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 public class TCCheckHistory extends TCLoad {
     private static Logger log = Logger.getLogger(TCCheckHistory.class);
@@ -43,8 +40,6 @@ public class TCCheckHistory extends TCLoad {
      */
     public boolean setParameters(Hashtable params) {
         try {
-            Integer tmp;
-            Boolean tmpBool;
 
             fRoundId = retrieveIntParam("roundid", params, false, true).intValue();
 
@@ -103,7 +98,7 @@ public class TCCheckHistory extends TCLoad {
             		log.info("The following coders are not present in coder_rank_history for round " + fRoundId);
             	}
             	found = true;
-            	log.info(rs.getInt(0));            	
+            	log.info("    " + rs.getInt(0));            	
             }
             if (!found) {
             	log.info("coder_rank_history isn't missing any record for round " + fRoundId);
