@@ -1182,7 +1182,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" and r1.calendar_id = cal.calendar_id");
             query.append(" and rr.coder_id = r.coder_id");
             query.append(" and r.algo_rating_type_id = " + algoType);
-            query.append(" and cal.calendar_id < (select calendar_id from round where round_id = r.round_id)");
+            query.append(" and cal.calendar_id <= (select calendar_id from round where round_id = r.round_id)");
             query.append("        and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2"); 
             query.append("                                  where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id))");
             query.append("                 then 1 else 0 end as active ");
