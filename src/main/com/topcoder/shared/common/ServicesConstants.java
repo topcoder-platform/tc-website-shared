@@ -34,6 +34,10 @@ public final class ServicesConstants {
 
     /** base directory of java problem user submissions */
     public static final String JAVA_SUBMISSIONS = BASE + "/submissions/java/";
+    public static final String PYTHON_SUBMISSIONS = BASE + "/submissions/python/";
+    
+    public static final String PYTHON_COMPILER = BASE + "/src/python/compiler.py";
+    
     public static final String CSHARP_SUBMISSIONS = BASE + "/submissions/csharp/";
 
     /** base directory of c++ problem user submissions */
@@ -52,6 +56,14 @@ public final class ServicesConstants {
     public static final String LONG_CONTEST_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.java";
     public static final String LONG_CONTEST_CPP_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.cpp";
     public static final String LONG_CONTEST_DOTNET_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.cs";
+    public static final String LONG_CONTEST_PYTHON_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.py";
+    
+    public static final String LONG_CONTEST_DOTNET_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.cs";
+    public static final String LONG_CONTEST_EXOPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.java";
+    public static final String LONG_CONTEST_CPP_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.cpp";
+    public static final String LONG_CONTEST_PYTHON_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.py";
+    
+    public static final String PYTHON_WRAPPER = BASE + "/wrapper/srm/PythonUserWrapper.py";
 
     /** argparser.h C++ header file */
     public static final String WRAPPER = BASE + "/cpp/wrapper.cc";
@@ -60,6 +72,16 @@ public final class ServicesConstants {
 
     /** The directory path to the C++ sandbox application */
     public static final String SANDBOX = BASE + "/cpp/sandbox/sandbox";
+    public static final String SANDBOX2 = BASE + "/cpp/sandbox2/GNU-i386-Linux/sandbox2";
+    
+    public static final String SANDBOX2_SRM_CONFIG = BASE + "/cpp/sandbox2/config_files/sample.config";
+    
+    public static final String SANDBOX2_LONG_CONFIG = BASE + "/cpp/sandbox2/config_files/long.config";
+    
+    public static final String SANDBOX2_LONG_PYTON_CONFIG = BASE + "/cpp/sandbox2/config_files/long_python.config";
+    
+    public static final String SANDBOX2_PYTHON_CONFIG = BASE + "/cpp/sandbox2/config_files/python.config";
+    
     public static final String LONG_SANDBOX = BASE + "/cpp/sandbox/long_sandbox";
 
     /** The directory path to the timeout application */

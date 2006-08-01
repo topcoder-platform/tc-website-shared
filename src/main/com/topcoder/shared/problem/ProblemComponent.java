@@ -51,10 +51,19 @@ public class ProblemComponent extends BaseElement
     private String name = "";
     private Element intro = new TextElement();
     private String className = "";
+    
+    private String exposedClassName = "";
+    
     private String[] methodNames = new String[0];
     private DataType[] returnTypes = new DataType[0];
     private DataType[][] paramTypes = new DataType[0][0];
     private String[][] paramNames = new String[0][0];
+    
+    private String[] exposedMethodNames = new String[0];
+    private DataType[] exposedReturnTypes = new DataType[0];
+    private DataType[][] exposedParamTypes = new DataType[0][0];
+    private String[][] exposedParamNames = new String[0][0];
+    
     private Element spec = new TextElement();
     private Element[] notes = new Element[0];
     private Constraint[] constraints = new Constraint[0];
@@ -145,10 +154,15 @@ public class ProblemComponent extends BaseElement
         writer.writeString(name);
         writer.writeObject(intro);
         writer.writeString(className);
+        writer.writeString(exposedClassName);
         writer.writeObjectArray(methodNames);
         writer.writeObjectArray(returnTypes);
         writer.writeObjectArrayArray(paramTypes);
         writer.writeObjectArrayArray(paramNames);
+        writer.writeObjectArray(exposedMethodNames);
+        writer.writeObjectArray(exposedReturnTypes);
+        writer.writeObjectArrayArray(exposedParamTypes);
+        writer.writeObjectArrayArray(exposedParamNames);
         writer.writeObject(spec);
         writer.writeObjectArray(notes);
         writer.writeObjectArray(constraints);
@@ -177,10 +191,15 @@ public class ProblemComponent extends BaseElement
         name = reader.readString();
         intro = (Element) reader.readObject();
         className = reader.readString();
+        exposedClassName = reader.readString();
         methodNames = (String[])reader.readObjectArray(String.class);
         returnTypes = (DataType[])reader.readObjectArray(DataType.class);
         paramTypes = (DataType[][])reader.readObjectArrayArray(DataType.class);
         paramNames = (String[][])reader.readObjectArrayArray(String.class);
+        exposedMethodNames = (String[])reader.readObjectArray(String.class);
+        exposedReturnTypes = (DataType[])reader.readObjectArray(DataType.class);
+        exposedParamTypes = (DataType[][])reader.readObjectArrayArray(DataType.class);
+        exposedParamNames = (String[][])reader.readObjectArrayArray(String.class);
         spec = (Element) reader.readObject();
         notes = (Element[])reader.readObjectArray(Element.class);
         constraints = (Constraint[])reader.readObjectArray(Constraint.class);
@@ -311,6 +330,10 @@ public class ProblemComponent extends BaseElement
     public String getClassName() {
         return className;
     }
+    
+    public String getExposedClassName() {
+        return exposedClassName;
+    }
 
     /**
      * Sets the name of the class that should be defined in solutions to this problem.
@@ -318,6 +341,10 @@ public class ProblemComponent extends BaseElement
      */
     public void setClassName(String className) {
         this.className = className;
+    }
+    
+    public void setExposedClassName(String className) {
+        this.exposedClassName = className;
     }
 
     /**
@@ -329,6 +356,9 @@ public class ProblemComponent extends BaseElement
     public String getMethodName(int idx) {
         return methodNames.length>idx?methodNames[idx]:"";
     }
+    public String getExposedMethodName(int idx) {
+        return exposedMethodNames.length>idx?exposedMethodNames[idx]:"";
+    }
 
     /**
      * Sets the name of the method that should be defined in solutions to this problem.
@@ -338,6 +368,9 @@ public class ProblemComponent extends BaseElement
     }
     public void setMethodNames(String[] methodNames) {
         this.methodNames = methodNames;
+    }
+    public void setExposedMethodNames(String[] methodNames) {
+        this.exposedMethodNames = methodNames;
     }
 
     /**
@@ -361,6 +394,13 @@ public class ProblemComponent extends BaseElement
     public void setReturnTypes(DataType[] returnTypes) {
         this.returnTypes = returnTypes;
     }
+    
+    public void setExposedReturnType(DataType returnType) {
+        this.exposedReturnTypes = new DataType[]{returnType};
+    }
+    public void setExposedReturnTypes(DataType[] returnTypes) {
+        this.exposedReturnTypes = returnTypes;
+    }
 
     /**
      * Gets the data type of all of the arguments to the method that should be defined in solutions to this problem.
@@ -374,6 +414,13 @@ public class ProblemComponent extends BaseElement
     }
     public DataType[] getParamTypes(int idx) {
         return paramTypes.length>idx?paramTypes[idx]:new DataType[0];
+    }
+    
+    public DataType[] getExposedParamTypes() {
+        return exposedParamTypes.length>0?exposedParamTypes[0]:new DataType[0];
+    }
+    public DataType[] getExposedParamTypes(int idx) {
+        return exposedParamTypes.length>idx?exposedParamTypes[idx]:new DataType[0];
     }
 
     /**
@@ -389,6 +436,13 @@ public class ProblemComponent extends BaseElement
     public void setParamTypes(DataType[][] paramTypes) {
         this.paramTypes = paramTypes;
     }
+    
+    public void setExposedParamTypes(DataType[] paramTypes) {
+        this.exposedParamTypes = new DataType[][]{paramTypes};
+    }
+    public void setExposedParamTypes(DataType[][] paramTypes) {
+        this.exposedParamTypes = paramTypes;
+    }
 
     /**
      * Gets the names of the arguments to the method that should be defined in solutions to this problem.
@@ -402,6 +456,13 @@ public class ProblemComponent extends BaseElement
     public String[] getParamNames(int idx) {
         return paramNames.length>idx?paramNames[idx]:new String[0];
     }
+    
+    public String[] getExposedParamNames() {
+        return exposedParamNames.length>0?exposedParamNames[0]:new String[0];
+    }
+    public String[] getExposedParamNames(int idx) {
+        return exposedParamNames.length>idx?exposedParamNames[idx]:new String[0];
+    }
 
     /**
      * Sets the names of the arguments to the method that should be defined in solutions to this problem.
@@ -414,6 +475,13 @@ public class ProblemComponent extends BaseElement
     }
     public void setParamNames(String[][] paramNames) {
         this.paramNames = paramNames;
+    }
+    
+    public void setExposedParamNames(String[] paramNames) {
+        this.exposedParamNames = new String[][]{paramNames};
+    }
+    public void setExposedParamNames(String[][] paramNames) {
+        this.exposedParamNames = paramNames;
     }
 
     /**
@@ -569,6 +637,26 @@ public class ProblemComponent extends BaseElement
             }
             buf.append("</params></method>");
         }
+        if(exposedClassName != null && !exposedClassName.equals("")) {
+            buf.append("<exposed_class>");
+            buf.append(exposedClassName);
+            buf.append("</exposed_class>");
+        }
+        for(int i = 0; i<exposedMethodNames.length; i++){
+            buf.append("<exposed_method><name>");
+            buf.append(exposedMethodNames[i]);
+            buf.append("</name><return>");
+            buf.append(exposedReturnTypes[i].toXML());
+            buf.append("</return><params>");
+            for (int j = 0; j < exposedParamTypes[i].length; j++) {
+                buf.append("<param>");
+                buf.append(exposedParamTypes[i][j].toXML());
+                buf.append("<name>");
+                buf.append(exposedParamNames[i][j]);
+                buf.append("</name></param>");
+            }
+            buf.append("</params></exposed_method>");
+        }
         buf.append("</signature>");
         if (intro != null)
             buf.append(handleTextElement("intro", intro));
@@ -620,6 +708,14 @@ public class ProblemComponent extends BaseElement
         str.append(paramTypes);
         str.append(",paramNames=");
         str.append(paramNames);
+        str.append(",exposedMethodNames=");
+        str.append(exposedMethodNames);
+        str.append(",exposedReturnTypes=");
+        str.append(exposedReturnTypes);
+        str.append(",exposedParamTypes=");
+        str.append(exposedParamTypes);
+        str.append(",exposedParamNames=");
+        str.append(exposedParamNames);
         str.append(",memLimitMB=");
         str.append(memLimitMB);
         str.append(",roundType=");
@@ -764,6 +860,19 @@ public class ProblemComponent extends BaseElement
     }
     public String[][] getAllParamNames(){
         return paramNames;
+    }
+    
+    public DataType[] getAllExposedReturnTypes(){
+        return exposedReturnTypes;
+    }
+    public String[] getAllExposedMethodNames(){
+        return exposedMethodNames;
+    }
+    public DataType[][] getAllExposedParamTypes(){
+        return exposedParamTypes;
+    }
+    public String[][] getAllExposedParamNames(){
+        return exposedParamNames;
     }
 
     public void setCategories(ArrayList categories) {

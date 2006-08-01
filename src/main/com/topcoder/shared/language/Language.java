@@ -36,6 +36,8 @@ public interface Language
 
     String getMethodSignature(String methodName, DataType returnType,
                                               DataType[] paramTypes, String[] paramNames);
+    
+    String exampleExposedCall(String className, String methodName, String[] paramNames);
 
     /**
      * @return the default file extension for the language
