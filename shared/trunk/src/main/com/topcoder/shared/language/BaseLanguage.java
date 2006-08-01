@@ -79,6 +79,8 @@ abstract public class BaseLanguage
                 return CSharpLanguage.CSHARP_LANGUAGE;
             case VBLanguage.ID:
                 return VBLanguage.VB_LANGUAGE;
+            case PythonLanguage.ID:
+                return PythonLanguage.PYTHON_LANGUAGE;
             default: throw new IllegalArgumentException("Invalid language: " + typeID);
         }
     }

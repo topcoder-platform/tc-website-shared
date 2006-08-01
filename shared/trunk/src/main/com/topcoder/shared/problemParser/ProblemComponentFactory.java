@@ -52,6 +52,8 @@ public class ProblemComponentFactory
     static final String SIGNATURE = "signature";
     static final String SIGNATURE_CLASS = "class";
     static final String SIGNATURE_METHOD = "method";
+    static final String SIGNATURE_EXPOSED_METHOD = "exposed_method";
+    static final String SIGNATURE_EXPOSED_CLASS = "exposed_class";
     static final String SIGNATURE_RETURN = "return";
     static final String SIGNATURE_PARAMS = "params";
     static final String SIGNATURE_METHOD_NAME = "name";
@@ -208,6 +210,24 @@ public class ProblemComponentFactory
         }
         return null;
     }
+    
+    static public Node[] getChildrenByName(NodeList nl, String name)
+    {
+        ArrayList list = new ArrayList();
+        //System.out.println("Looking for "+name);
+        for(int i = 0; i < nl.getLength(); i++) {
+            Node node = nl.item(i);
+
+            //System.out.println("  found "+node.getNodeName());
+            if(node.getNodeName().equals(name))
+                list.add(node);
+        }
+        Node[] ret = new Node[list.size()];
+        for(int i =0 ; i < list.size(); i++) {
+            ret[i] = (Node)list.get(i);
+        }
+        return ret;
+    }
 
     /**
      * Gets the text value of the attribute of the given node with the given name,
@@ -321,16 +341,16 @@ public class ProblemComponentFactory
         Node cls = getChildByName(nl, SIGNATURE_CLASS);
         String className = getText(cls);
         node.removeChild(cls);
-        NodeList methodList = node.getChildNodes();
+        Node[] methodList = getChildrenByName(nl, SIGNATURE_METHOD);
 
-        DataType[] returnTypes = new DataType[methodList.getLength()];
-        String[] methodNames = new String[methodList.getLength()];
-        DataType[][] paramTypes = new DataType[methodList.getLength()][];
-        String[][] paramNames= new String[methodList.getLength()][];
+        DataType[] returnTypes = new DataType[methodList.length];
+        String[] methodNames = new String[methodList.length];
+        DataType[][] paramTypes = new DataType[methodList.length][];
+        String[][] paramNames= new String[methodList.length][];
 
         trace.debug("we're working with " + returnTypes.length + " return types");
         for(int i = 0; i<returnTypes.length; i++){
-            NodeList m = methodList.item(i).getChildNodes();
+            NodeList m = methodList[i].getChildNodes();
             methodNames[i] = getText(getChildByName(m,SIGNATURE_METHOD_NAME));
             returnTypes[i] = getNestedType(getChildByName(m,SIGNATURE_RETURN));
             trace.debug("added return type " + returnTypes[i] + " at index " + i);
@@ -350,11 +370,52 @@ public class ProblemComponentFactory
                 paramNames[i][j] = getText(getChildByName(n.getChildNodes(), SIGNATURE_PARAM_NAME));
             }
         }
+        
         stmt.setClassName(className);
         stmt.setMethodNames(methodNames);
         stmt.setReturnTypes(returnTypes);
         stmt.setParamTypes(paramTypes);
         stmt.setParamNames(paramNames);
+        
+        Node exCls = getChildByName(nl, SIGNATURE_EXPOSED_CLASS);
+        
+        methodList = getChildrenByName(nl, SIGNATURE_EXPOSED_METHOD);
+        
+        returnTypes = new DataType[methodList.length];
+        methodNames = new String[methodList.length];
+        paramTypes = new DataType[methodList.length][];
+        paramNames= new String[methodList.length][];
+
+        trace.debug("we're working with " + returnTypes.length + " return types");
+        for(int i = 0; i<returnTypes.length; i++){
+            NodeList m = methodList[i].getChildNodes();
+            methodNames[i] = getText(getChildByName(m,SIGNATURE_METHOD_NAME));
+            returnTypes[i] = getNestedType(getChildByName(m,SIGNATURE_RETURN));
+            trace.debug("added return type " + returnTypes[i] + " at index " + i);
+
+            Node params = getChildByName(m, SIGNATURE_PARAMS);
+
+            removeTextChildren(params);
+
+            NodeList paramList = params.getChildNodes();
+            paramTypes[i] = new DataType[paramList.getLength()];
+            paramNames[i] = new String[paramList.getLength()];
+
+            for(int j = 0; j < paramTypes[i].length; j++) {
+                Node n = paramList.item(j);
+
+                paramTypes[i][j] = getType(getChildByName(n.getChildNodes(), TYPE));
+                paramNames[i][j] = getText(getChildByName(n.getChildNodes(), SIGNATURE_PARAM_NAME));
+            }
+        }
+        
+        stmt.setExposedMethodNames(methodNames);
+        stmt.setExposedReturnTypes(returnTypes);
+        stmt.setExposedParamTypes(paramTypes);
+        stmt.setExposedParamNames(paramNames);
+        
+        if(exCls != null)
+            stmt.setExposedClassName(getText(exCls));
     }
 
     void parseIntro()

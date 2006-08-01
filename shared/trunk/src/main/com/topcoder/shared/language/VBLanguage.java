@@ -62,6 +62,26 @@ public class VBLanguage extends CStyleLanguage {
         return buf.toString();
     }
     
+    public String exampleExposedCall(String className, String methodName, String[] paramNames) {
+        StringBuffer buf = new StringBuffer();
+        
+        buf.append("val = ");
+        buf.append(className);
+        buf.append(".");
+        buf.append(methodName);
+        buf.append("(");
+        
+        for(int i = 0; i < paramNames.length; i++) {
+            if(i > 0)
+                buf.append(", ");
+            buf.append(paramNames[i]);
+        }
+        
+        buf.append(")");
+        
+        return buf.toString();
+    }
+    
     public String getDefaultExtension() {
         return "vb";
     }
