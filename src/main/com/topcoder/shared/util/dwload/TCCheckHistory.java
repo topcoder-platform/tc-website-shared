@@ -85,10 +85,11 @@ public class TCCheckHistory extends TCLoad {
             query = new StringBuffer(100);
             query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' "); 
             query.append("and round_id = ? ");
-            query.append("and coder_id not in (select coder_id from coder_rank_history where coder_rank_type_id = 2) ");
+            query.append("and coder_id not in (select coder_id from coder_rank_history where coder_rank_type_id = 2 and round_id = ?) ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             psSel.setInt(1, fRoundId);
+            psSel.setInt(2, fRoundId);
             
             rs = psSel.executeQuery();
 
