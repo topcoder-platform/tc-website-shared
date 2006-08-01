@@ -99,7 +99,7 @@ public class TCCheckHistory extends TCLoad {
             		log.info("The following coders are not present in coder_rank_history for round " + fRoundId);
             	}
             	found = true;
-            	log.info("    " + rs.getInt(0));            	
+            	log.info("    " + rs.getInt("coder_id"));            	
             }
             if (!found) {
             	log.info("coder_rank_history isn't missing any record for round " + fRoundId);
