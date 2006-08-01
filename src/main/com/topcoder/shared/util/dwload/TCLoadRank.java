@@ -1149,7 +1149,7 @@ public class TCLoadRank extends TCLoad {
 
         try {
 
-            String activeMembers = algoType == TC_RATING_TYPE_ID ? "active_members" : "active_hs_members";
+/*            String activeMembers = algoType == TC_RATING_TYPE_ID ? "active_members" : "active_hs_members";
             query = new StringBuffer(200);
             query.append(" select r.coder_id");
             query.append(" , r.rating");
@@ -1166,8 +1166,36 @@ public class TCLoadRank extends TCLoad {
             query.append(" and c.status = 'A'");
             query.append(" and r.num_ratings > 0");
             query.append(" and algo_rating_type_id = " + algoType);
-
+            */
+            query.append("select r.coder_id "); 
+            query.append(" , r.rating "); 
+            query.append(" , cs.school_id ");
+            query.append(" , c.coder_type_id ");
+            query.append(" , c.comp_country_code as country_code "); 
+            query.append(" , c.state_code ");
+            query.append(" , case when exists (select '1'");
+            query.append(" from room_result rr,");
+            query.append(" round r1,");
+            query.append(" calendar cal");     
+            query.append(" where rr.round_id = r1.round_id");
+            query.append(" and r1.calendar_id = cal.calendar_id");
+            query.append(" and rr.coder_id = r.coder_id");
+            query.append(" and r.algo_rating_type_id = " + algoType);
+            query.append(" and cal.calendar_id < (select calendar_id from round where round_id = r.round_id)");
+            query.append("        and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2"); 
+            query.append("                                  where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id))");
+            query.append("                 then 1 else 0 end as active ");
+            query.append("  from algo_rating_history r ");
+            query.append(" , outer current_school cs ");
+            query.append(" , coder c ");
+            query.append(" where r.coder_id = cs.coder_id"); 
+            query.append(" and r.coder_id = c.coder_id ");
+            query.append(" and r.num_ratings > 0 ");
+            query.append(" and r.round_id = ?");
+            
+            
             psSel = prepareStatement(query.toString(), TARGET_DB);
+            psSel.setInt(1, roundId);
 
             rs = psSel.executeQuery();
             ret = new ArrayList();
