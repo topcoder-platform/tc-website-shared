@@ -1167,6 +1167,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" and r.num_ratings > 0");
             query.append(" and algo_rating_type_id = " + algoType);
             */
+            query = new StringBuffer(1000);
             query.append("select r.coder_id "); 
             query.append(" , r.rating "); 
             query.append(" , cs.school_id ");
