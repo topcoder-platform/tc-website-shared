@@ -43,7 +43,7 @@ public class DBMS {
     public final static String TCS_JTS_OLTP_DATASOURCE_NAME = getProperty("TCS_JTS_OLTP_DATASOURCE_NAME", "JTS_TCS_CATALOG");
     public final static String TCS_DW_DATASOURCE_NAME = getProperty("TCS_DW_DATASOURCE_NAME", "TCS_DW");
     public final static String FORUMS_DATASOURCE_NAME = getProperty("FORUMS_DATASOURCE_NAME", "java:JiveDS");
-    public final static String STUDIO_DATASOURCE_NAME = getProperty("CREATIVE_DATASOURCE_NAME", "java:JTS_CREATIVE_OLTP");
+    public final static String STUDIO_DATASOURCE_NAME = getProperty("STUDIO_DATASOURCE_NAME", "java:JTS_STUDIO_OLTP");
 
 
     /**
