@@ -23,10 +23,13 @@ import java.util.*;
  * <li>
  * Added table rookie.
  * </li>
+ * <li>
+ * Non rated project left out of DR points.
+ * </li>
  * </ol>
  *
  * @author rfairfax, pulky
- * @version 1.1.0
+ * @version 1.1.1
  */
 public class TCLoadTCS extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadTCS.class);
@@ -1059,7 +1062,8 @@ public class TCLoadTCS extends TCLoad {
 
                 long pointsAwarded = 0;
                 if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                        dRProjects.contains(new Long(project_id))) {
+                        dRProjects.contains(new Long(project_id)) &&
+                        projectResults.getInt("rating_ind") == 1) {
                     pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
                     resultUpdate.setLong(17, pointsAwarded);
                     // adjusts final points. point_adjustment could be negative to substracto points.
@@ -1099,7 +1103,8 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
                     if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                            dRProjects.contains(new Long(project_id))) {
+                            dRProjects.contains(new Long(project_id)) &&
+                            projectResults.getInt("rating_ind") == 1) {
                         resultInsert.setLong(19, pointsAwarded);
                         resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
                     } else {
@@ -1218,7 +1223,7 @@ public class TCLoadTCS extends TCLoad {
                     "	) " +
                     ")";
 
-            // this query will retrieve the number of passing submissions for a particular user and phase 
+            // this query will retrieve the number of passing submissions for a particular user and phase
             // for his first and second season (previously calculated)
             final String SELECT_SUBMISSIONS = "select st.season_id, count(*) as num_submissions from project_result pr, " +
                     "project p, stage st " +
@@ -1244,8 +1249,8 @@ public class TCLoadTCS extends TCLoad {
             // the process will delete all rookies and reload them again completly.
             delete.executeUpdate();
 
-            // Stationary state: 
-            // - if the user had in his first season more than PASSED_REVIEW_THRESHOLD submissions, 
+            // Stationary state:
+            // - if the user had in his first season more than PASSED_REVIEW_THRESHOLD submissions,
             //   he is confirmed for that season.
             // - Otherwise he is potential for that season and confirmed for the next one.
             rsUsers = selectUsers.executeQuery();
