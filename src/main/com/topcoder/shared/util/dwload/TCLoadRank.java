@@ -1149,24 +1149,6 @@ public class TCLoadRank extends TCLoad {
 
         try {
 
-/*            String activeMembers = algoType == TC_RATING_TYPE_ID ? "active_members" : "active_hs_members";
-            query = new StringBuffer(200);
-            query.append(" select r.coder_id");
-            query.append(" , r.rating");
-            query.append(" , cs.school_id");
-            query.append(" , c.coder_type_id");
-            query.append(" , c.comp_country_code as country_code");
-            query.append(" , c.state_code");
-            query.append(" , case when exists (select '1' from " + activeMembers + " a where a.coder_id = c.coder_id) then 1 else 0 end as active");
-            query.append(" from algo_rating r");
-            query.append(" , outer current_school cs");
-            query.append(" , coder c");
-            query.append(" where r.coder_id = cs.coder_id");
-            query.append(" and r.coder_id = c.coder_id");
-            query.append(" and c.status = 'A'");
-            query.append(" and r.num_ratings > 0");
-            query.append(" and algo_rating_type_id = " + algoType);
-            */
             query = new StringBuffer(1000);
             query.append("select r.coder_id "); 
             query.append(" , r.rating "); 
@@ -1241,14 +1223,14 @@ public class TCLoadRank extends TCLoad {
             query.append(" SELECT r.coder_id ");
             query.append(" ,r.rating ");
             query.append(" , c.comp_country_code as country_code ");
-            query.append(" FROM season_algo_rating r ");
+            query.append(" FROM season_algo_rating_history r");
             query.append(" ,coder c ");
             query.append("  WHERE r.coder_id = c.coder_id ");
-            query.append(" AND r.season_id = ?");
+            query.append(" AND r.round = ?");
 
             psSel = prepareStatement(query.toString(), TARGET_DB);
 
-            psSel.setInt(1, seasonId);
+            psSel.setInt(1, roundId);
             rs = psSel.executeQuery();
             ret = new ArrayList();
             while (rs.next()) {
