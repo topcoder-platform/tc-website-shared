@@ -64,6 +64,7 @@ public class TCCheckHistory extends TCLoad {
 
             if (algoType == 2) {
             	checkSeasonRatingHistory();
+            	checkSeasonRankHistory();
             }
             log.info("SUCCESS: Check Finished.");
         } catch (Exception ex) {
@@ -146,6 +147,46 @@ public class TCCheckHistory extends TCLoad {
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Check of 'season_algo_rating_history' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+    }
+
+    private void checkSeasonRankHistory() throws Exception {
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            // Get all the coders that participated in this round
+            query = new StringBuffer(100);
+            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' "); 
+            query.append("and round_id = ? ");
+            query.append("and coder_id not in (select coder_id from season_rank_history where round_id = ?) ");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            psSel.setInt(1, fRoundId);
+            psSel.setInt(2, fRoundId);
+            
+            rs = psSel.executeQuery();
+
+            boolean found = false;
+            while (rs.next()) {
+            	if (!found) {
+            		log.info("The following coders are not present in season_rank_history for round " + fRoundId);
+            	}
+            	found = true;
+            	log.info("    " + rs.getInt("coder_id"));            	
+            }
+            if (!found) {
+            	log.info("season_rank_history isn't missing any record for round " + fRoundId);
+            }
+
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Check of 'season_rank_history' table failed.\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
