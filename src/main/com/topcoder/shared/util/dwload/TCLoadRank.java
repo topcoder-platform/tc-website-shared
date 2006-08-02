@@ -1226,7 +1226,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" FROM season_algo_rating_history r");
             query.append(" ,coder c ");
             query.append("  WHERE r.coder_id = c.coder_id ");
-            query.append(" AND r.round = ?");
+            query.append(" AND r.round_id = ?");
 
             psSel = prepareStatement(query.toString(), TARGET_DB);
 
