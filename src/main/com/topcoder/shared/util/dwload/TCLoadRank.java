@@ -1179,6 +1179,8 @@ public class TCLoadRank extends TCLoad {
             query.append(" round r1,");
             query.append(" calendar cal");     
             query.append(" where rr.round_id = r1.round_id");
+            query.append(" and rr.attended = 'Y'");
+            query.append(" and rr.rated_flag = 1 ");
             query.append(" and r1.calendar_id = cal.calendar_id");
             query.append(" and rr.coder_id = r.coder_id");
             query.append(" and r.algo_rating_type_id = " + algoType);
