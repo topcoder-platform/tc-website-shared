@@ -343,6 +343,7 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,u.status ");                   // 17
             query.append("       ,e.address ");                  // 18
             query.append("       ,c.comp_country_code");         // 19
+            query.append("       ,u.last_site_hit_date");        // 20
             query.append("  FROM coder c ");
             query.append("       ,user u ");
             query.append("       ,email e ");
@@ -388,10 +389,11 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,handle ");                    // 16
             query.append("       ,status ");                    // 17
             query.append("       ,email ");                     // 18
-            query.append("       ,comp_country_code) ");         // 20
+            query.append("       ,comp_country_code ");         // 19
+            query.append("       ,last_site_hit_date)");        // 20
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
-            query.append("?,?,?,?,?,?,?,?,?)");  // 19
+            query.append("?,?,?,?,?,?,?,?,?,?)");  // 20
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // Our update statement
@@ -415,7 +417,8 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,status = ? ");                    // 16
             query.append("       ,email = ? ");                     // 17
             query.append("       ,comp_country_code = ?");          // 18
-            query.append("WHERE coder_id = ?");                     // 19
+            query.append("       ,last_site_hit_date = ?");         // 19
+            query.append(" WHERE coder_id = ?");                    // 20
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             // Our select statement to determine if a particular row is
@@ -463,7 +466,8 @@ public class TCLoadCoders extends TCLoad {
                     psUpd.setString(16, rs.getString("status"));
                     psUpd.setString(17, rs.getString("address"));
                     psUpd.setString(18, rs.getString("comp_country_code"));
-                    psUpd.setLong(19, coder_id);
+                    psUpd.setTimestamp(19, rs.getTimestamp("last_site_hit_date"));
+                    psUpd.setLong(20, coder_id);
 
                     // Now, execute the insert of the new row
                     retVal = psUpd.executeUpdate();
@@ -494,6 +498,7 @@ public class TCLoadCoders extends TCLoad {
                     psIns.setString(17, rs.getString("status"));
                     psIns.setString(18, rs.getString("address"));
                     psIns.setString(19, rs.getString("comp_country_code"));
+                    psIns.setTimestamp(20, rs.getTimestamp("last_site_hit_date"));
 
                     // Now, execute the insert of the new row
                     retVal = psIns.executeUpdate();
