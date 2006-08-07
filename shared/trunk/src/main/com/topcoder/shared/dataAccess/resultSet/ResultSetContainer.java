@@ -81,7 +81,11 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * ***************************************************************
      */
 
-    private ResultSetContainer() {
+    /**
+     * This has marginal value and shoult not be used in practice,
+     * but it helps us fullfill the contract of a java bean.
+     */
+    public ResultSetContainer() {
         data = new ArrayList();
         columnNameMap = new HashMap();
         dataBefore = false;
