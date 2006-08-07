@@ -222,7 +222,7 @@ public class TCLoadRound extends TCLoad {
             int algoType = getRoundType(fRoundId);
 
             if (FULL_LOAD) {
-                String divs = algoType == 1? "1,2" : "-1";
+                String divs = algoType == 1 ? "1,2" : "-1";
                 a.add("DELETE FROM coder_level where algo_rating_type_id=" + algoType);
                 a.add("DELETE FROM coder_division where division_id in (" + divs + ")");
                 a.add("DELETE FROM room_result WHERE round_id = ?");
@@ -353,7 +353,6 @@ public class TCLoadRound extends TCLoad {
 
             //use the target db (warehouse) for this historical data
             psSelMinMaxRatings = prepareStatement(query.toString(), TARGET_DB);
-
 
             // No need to filter admins here as they have already been filtered from
             // the DW rating table
@@ -1288,7 +1287,7 @@ public class TCLoadRound extends TCLoad {
                     if (rs.getString(14) != null) {
                         psUpd.setInt(14, rs.getInt(14));  // region_id
                     } else {
-                        psUpd.setNull(14,java.sql.Types.DECIMAL);  // region_id
+                        psUpd.setNull(14, java.sql.Types.DECIMAL);  // region_id
                     }
 
                     psUpd.setInt(15, rs.getInt(1));  // round_id
@@ -1319,7 +1318,7 @@ public class TCLoadRound extends TCLoad {
                     if (rs.getString(14) != null) {
                         psIns.setInt(15, rs.getInt(14));  // region_id
                     } else {
-                        psIns.setNull(15,java.sql.Types.DECIMAL);  // region_id
+                        psIns.setNull(15, java.sql.Types.DECIMAL);  // region_id
                     }
 
                     retVal = psIns.executeUpdate();
@@ -1623,11 +1622,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,pt.payment_type_desc");                    // 32
             query.append("       ,rr.rated_flag");                           //33
             query.append("       ,rr.team_points");                          //34
-            query.append("       ,(SELECT tcx.team_id ");
-            query.append("          FROM team_coder_xref tcx, team t  ");
-            query.append("          WHERE coder_id = rr.coder_id ");
-            query.append("          AND tcx.team_id = t.team_id  ");
-            query.append("          AND t.team_type=4) as team_id ");        // 35
+            query.append("       ,rreg.team_id ");        // 35
             query.append("       ,rr.region_placed ");                       // 36
             query.append("  FROM room_result rr ");
             query.append("  JOIN room r ON rr.round_id = r.round_id ");
@@ -1635,6 +1630,7 @@ public class TCLoadRound extends TCLoad {
             query.append("  LEFT OUTER JOIN round_payment rp ON rr.round_id = rp.round_id");
             query.append("              AND rp.coder_id = rr.coder_id");
             query.append("  LEFT OUTER JOIN payment_type_lu pt ON rp.payment_type_id = pt.payment_type_id");
+            query.append("  JOIN round_registration rreg ON rreg.round_id = r.round_id and rreg.coder_id = rr.coder_id ");
             query.append(" WHERE r.room_type_id = " + CONTEST_ROOM);
             query.append("   AND rr.round_id = ?");
             query.append("   AND rr.attended = 'Y'");
@@ -2310,7 +2306,6 @@ public class TCLoadRound extends TCLoad {
     }
 
 
-
     /**
      * Load all the seasons from transactional.
      */
@@ -2383,7 +2378,7 @@ public class TCLoadRound extends TCLoad {
 
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
-                PreparedStatement psInsUpd = rs2.next()? psUpd : psIns;
+                PreparedStatement psInsUpd = rs2.next() ? psUpd : psIns;
 
                 psInsUpd.clearParameters();
                 psInsUpd.setInt(1, start_calendar_id);
@@ -2518,7 +2513,6 @@ public class TCLoadRound extends TCLoad {
 
                 int num_competitions = 0;
 
-
                 //use by default the loaded round id and rating, so that if there aren't other rounds, that round is the first and last
                 // and the rating is the lowest and highest.
                 int first_rated_round_id = round_id;
@@ -2537,8 +2531,7 @@ public class TCLoadRound extends TCLoad {
                         first_rated_round_id = rs2.getInt(1);
                     }
 
-                    if (rs2.getString(2) != null)
-                    {
+                    if (rs2.getString(2) != null) {
                         last_rated_round_id = rs2.getInt(2);
                     }
                     lowest_rating = Math.min(rs2.getInt(3), rating);
@@ -2549,7 +2542,6 @@ public class TCLoadRound extends TCLoad {
 
                     if (getRoundStart(round_id).compareTo(getRoundStart(last_rated_round_id)) > 0)
                         last_rated_round_id = round_id;
-
 
                     // clear the row
                     psDel.clearParameters();
