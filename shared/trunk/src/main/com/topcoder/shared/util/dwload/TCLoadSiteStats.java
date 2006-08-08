@@ -9,14 +9,14 @@ package com.topcoder.shared.util.dwload;
  * @author cuuc
  */
 
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Hashtable;
-
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 
 public class TCLoadSiteStats extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadSiteStats.class);
@@ -46,7 +46,7 @@ public class TCLoadSiteStats extends TCLoad {
             getLastUpdateTime();
 
             loadLastSiteHit();
-            
+
             setLastUpdateTime();
 
             log.info("SUCCESS: Site Stats load ran successfully.");
@@ -103,9 +103,9 @@ public class TCLoadSiteStats extends TCLoad {
             query = new StringBuffer(100);
             query.append(" select coder_id, max(timestamp) as last_hit from site_hit ");
             query.append(" where timestamp > ?");
-            query.append(" and not coder_id is null");
+            query.append(" and coder_id is not null");
             query.append(" group by coder_id");
-            
+
             psSel = prepareStatement(query.toString(), SOURCE_DB);
             psSel.setTimestamp(1, fLastLogTime);
 
@@ -122,11 +122,6 @@ public class TCLoadSiteStats extends TCLoad {
                 retVal = psUpd.executeUpdate();
 
                 count = count + retVal;
-                if (retVal != 1) {
-                    throw new SQLException("TCLoadSiteHits: Load for coder " + rs.getInt("coder_id") +
-                            " modified " + retVal + " rows, not one.");
-                }
-
                 printLoadProgress(count, "site_hit");
             }
 
