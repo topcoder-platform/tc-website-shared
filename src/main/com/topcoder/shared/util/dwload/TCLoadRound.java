@@ -241,6 +241,7 @@ public class TCLoadRound extends TCLoad {
                 a.add("UPDATE algo_rating SET first_rated_round_id = null WHERE first_rated_round_id = ?");
                 a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
                 a.add("DELETE FROM algo_rating_history WHERE round_id = ?");
+                a.add("delete from season_algo_rating_history where round_id = ?");
             } else {
                 a.add("DELETE FROM coder_level WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?) AND algo_rating_type_id=" + algoType);
                 a.add("DELETE FROM coder_division WHERE coder_id IN (SELECT coder_id FROM room_result WHERE attended = 'Y' AND round_id = ?)");
@@ -259,6 +260,7 @@ public class TCLoadRound extends TCLoad {
                 a.add("UPDATE algo_rating SET first_rated_round_id = null WHERE first_rated_round_id = ?");
                 a.add("UPDATE algo_rating SET last_rated_round_id = null WHERE last_rated_round_id = ?");
                 a.add("DELETE FROM algo_rating_history WHERE round_id = ?");
+                a.add("delete from season_algo_rating_history where round_id = ?");
             }
 
             int count = 0;
