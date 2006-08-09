@@ -975,7 +975,7 @@ public class TCLoadTCS extends TCLoad {
                         " and project_id = pr.project_id and cur_version = 1) as review_completed_timestamp, " +
                         "(select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
                         "pr.payment, pr.old_rating, pr.new_rating, " +
-                        "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment " +
+                        "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment, pr.current_reliability_ind " +
                         "from project_result pr, " +
                         "project p, " +
                         "comp_versions cv, " +
@@ -989,12 +989,12 @@ public class TCLoadTCS extends TCLoad {
         final String RESULT_UPDATE =
                 "update project_result set submit_ind = ?, valid_submission_ind = ?, raw_score = ?, final_score = ?, inquire_timestamp = ?, " +
                         "submit_timestamp = ?, review_complete_timestamp = ?, payment = ?, old_rating = ?, new_rating = ?, old_reliability = ?, new_reliability = ?, " +
-                        "placed = ?, rating_ind = ?, reliability_ind = ?, passed_review_ind = ?, points_awarded = ?, final_points = ?  where project_id = ? and user_id = ?";
+                        "placed = ?, rating_ind = ?, reliability_ind = ?, passed_review_ind = ?, points_awarded = ?, final_points = ?, current_reliability_ind=?  where project_id = ? and user_id = ?";
 
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
-                        "reliability_ind, passed_review_ind, points_awarded, final_points) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
         try {
             long start = System.currentTimeMillis();
@@ -1072,8 +1072,9 @@ public class TCLoadTCS extends TCLoad {
                     resultUpdate.setNull(17, Types.DECIMAL);
                     resultUpdate.setNull(18, Types.DECIMAL);
                 }
-                resultUpdate.setLong(19, project_id);
-                resultUpdate.setLong(20, projectResults.getLong("user_id"));
+                resultUpdate.setInt(19, projectResults.getInt("current_reliability_ind"));
+                resultUpdate.setLong(20, project_id);
+                resultUpdate.setLong(21, projectResults.getLong("user_id"));
 
                 //log.debug("before result update");
                 int retVal = resultUpdate.executeUpdate();
@@ -1111,6 +1112,7 @@ public class TCLoadTCS extends TCLoad {
                         resultInsert.setNull(19, Types.DECIMAL);
                         resultInsert.setNull(20, Types.DECIMAL);
                     }
+                    resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
                     //log.debug("before result insert");
                     resultInsert.executeUpdate();
                     //log.debug("after result insert");
