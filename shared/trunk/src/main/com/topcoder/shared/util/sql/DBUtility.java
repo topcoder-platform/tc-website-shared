@@ -3,6 +3,8 @@
  */
 package com.topcoder.shared.util.sql;
 
+import com.topcoder.shared.util.EmailEngine;
+import com.topcoder.shared.util.TCSEmailMessage;
 import com.topcoder.shared.util.logging.Logger;
 import org.w3c.dom.*;
 
@@ -239,6 +241,15 @@ public abstract class DBUtility {
 
         log.debug("processParams");
         log.debug("sDriverName : " + sDriverName);
+    }
+
+    protected static void sendMail(String from, String to, String subject, String messageText) throws Exception {
+        TCSEmailMessage message = new TCSEmailMessage();
+        message.setFromAddress(from);
+        message.setToAddress(to, TCSEmailMessage.TO);
+        message.setSubject(subject);
+        message.setBody(messageText);
+        EmailEngine.send(message);
     }
 
     /**
