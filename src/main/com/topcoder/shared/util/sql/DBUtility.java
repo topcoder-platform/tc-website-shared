@@ -23,7 +23,7 @@ import java.util.Hashtable;
  * A base class for building DB utilities.
  *
  * @author pulky
- * @version 1.0.0
+ * @version 1.0.1
  */
 public abstract class DBUtility {
     /**
@@ -243,6 +243,16 @@ public abstract class DBUtility {
         log.debug("sDriverName : " + sDriverName);
     }
 
+    /**
+     * This method sends an email using the EmailEngine component
+     *
+     * @param from The sender of the email.
+     * @param to The receiver of the email.
+     * @param subject The subject of the email.
+     * @param messageText The message text of the email.
+     *
+     * @since 1.0.1
+     */
     protected static void sendMail(String from, String to, String subject, String messageText) throws Exception {
         TCSEmailMessage message = new TCSEmailMessage();
         message.setFromAddress(from);
