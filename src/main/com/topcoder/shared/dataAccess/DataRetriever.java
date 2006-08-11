@@ -1,20 +1,26 @@
 package com.topcoder.shared.dataAccess;
 
 import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
-import com.topcoder.shared.util.*;
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.StringUtil;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
- *
  * Retrieves data from the database.<p>
- *
+ * <p/>
  * Rerieval involves the following tables:
  * <ul>
  * <li><strong>data_type_lu</strong> - holds information about data types, like String, Date, Decimal etc.</li>
@@ -24,104 +30,102 @@ import java.util.*;
  * <li><strong>query_input_xref</strong> - the mapping between a query and n inputs.</li>
  * <li><strong>query</strong> - the actual query.</li><p>
  * </ul>
- *
+ * <p/>
  * Example:
  * <pre>SELECT c.handle, r.rating
  *   FROM coder c, rating r
  *  WHERE c.coder_id = r.coder_id
  *    AND r.rating @gt; @ra@</pre><p>
- *
+ * <p/>
  * This query gives us a list of handles and ratings where the rating is greater than
  * the input "ra".  We would follow the following steps to set this up in the database.
  * <ul>
- *   <li>
- *     Insert the query into the query table. {@link com.topcoder.utilities.QueryLoader} can be
- *     used for this purpose (one can not insert into a TEXT coulumn directly).
- *     <pre>
+ * <li>
+ * Insert the query into the query table. {@link com.topcoder.utilities.QueryLoader} can be
+ * used for this purpose (one can not insert into a TEXT coulumn directly).
+ * <pre>
  *       com.topcoder.utilities.QueryLoader "DW" 1 "Coder_Ratings" 0 0 "
  *       SELECT c.handle, r.rating
  *         FROM coder c, rating r
  *        WHERE c.coder_id = r.coder_id
  *          AND r.rating &gt; @ra@"
  *     </pre>
- *     <ul>
- *       <li><strong>query_id</strong> a unique identifier for a query</li>
- *       <li><strong>text</strong> the actual text of the query</li>
- *       <li><strong>name</strong> a name for the query, this is used as a key for the resultset of this query</li>
- *       <li><strong>ranking</strong> 1 if this is a ranking query, 0 if it is not.  If it is a ranking query, another
- *         column is added to the result set containing the rank of  a particular row.  If there is a tie, all those
- *         rows that are tied get the same rank, and the next non-tied row will get the next rank as
- *         if there was no tie.</li>
- *       <li><strong>column_index</strong> the column that we are ranking on</li>
- *     </ul>
- *     <br/>
- *   </li>
- *   <li>
- *     <pre>
+ * <ul>
+ * <li><strong>query_id</strong> a unique identifier for a query</li>
+ * <li><strong>text</strong> the actual text of the query</li>
+ * <li><strong>name</strong> a name for the query, this is used as a key for the resultset of this query</li>
+ * <li><strong>ranking</strong> 1 if this is a ranking query, 0 if it is not.  If it is a ranking query, another
+ * column is added to the result set containing the rank of  a particular row.  If there is a tie, all those
+ * rows that are tied get the same rank, and the next non-tied row will get the next rank as
+ * if there was no tie.</li>
+ * <li><strong>column_index</strong> the column that we are ranking on</li>
+ * </ul>
+ * <br/>
+ * </li>
+ * <li>
+ * <pre>
  *       INSERT INTO input_lu (input_id, input_code, data_type_id, input_desc)
  *       VALUES (2, 'ra', 1001, 'Rating');
  *     </pre>
- *     <ul>
- *       <li><strong>input_id</strong> a unique identifier for an input</li>
- *       <li><strong>input_code</strong> a code used when specifying a particular input in a query</li>
- *       <li><strong>date_type_id</strong> the id of the data type of this input</li>
- *       <li><strong>input_desc</strong> a text description of this input</li>
- *     </ul>
- *     <br/>
- *   </li>
- *   <li>
- *     <pre>
+ * <ul>
+ * <li><strong>input_id</strong> a unique identifier for an input</li>
+ * <li><strong>input_code</strong> a code used when specifying a particular input in a query</li>
+ * <li><strong>date_type_id</strong> the id of the data type of this input</li>
+ * <li><strong>input_desc</strong> a text description of this input</li>
+ * </ul>
+ * <br/>
+ * </li>
+ * <li>
+ * <pre>
  *       INSERT INTO command (command_id, command_desc, command_group_id)
  *       VALUES (3, 'coder_ratings', 1);
  *     </pre>
- *     <ul>
- *       <li><strong>command_id</strong> a unique identifier for a command</li>
- *       <li><strong>command_desc</strong> a text description of the command</li>
- *       <li><strong>command_group_id</strong> the id of the group this command belongs to</li>
- *     </ul>
- *     <br/>
- *   </li>
- *   <li>
- *     <pre>
+ * <ul>
+ * <li><strong>command_id</strong> a unique identifier for a command</li>
+ * <li><strong>command_desc</strong> a text description of the command</li>
+ * <li><strong>command_group_id</strong> the id of the group this command belongs to</li>
+ * </ul>
+ * <br/>
+ * </li>
+ * <li>
+ * <pre>
  *       INSERT INTO command_query_xref (command_id, query_id, sort_order)
  *       VALUES (3, 1, 1);
  *     </pre>
- *     <ul>
- *       <li><strong>command_id</strong> is the id of the command we are setting up</li>
- *       <li><strong>query_id</strong> is the id of the query we're associating with this command</li>
- *       <li><strong>sort_order</strong> is simply a way to sort the queriess for a given command, each
- *         record in command_query_xref for a particular command should have a distinct
- *         value for sort_order</li>
- *     </ul>
- *     <br/>
- *   </li>
- *   <li>
- *     <pre>
+ * <ul>
+ * <li><strong>command_id</strong> is the id of the command we are setting up</li>
+ * <li><strong>query_id</strong> is the id of the query we're associating with this command</li>
+ * <li><strong>sort_order</strong> is simply a way to sort the queriess for a given command, each
+ * record in command_query_xref for a particular command should have a distinct
+ * value for sort_order</li>
+ * </ul>
+ * <br/>
+ * </li>
+ * <li>
+ * <pre>
  *       INSERT INTO query_input_xref (query_id, optional, default_value, input_id, sort_order)
  *       VALUES (1, 'Y', '1500', 2, 1);
  *     </pre>
- *     <ul>
- *       <li><strong>query_id</strong> is the id of the query whose inputs were are setting up</li>
- *       <li><strong>optional</strong> is a flag that allows us to set defaults for this input</li>
- *       <li>
- *         <strong>default_value</strong> is the default value if this input was not specified
- *         at execution time.  it should not include the INPUT_DELIMITER specified in the
- *         DataAccess.properties file.
- *       </li>
- *       <li><strong>input_id</strong> is the id of the input we are associating with this query</li>
- *       <li><strong>sort_order</strong> is simply a way to sort the inputs for a given query, each
- *         record in query_input_xref for a particular query should have a distinct  value for sort_order</li>
- *     </ul>
- *     <br/>
- *   </li>
+ * <ul>
+ * <li><strong>query_id</strong> is the id of the query whose inputs were are setting up</li>
+ * <li><strong>optional</strong> is a flag that allows us to set defaults for this input</li>
+ * <li>
+ * <strong>default_value</strong> is the default value if this input was not specified
+ * at execution time.  it should not include the INPUT_DELIMITER specified in the
+ * DataAccess.properties file.
+ * </li>
+ * <li><strong>input_id</strong> is the id of the input we are associating with this query</li>
+ * <li><strong>sort_order</strong> is simply a way to sort the inputs for a given query, each
+ * record in query_input_xref for a particular query should have a distinct  value for sort_order</li>
  * </ul>
- *
+ * <br/>
+ * </li>
+ * </ul>
  *
  * @author Dave Pecora
  * @author Greg Paul
- * @see     ResultSetContainer*
  * @version $Revision$
- *
+ * @see ResultSetContainer*
  */
 
 public class DataRetriever implements DataRetrieverInt {
@@ -134,6 +138,7 @@ public class DataRetriever implements DataRetrieverInt {
 
     /**
      * Constructor that takes a connection object.
+     *
      * @param conn
      */
     protected DataRetriever(Connection conn) {
@@ -195,6 +200,7 @@ public class DataRetriever implements DataRetrieverInt {
      * a clever user who knows how this system works from embedding SQL in the
      * input.  TODO If we ever need to add string input support at a later time, this
      * should be explicitly checked for.
+     *
      * @param input
      * @param dataType
      * @return true if the input is valid, false if not
@@ -274,7 +280,7 @@ public class DataRetriever implements DataRetrieverInt {
             closeObject(ps);
         }
 
-        int i,j;
+        int i, j;
         // For default input queries, all inputs are required to avoid circularity hassles.
         // Thus the substitution process is not table-based (no query_input_xref entries here).
         // It is assumed that inputs have already passed validation in executeCommand(),
@@ -325,15 +331,15 @@ public class DataRetriever implements DataRetrieverInt {
      * a query name, and each value is a <tt>ResultSetContainer</tt> containing the
      * data returned by that query.
      *
-     * @param      inputMap  A map of inputs to this command.  Each key in this map
-     *                     is a valid input code in DataAccess.properties, and
-     *                     each value is a <tt>String</tt> containing the value passed in
-     *                     for the given input code.  One key-value pair must
-     *                     contain a valid command description as specified in the
-     *                     "command" table.
-     * @throws      Exception If some problem is encountered while executing
-     *                              the queries specified by the passed-in command.
-     * @return      The statistical data requested by the command.
+     * @param inputMap A map of inputs to this command.  Each key in this map
+     *                 is a valid input code in DataAccess.properties, and
+     *                 each value is a <tt>String</tt> containing the value passed in
+     *                 for the given input code.  One key-value pair must
+     *                 contain a valid command description as specified in the
+     *                 "command" table.
+     * @return The statistical data requested by the command.
+     * @throws Exception If some problem is encountered while executing
+     *                   the queries specified by the passed-in command.
      */
     public Map executeCommand(Map inputMap) throws Exception {
         //create a new map to avoid mutating the passed in version.
@@ -455,7 +461,7 @@ public class DataRetriever implements DataRetrieverInt {
 
                 // Remove leading/trailing input whitespace
                 input = input.trim();
-                if (dataType==DataAccessConstants.STRING_INPUT) {
+                if (dataType == DataAccessConstants.STRING_INPUT) {
                     //escape single quotes for informix
                     input = StringUtil.replace(input, "\'", "\'\'");
                 }
@@ -511,7 +517,7 @@ public class DataRetriever implements DataRetrieverInt {
              */
             for (i = 0; i < queryIdList.length; i++) {
                 String queryText = (String) queryTextMap.get(new Integer(queryIdList[i]));
-                for (int j=0; j<rowcount; j++) {
+                for (int j = 0; j < rowcount; j++) {
                     if (queryText.indexOf(DataAccessConstants.INPUT_DELIMITER +
                             rsc.getItem(j, "input_code").toString() +
                             DataAccessConstants.INPUT_DELIMITER) > -1) {
@@ -586,8 +592,6 @@ public class DataRetriever implements DataRetrieverInt {
             closeObject(ps);
         }
 
-        // Done!
-        closeConnections();
         return resultMap;
     }
 }
