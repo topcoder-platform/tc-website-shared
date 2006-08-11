@@ -163,15 +163,6 @@ public class DataRetriever implements DataRetrieverInt {
         }
     }
 
-    private void closeConnections() {
-        closeObject(rs);
-        closeObject(ps);
-// skip connection, it's passed in and should be closed outside.
-//        closeObject(conn);
-        rs = null;
-        ps = null;
-//        conn = null;
-    }
 
     private void handleException(Exception e, String lastQuery, Map inputs) {
         try {
@@ -192,7 +183,6 @@ public class DataRetriever implements DataRetrieverInt {
                 e.printStackTrace();
         } catch (Exception ex) {
         }
-        closeConnections();
     }
 
     /**
