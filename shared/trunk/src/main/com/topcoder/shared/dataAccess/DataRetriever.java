@@ -131,8 +131,6 @@ import java.util.Map;
 public class DataRetriever implements DataRetrieverInt {
     private static Logger log = Logger.getLogger(DataRetriever.class);
     private Connection conn;
-    private PreparedStatement ps;
-    private ResultSet rs;
     /* Keeps track of the most recent query run, for exception handling purposes */
     private StringBuffer query;
 
@@ -144,25 +142,6 @@ public class DataRetriever implements DataRetrieverInt {
     protected DataRetriever(Connection conn) {
         this.conn = conn;
     }
-
-    private void closeObject(Object o) {
-        if (o == null)
-            return;
-        try {
-            if (o instanceof ResultSet)
-                ((ResultSet) o).close();
-            else if (o instanceof PreparedStatement)
-                ((PreparedStatement) o).close();
-            else if (o instanceof Connection)
-                ((Connection) o).close();
-        } catch (Exception e) {
-            try {
-                log.error("Error closing " + o.getClass(), e);
-            } catch (Exception ex) {
-            }
-        }
-    }
-
 
     private void handleException(Exception e, String lastQuery, Map inputs) {
         try {
@@ -259,6 +238,8 @@ public class DataRetriever implements DataRetrieverInt {
         query.append("SELECT text FROM query WHERE query_id=");
         query.append(specialQueryId);
         String specialQuery = null;
+        ResultSet rs = null;
+        PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(query.toString());
             rs = ps.executeQuery();
@@ -266,8 +247,8 @@ public class DataRetriever implements DataRetrieverInt {
                 throw new Exception("Query text for query ID " + specialQueryId + " missing from DB");
             specialQuery = DBMS.getTextString(rs, 1);
         } finally {
-            closeObject(rs);
-            closeObject(ps);
+            DBMS.close(rs);
+            DBMS.close(ps);
         }
 
         int i, j;
@@ -310,8 +291,8 @@ public class DataRetriever implements DataRetrieverInt {
             inputs.put(defaultQueryId, input);
             return input;
         } finally {
-            closeObject(rs);
-            closeObject(ps);
+            DBMS.close(rs);
+            DBMS.close(ps);
         }
     }
 
@@ -346,6 +327,8 @@ public class DataRetriever implements DataRetrieverInt {
         HashMap queryTextMap, queryNameMap, querySortMap, queryStartRow, queryEndRow, resultMap;
 
         // Get the list of queries to execute, and the names and texts of the queries
+        ResultSet rs = null;
+        PreparedStatement ps = null;
         try {
             query = new StringBuffer(300);
             query.append("SELECT cqx.query_id, ");
@@ -385,8 +368,8 @@ public class DataRetriever implements DataRetrieverInt {
             handleException(e, query.toString(), inputs);
             throw new Exception("Invalid command: " + commandDesc);
         } finally {
-            closeObject(rs);
-            closeObject(ps);
+            DBMS.close(rs);
+            DBMS.close(ps);
         }
 
         // Now get the inputs of the queries
@@ -519,8 +502,8 @@ public class DataRetriever implements DataRetrieverInt {
             handleException(e, query.toString(), inputs);
             throw e;
         } finally {
-            closeObject(rs);
-            closeObject(ps);
+            DBMS.close(rs);
+            DBMS.close(ps);
         }
 
         // At this point we've built all queries to run.
@@ -578,8 +561,8 @@ public class DataRetriever implements DataRetrieverInt {
             handleException(e, queryText, inputs);
             throw new Exception("Error while retrieving query data:" + queryText);
         } finally {
-            closeObject(rs);
-            closeObject(ps);
+            DBMS.close(rs);
+            DBMS.close(ps);
         }
 
         return resultMap;
