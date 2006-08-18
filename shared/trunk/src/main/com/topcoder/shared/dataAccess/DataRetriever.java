@@ -556,6 +556,8 @@ public class DataRetriever implements DataRetrieverInt {
                 }
 
                 resultMap.put(queryName, rsc);
+                DBMS.close(rs);
+                DBMS.close(ps);
             }
         } catch (Exception e) {
             handleException(e, queryText, inputs);
