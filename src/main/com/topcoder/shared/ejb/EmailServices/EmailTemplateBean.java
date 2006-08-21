@@ -1,20 +1,18 @@
 package com.topcoder.shared.ejb.EmailServices;
 
 import com.topcoder.shared.ejb.BaseEJB;
-import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 import javax.ejb.EJBException;
-import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * @author Eric Ellingson
+ * @version $Revision$
  * @see EmailTemplate
- *
- * @author   Eric Ellingson
- * @version  $Revision$
  */
 public class EmailTemplateBean extends BaseEJB {
 
@@ -28,7 +26,6 @@ public class EmailTemplateBean extends BaseEJB {
 
 
     /**
-     *
      * @param group
      * @param name
      * @param data
@@ -84,22 +81,16 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to create template";
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return id;
     }
 
     /**
-     *
      * @return
      * @throws EJBException
      */
@@ -135,29 +126,16 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to get template names";
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return ret;
     }
 
     /**
-     *
      * @param groupId
      * @return
      * @throws EJBException
@@ -192,34 +170,20 @@ public class EmailTemplateBean extends BaseEJB {
             for (; rs.next();) {
                 ret.put(new Integer(rs.getInt(1)), rs.getString(2));
             }
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get template names for group " + groupId;
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return ret;
     }
 
     /**
-     *
      * @param templateId
      * @return
      * @throws EJBException
@@ -256,29 +220,16 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to get data for " + templateId;
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return ret;
     }
 
     /**
-     *
      * @param templateId
      * @return
      * @throws EJBException
@@ -315,29 +266,16 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to get data for " + templateId;
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return ret;
     }
 
     /**
-     *
      * @param templateId
      * @return
      * @throws EJBException
@@ -376,29 +314,16 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to get data for template " + templateId;
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return ret;
     }
 
     /**
-     *
      * @param templateId
      * @return
      * @throws EJBException
@@ -445,29 +370,16 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to get data for template " + templateId;
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return (ret > 0);
     }
 
     /**
-     *
      * @param templateId
      * @param groupId
      * @throws EJBException
@@ -513,27 +425,14 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to update template";
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param templateId
      * @param name
      * @throws EJBException
@@ -579,27 +478,14 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to update template";
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            if (ctx != null) {
-                try {
-                    ctx.close();
-                } catch (Exception ctxerr) {
-                    log.error("Failed to close database context", ctxerr);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception connerr) {
-                    log.error("Failed to close database connection", connerr);
-                }
-            }
-
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param templateId
      * @param data
      * @throws EJBException
@@ -645,15 +531,10 @@ public class EmailTemplateBean extends BaseEJB {
             String err = "Failed to update template";
             log.error(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 }
