@@ -519,52 +519,54 @@ public class DataRetriever implements DataRetrieverInt {
             //todo what goes where and then calling setXXX on the preparedstatement
             resultMap = new HashMap();
             for (i = 0; i < queryIdList.length; i++) {
-                Integer lookup = new Integer(queryIdList[i]);
-                queryText = (String) queryTextMap.get(lookup);
-                queryName = (String) queryNameMap.get(lookup);
-                Integer ranklistCol = (Integer) querySortMap.get(lookup);
-                int startRow, endRow;
-                Integer tempInt = (Integer) queryStartRow.get(lookup);
-                if (tempInt == null)
-                    startRow = 1;
-                else
-                    startRow = tempInt.intValue();
-                tempInt = (Integer) queryEndRow.get(lookup);
-                if (tempInt == null)
-                    endRow = Integer.MAX_VALUE;
-                else
-                    endRow = tempInt.intValue();
-                ps = conn.prepareStatement(queryText);
-                rs = ps.executeQuery();
-                //log.debug("startrow: " + startRow + " endRow: " + endRow);
-                // Call different constructors depending on if we have to
-                // generate a ranklist column or not.
-                ResultSetContainer rsc;
-                if (ranklistCol == null)
-                    rsc = new ResultSetContainer(rs, startRow, endRow, false);
-                else
-                    rsc = new ResultSetContainer(rs, startRow, endRow, ranklistCol.intValue(), false);
+                try {
+                    Integer lookup = new Integer(queryIdList[i]);
+                    queryText = (String) queryTextMap.get(lookup);
+                    queryName = (String) queryNameMap.get(lookup);
+                    Integer ranklistCol = (Integer) querySortMap.get(lookup);
+                    int startRow, endRow;
+                    Integer tempInt = (Integer) queryStartRow.get(lookup);
+                    if (tempInt == null)
+                        startRow = 1;
+                    else
+                        startRow = tempInt.intValue();
+                    tempInt = (Integer) queryEndRow.get(lookup);
+                    if (tempInt == null)
+                        endRow = Integer.MAX_VALUE;
+                    else
+                        endRow = tempInt.intValue();
+                    ps = conn.prepareStatement(queryText);
+                    rs = ps.executeQuery();
+                    //log.debug("startrow: " + startRow + " endRow: " + endRow);
+                    // Call different constructors depending on if we have to
+                    // generate a ranklist column or not.
+                    ResultSetContainer rsc;
+                    if (ranklistCol == null)
+                        rsc = new ResultSetContainer(rs, startRow, endRow, false);
+                    else
+                        rsc = new ResultSetContainer(rs, startRow, endRow, ranklistCol.intValue(), false);
 
-                // Sort if necessary
-                if (sortCalled && queryName.equals(sortQueryName)) {
-                    int col = Integer.parseInt(sortQueryCol);
-                    boolean ascending = true;
-                    if (sortDir != null && sortDir.equals("desc"))
-                        ascending = false;
-                    if (rsc.isValidColumn(col))
-                        rsc.sortByColumn(col, ascending);
+                    // Sort if necessary
+                    if (sortCalled && queryName.equals(sortQueryName)) {
+                        int col = Integer.parseInt(sortQueryCol);
+                        boolean ascending = true;
+                        if (sortDir != null && sortDir.equals("desc"))
+                            ascending = false;
+                        if (rsc.isValidColumn(col))
+                            rsc.sortByColumn(col, ascending);
+                    }
+
+                    resultMap.put(queryName, rsc);
+                } finally {
+                    DBMS.close(rs);
+                    DBMS.close(ps);
+
                 }
 
-                resultMap.put(queryName, rsc);
-                DBMS.close(rs);
-                DBMS.close(ps);
             }
         } catch (Exception e) {
             handleException(e, queryText, inputs);
             throw new Exception("Error while retrieving query data:" + queryText);
-        } finally {
-            DBMS.close(rs);
-            DBMS.close(ps);
         }
 
         return resultMap;
