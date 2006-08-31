@@ -1407,6 +1407,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         rsc.dataBefore = fromIndex > 0;
         rsc.dataAfter = toIndex < data.size();
         rsc.data = new ArrayList(this.data.subList(fromIndex, toIndex));
+        rsc.startRow = fromIndex + 1;
+        rsc.endRow = toIndex + 1;
         return rsc;
     }
 
