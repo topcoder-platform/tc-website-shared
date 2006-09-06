@@ -624,6 +624,8 @@ public class EmailJobBean extends BaseEJB {
         java.sql.Connection conn = null;
         java.sql.PreparedStatement ps = null;
         java.sql.ResultSet rs = null;
+        java.sql.PreparedStatement ps1 = null;
+        java.sql.ResultSet rs1 = null;
         StringBuffer sqlStmt = new StringBuffer(500);
         Map ret = new HashMap();
 
@@ -647,8 +649,6 @@ public class EmailJobBean extends BaseEJB {
             for (; rs.next();) {
                 ret.put(new Integer(rs.getInt(1)), new Integer(rs.getInt(2)));
             }
-            DBMS.close(rs);
-            DBMS.close(ps);
 
             if (ret.size() == 0) {
                 // maybe the job has been archived, check there...
@@ -661,11 +661,11 @@ public class EmailJobBean extends BaseEJB {
                 sqlStmt.append(" archive_sched_job_detail");
                 sqlStmt.append(" WHERE");
                 sqlStmt.append(" sched_job_id = ?");
-                ps = conn.prepareStatement(sqlStmt.toString());
-                ps.setInt(1, jobId);
-                rs = ps.executeQuery();
-                for (; rs.next();) {
-                    ret.put(new Integer(rs.getInt(1)), new Integer(rs.getInt(2)));
+                ps1 = conn.prepareStatement(sqlStmt.toString());
+                ps1.setInt(1, jobId);
+                rs1 = ps.executeQuery();
+                for (; rs1.next();) {
+                    ret.put(new Integer(rs1.getInt(1)), new Integer(rs1.getInt(2)));
                 }
             }
         } catch (Exception dberr) {
@@ -675,6 +675,8 @@ public class EmailJobBean extends BaseEJB {
         } finally {
             DBMS.close(rs);
             DBMS.close(ps);
+            DBMS.close(rs1);
+            DBMS.close(ps1);
             DBMS.close(conn);
             ApplicationServer.close(ctx);
         }
