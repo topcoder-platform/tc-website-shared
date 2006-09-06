@@ -1,19 +1,19 @@
 package com.topcoder.shared.ejb.EmailServices;
 
 import com.topcoder.shared.ejb.BaseEJB;
-import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 import javax.ejb.EJBException;
-import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- * @see    EmailJob
- *
- * @author   Eric Ellingson
- * @version  $Revision$
+ * @author Eric Ellingson
+ * @version $Revision$
+ * @see EmailJob
  */
 public class EmailServerBean extends BaseEJB {
     /**
@@ -30,7 +30,6 @@ public class EmailServerBean extends BaseEJB {
     private static final Logger log = Logger.getLogger(EmailServerBean.class);
 
     /**
-     *
      * @return
      * @throws EJBException
      */
@@ -43,7 +42,6 @@ public class EmailServerBean extends BaseEJB {
     }
 
     /**
-     *
      * @param status
      * @param dateRange
      * @return
@@ -93,28 +91,21 @@ public class EmailServerBean extends BaseEJB {
             for (; rs.next();) {
                 ret.add(new Integer(rs.getInt(1)));
             }
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get job ids";
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return ret;
     }
 
     /**
-     *
      * @param jobId
      * @param status
      * @throws EJBException
@@ -157,20 +148,14 @@ public class EmailServerBean extends BaseEJB {
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @param type
      * @throws EJBException
@@ -214,20 +199,14 @@ public class EmailServerBean extends BaseEJB {
             //throw new EJBException(err, dberr);
             throw new EJBException(dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @throws EJBException
      */
@@ -265,20 +244,14 @@ public class EmailServerBean extends BaseEJB {
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @param data
      * @return
@@ -306,7 +279,6 @@ public class EmailServerBean extends BaseEJB {
             rs = ps.executeQuery();
             rs.next();
             id = rs.getInt(1);
-            rs.close();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" INSERT INTO");
@@ -333,22 +305,16 @@ public class EmailServerBean extends BaseEJB {
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
 
         return id;
     }
 
     /**
-     *
      * @param jobId
      * @param detailId
      * @param status
@@ -397,20 +363,14 @@ public class EmailServerBean extends BaseEJB {
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @throws EJBException
      */
@@ -454,20 +414,14 @@ public class EmailServerBean extends BaseEJB {
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @throws EJBException
      */
@@ -507,6 +461,8 @@ public class EmailServerBean extends BaseEJB {
                 throw new Exception("The update command affected "
                         + rows + " rows.");
             }
+            DBMS.close(ps);
+
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE FROM");
             sqlStmt.append(" sched_job_detail");
@@ -530,20 +486,14 @@ public class EmailServerBean extends BaseEJB {
             log.error(err, dberr);
             throw new EJBException(err, dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @return
      * @throws EJBException
      */
@@ -591,20 +541,14 @@ public class EmailServerBean extends BaseEJB {
             log.error("Failed to get schedulerId", dberr);
             throw new EJBException("Failed to get schedulerId", dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @param controlId
      * @return
@@ -648,18 +592,13 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             throw new EJBException("Error while attempting to acquireJob", dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @param controlId
      * @param oldId
@@ -701,18 +640,13 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             throw new EJBException("Error while attempting to acquireJob", dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param jobId
      * @return
      * @throws EJBException
@@ -747,20 +681,14 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             throw new EJBException("Error while attempting to getJobControlId", dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (rs != null) rs.close(); } catch (Exception ignore) { log.error("resultset close problem", ignore); }
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            rs = null;
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(rs);
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 
     /**
-     *
      * @param controlId
      * @throws EJBException
      */
@@ -788,13 +716,9 @@ public class EmailServerBean extends BaseEJB {
         } catch (Exception dberr) {
             throw new EJBException("Error while attempting to clearJobControlIds", dberr);
         } finally {
-            // Since the connections are pooled, make sure to close them in finally blocks
-            try { if (ps != null) ps.close(); } catch (Exception ignore) { log.error("prepared statement close problem", ignore); }
-            try { if (conn != null) conn.close(); } catch (Exception ignore) { log.error("connection close problem", ignore); }
-            try { if (ctx != null) ctx.close(); } catch (Exception ignore) { log.error("contet close problem", ignore); }
-            ps = null;
-            conn = null;
-            ctx = null;
+            DBMS.close(ps);
+            DBMS.close(conn);
+            ApplicationServer.close(ctx);
         }
     }
 }
