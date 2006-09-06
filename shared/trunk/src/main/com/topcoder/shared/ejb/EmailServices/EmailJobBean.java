@@ -663,7 +663,7 @@ public class EmailJobBean extends BaseEJB {
                 sqlStmt.append(" sched_job_id = ?");
                 ps1 = conn.prepareStatement(sqlStmt.toString());
                 ps1.setInt(1, jobId);
-                rs1 = ps.executeQuery();
+                rs1 = ps1.executeQuery();
                 for (; rs1.next();) {
                     ret.put(new Integer(rs1.getInt(1)), new Integer(rs1.getInt(2)));
                 }
