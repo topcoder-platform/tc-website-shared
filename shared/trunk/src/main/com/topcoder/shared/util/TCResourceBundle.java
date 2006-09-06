@@ -60,6 +60,9 @@ public final class TCResourceBundle {
      */
     public int getIntProperty(String key, int defaultValue) {
         String str = getProperty(key, Integer.toString(defaultValue));
+        if (str == null) {
+        	return defaultValue;
+        }
         return Integer.parseInt(str.trim());
     }
 
@@ -72,6 +75,9 @@ public final class TCResourceBundle {
      */
     public double getDoubleProperty(String key, double defaultValue) {
         String str = getProperty(key, Double.toString(defaultValue));
+        if (str == null) {
+        	return defaultValue;
+        }
         return Double.parseDouble(str.trim());
     }
 
@@ -82,7 +88,14 @@ public final class TCResourceBundle {
      * @throws MissingResourceException
      */
     public String getProperty(String key) throws MissingResourceException {
-        String ret = bundle.getString(key).trim();
+    	if (bundle == null) {
+    		return null;
+    	}
+        String ret = bundle.getString(key);
+        if (ret == null) {
+        	return null;
+        }
+        ret = ret.trim();
         try {
             ret = new String(ret.getBytes(), "utf-8");
         } catch (UnsupportedEncodingException e) {
