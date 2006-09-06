@@ -259,7 +259,6 @@ public class EmailServerBean extends BaseEJB {
      */
     public int addDetailRecord(int jobId, String data) throws EJBException {
         javax.naming.Context ctx = null;
-        javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
         java.sql.PreparedStatement ps = null;
         java.sql.PreparedStatement ps1 = null;
@@ -271,47 +270,60 @@ public class EmailServerBean extends BaseEJB {
         log.debug("addDetailRecord (jobId " + jobId + ")");
 
         try {
-            conn = DBMS.getConnection();
+            try {
+                conn = DBMS.getConnection();
 
-            sqlStmt.setLength(0);
-            sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
-            ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setInt(1, EmailJobBean.JOB_DETAIL_SEQUENCE_ID);
-            rs = ps.executeQuery();
-            rs.next();
-            id = rs.getInt(1);
 
-            sqlStmt.setLength(0);
-            sqlStmt.append(" INSERT INTO");
-            sqlStmt.append(" sched_job_detail (");
-            sqlStmt.append(" sched_job_id");
-            sqlStmt.append(",");
-            sqlStmt.append(" sched_job_detail_id");
-            sqlStmt.append(",");
-            sqlStmt.append(" sched_job_detail_status_id");
-            sqlStmt.append(",");
-            sqlStmt.append(" data");
-            sqlStmt.append(") VALUES (?,?,?,?)");
-            ps1 = conn.prepareStatement(sqlStmt.toString());
-            ps1.setInt(1, jobId);
-            ps1.setInt(2, id);
-            ps1.setInt(3, EmailServer.MSG_NONE);
-            ps1.setBytes(4, data.getBytes());
-            rows = ps1.executeUpdate();
-            if (rows != 1) {
-                throw new Exception("insert command affected " + rows + " rows.");
+                sqlStmt.setLength(0);
+
+                sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
+
+                ps = conn.prepareStatement(sqlStmt.toString());
+                ps.setInt(1, EmailJobBean.JOB_DETAIL_SEQUENCE_ID);
+
+                rs = ps.executeQuery();
+                rs.next();
+
+                id = rs.getInt(1);
+            } finally {
+                DBMS.close(rs);
+                DBMS.close(ps);
             }
+
+            try {
+
+                sqlStmt.setLength(0);
+                sqlStmt.append(" INSERT INTO");
+                sqlStmt.append(" sched_job_detail (");
+                sqlStmt.append(" sched_job_id");
+                sqlStmt.append(",");
+                sqlStmt.append(" sched_job_detail_id");
+                sqlStmt.append(",");
+                sqlStmt.append(" sched_job_detail_status_id");
+                sqlStmt.append(",");
+                sqlStmt.append(" data");
+                sqlStmt.append(") VALUES (?,?,?,?)");
+                ps1 = conn.prepareStatement(sqlStmt.toString());
+                ps1.setInt(1, jobId);
+                ps1.setInt(2, id);
+                ps1.setInt(3, EmailServer.MSG_NONE);
+                ps1.setBytes(4, data.getBytes());
+                rows = ps1.executeUpdate();
+                if (rows != 1) {
+                    throw new Exception("insert command affected " + rows + " rows.");
+                }
+            } finally {
+                DBMS.close(ps1);
+                DBMS.close(conn);
+                ApplicationServer.close(ctx);
+            }
+
         } catch (Exception dberr) {
             String err = "Failed to update job status";
             log.error(err, dberr);
             throw new EJBException(err, dberr);
-        } finally {
-            DBMS.close(rs);
-            DBMS.close(ps);
-            DBMS.close(ps1);
-            DBMS.close(conn);
-            ApplicationServer.close(ctx);
         }
+
 
         return id;
     }
