@@ -147,10 +147,16 @@ public class DBMS {
     public final static String MPSQAS_SVC_EVENT_TOPIC = getProperty("MPSQAS_SVC_EVENT_TOPIC", "servicesEventTopic");
 
     private static final String getProperty(String key, String defaultValue) {
+    	if (bundle == null) {
+    		return defaultValue;
+    	}
         return bundle.getProperty(key, defaultValue);
     }
 
     private static final int getIntProperty(String key, int defaultValue) {
+    	if (bundle == null) {
+    		return defaultValue;
+    	}
         return bundle.getIntProperty(key, defaultValue);
     }
 
