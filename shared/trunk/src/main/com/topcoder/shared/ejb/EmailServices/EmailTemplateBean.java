@@ -54,7 +54,6 @@ public class EmailTemplateBean extends BaseEJB {
             rs = ps.executeQuery();
             rs.next();
             id = rs.getInt(1);
-            rs.close();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" INSERT INTO");
@@ -121,7 +120,6 @@ public class EmailTemplateBean extends BaseEJB {
             for (; rs.next();) {
                 ret.put(new Integer(rs.getInt(1)), rs.getString(2));
             }
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get template names";
             log.error(err, dberr);
@@ -215,7 +213,6 @@ public class EmailTemplateBean extends BaseEJB {
             rs = ps.executeQuery();
             rs.next();
             ret = rs.getString(1);
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get data for " + templateId;
             log.error(err, dberr);
@@ -261,7 +258,6 @@ public class EmailTemplateBean extends BaseEJB {
             rs = ps.executeQuery();
             rs.next();
             ret = rs.getInt(1);
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get data for " + templateId;
             log.error(err, dberr);
@@ -309,7 +305,6 @@ public class EmailTemplateBean extends BaseEJB {
                 if (rs.getString(1) != null)
                     ret = rs.getString(1);
             }
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get data for template " + templateId;
             log.error(err, dberr);
@@ -365,7 +360,6 @@ public class EmailTemplateBean extends BaseEJB {
             if (rs.next()) {
                 ret = rs.getInt(1);
             }
-            rs.close();
         } catch (Exception dberr) {
             String err = "Failed to get data for template " + templateId;
             log.error(err, dberr);
