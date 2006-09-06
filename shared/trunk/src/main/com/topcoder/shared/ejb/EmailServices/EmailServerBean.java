@@ -262,6 +262,7 @@ public class EmailServerBean extends BaseEJB {
         javax.sql.DataSource ds = null;
         java.sql.Connection conn = null;
         java.sql.PreparedStatement ps = null;
+        java.sql.PreparedStatement ps1 = null;
         java.sql.ResultSet rs = null;
         StringBuffer sqlStmt = new StringBuffer(500);
         int rows;
@@ -291,12 +292,12 @@ public class EmailServerBean extends BaseEJB {
             sqlStmt.append(",");
             sqlStmt.append(" data");
             sqlStmt.append(") VALUES (?,?,?,?)");
-            ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setInt(1, jobId);
-            ps.setInt(2, id);
-            ps.setInt(3, EmailServer.MSG_NONE);
-            ps.setBytes(4, data.getBytes());
-            rows = ps.executeUpdate();
+            ps1 = conn.prepareStatement(sqlStmt.toString());
+            ps1.setInt(1, jobId);
+            ps1.setInt(2, id);
+            ps1.setInt(3, EmailServer.MSG_NONE);
+            ps1.setBytes(4, data.getBytes());
+            rows = ps1.executeUpdate();
             if (rows != 1) {
                 throw new Exception("insert command affected " + rows + " rows.");
             }
@@ -307,6 +308,7 @@ public class EmailServerBean extends BaseEJB {
         } finally {
             DBMS.close(rs);
             DBMS.close(ps);
+            DBMS.close(ps1);
             DBMS.close(conn);
             ApplicationServer.close(ctx);
         }
