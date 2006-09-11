@@ -183,7 +183,8 @@ public class TCLoadTCS extends TCLoad {
             doLoadAppeal();
             doLoadTestcaseAppeal();
 
-
+            doLoadSubmission();
+            
             List list = getCurrentRatings();
             doLoadRank(112, ACTIVE_RATING_RANK_TYPE_ID, list);
             doLoadRank(112, OVERALL_RATING_RANK_TYPE_ID, list);
@@ -458,6 +459,85 @@ public class TCLoadTCS extends TCLoad {
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'royalty' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(insert);
+            close(update);
+            close(select);
+        }
+    }
+
+    public void doLoadSubmission() throws Exception {
+        log.info("load submissions");
+        PreparedStatement select = null;
+        PreparedStatement insert = null;
+        PreparedStatement update = null;
+        ResultSet rs = null;
+        try {
+            long start = System.currentTimeMillis();
+
+            // check if submission table is empty, if yes, do a complete load (assume that is the first time a load is done)
+            select = prepareStatement("select count(*) from submission", TARGET_DB); 
+            rs = select.executeQuery();
+            rs.next();
+            
+            boolean firstRun = rs.getInt(1) == 0;
+            
+            if (firstRun) log.info("Loading submission table for the first time.  A complete load will be performed.");
+            
+            final String SELECT = "select submission_id, submitter_id, project_id, submission_url, submission_type " +
+            		"from submission " +
+            		"where cur_version=1 " +
+            		"and submission_type=1 " +
+            		"and is_removed=0 " + 
+            		(firstRun? "" :
+            				  "and modify_date >= ?");
+            
+            final String UPDATE = "update submission set submitter_id=?, project_id=?, submission_url=?, submission_type=? " +
+            		"where submission_id=?";
+            		
+            final String INSERT = "insert into submission (submitter_id, project_id, submission_url, submission_type, submission_id)" +
+                    "values (?, ?, ?, ?, ?) ";
+
+            select = prepareStatement(SELECT, SOURCE_DB);
+
+            if (!firstRun) {
+            	select.setTimestamp(1, fLastLogTime);
+            }
+
+            update = prepareStatement(UPDATE, TARGET_DB);
+            insert = prepareStatement(INSERT, TARGET_DB);
+            rs = select.executeQuery();
+
+            int count = 0;
+            while (rs.next()) {
+                count++;
+
+                update.clearParameters();
+                update.setInt(1, rs.getInt("submitter_id"));
+                update.setInt(2, rs.getInt("project_id"));
+                update.setString(3, rs.getString("submission_url"));
+                update.setInt(4, rs.getInt("submission_type"));
+                update.setInt(5, rs.getInt("submission_id"));
+
+                int retVal = update.executeUpdate();
+
+                if (retVal == 0) {
+                    //need to insert
+                    insert.clearParameters();
+                    insert.setInt(1, rs.getInt("submitter_id"));
+                    insert.setInt(2, rs.getInt("project_id"));
+                    insert.setString(3, rs.getString("submission_url"));
+                    insert.setInt(4, rs.getInt("submission_type"));
+                    insert.setInt(5, rs.getInt("submission_id"));
+                    insert.executeUpdate();
+                }
+            }
+            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'submission' table failed.\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
