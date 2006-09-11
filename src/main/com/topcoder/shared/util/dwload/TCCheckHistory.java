@@ -22,13 +22,13 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Hashtable;
-
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 
 public class TCCheckHistory extends TCLoad {
     private static Logger log = Logger.getLogger(TCCheckHistory.class);
@@ -63,8 +63,8 @@ public class TCCheckHistory extends TCLoad {
             checkRankHistory();
 
             if (algoType == 2) {
-            	checkSeasonRatingHistory();
-            	checkSeasonRankHistory();
+                checkSeasonRatingHistory();
+                checkSeasonRankHistory();
             }
             log.info("SUCCESS: Check Finished.");
         } catch (Exception ex) {
@@ -82,26 +82,27 @@ public class TCCheckHistory extends TCLoad {
         try {
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
-            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' "); 
+            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' ");
             query.append("and round_id = ? ");
             query.append("and coder_id not in (select coder_id from algo_rating_history where round_id = ?) ");
+            query.append("and coder_id in (select coder_id from coder where status = 'A') ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             psSel.setInt(1, fRoundId);
             psSel.setInt(2, fRoundId);
-            
+
             rs = psSel.executeQuery();
 
             boolean found = false;
             while (rs.next()) {
-            	if (!found) {
-            		log.info("The following coders are not present in algo_rating_history for round " + fRoundId);
-            	}
-            	found = true;
-            	log.info("    " + rs.getInt("coder_id"));            	
+                if (!found) {
+                    log.info("The following coders are not present in algo_rating_history for round " + fRoundId);
+                }
+                found = true;
+                log.info("    " + rs.getInt("coder_id"));
             }
             if (!found) {
-            	log.info("algo_rating_history isn't missing any record for round " + fRoundId);
+                log.info("algo_rating_history isn't missing any record for round " + fRoundId);
             }
 
         } catch (SQLException sqle) {
@@ -122,26 +123,27 @@ public class TCCheckHistory extends TCLoad {
         try {
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
-            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' "); 
+            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' ");
             query.append("and round_id = ? ");
             query.append("and coder_id not in (select coder_id from season_algo_rating_history where round_id = ?) ");
+            query.append("and coder_id in (select coder_id from coder where status = 'A') ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             psSel.setInt(1, fRoundId);
             psSel.setInt(2, fRoundId);
-            
+
             rs = psSel.executeQuery();
 
             boolean found = false;
             while (rs.next()) {
-            	if (!found) {
-            		log.info("The following coders are not present in season_algo_rating_history for round " + fRoundId);
-            	}
-            	found = true;
-            	log.info("    " + rs.getInt("coder_id"));            	
+                if (!found) {
+                    log.info("The following coders are not present in season_algo_rating_history for round " + fRoundId);
+                }
+                found = true;
+                log.info("    " + rs.getInt("coder_id"));
             }
             if (!found) {
-            	log.info("season_algo_rating_history isn't missing any record for round " + fRoundId);
+                log.info("season_algo_rating_history isn't missing any record for round " + fRoundId);
             }
 
         } catch (SQLException sqle) {
@@ -162,26 +164,27 @@ public class TCCheckHistory extends TCLoad {
         try {
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
-            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' "); 
+            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' ");
             query.append("and round_id = ? ");
             query.append("and coder_id not in (select coder_id from season_rank_history where round_id = ?) ");
+            query.append("and coder_id in (select coder_id from coder where status = 'A') ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             psSel.setInt(1, fRoundId);
             psSel.setInt(2, fRoundId);
-            
+
             rs = psSel.executeQuery();
 
             boolean found = false;
             while (rs.next()) {
-            	if (!found) {
-            		log.info("The following coders are not present in season_rank_history for round " + fRoundId);
-            	}
-            	found = true;
-            	log.info("    " + rs.getInt("coder_id"));            	
+                if (!found) {
+                    log.info("The following coders are not present in season_rank_history for round " + fRoundId);
+                }
+                found = true;
+                log.info("    " + rs.getInt("coder_id"));
             }
             if (!found) {
-            	log.info("season_rank_history isn't missing any record for round " + fRoundId);
+                log.info("season_rank_history isn't missing any record for round " + fRoundId);
             }
 
         } catch (SQLException sqle) {
@@ -202,26 +205,27 @@ public class TCCheckHistory extends TCLoad {
         try {
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
-            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' "); 
+            query.append(" select coder_id from room_result where rated_flag = 1 and attended = 'Y' ");
             query.append("and round_id = ? ");
             query.append("and coder_id not in (select coder_id from coder_rank_history where coder_rank_type_id = 2 and round_id = ?) ");
+            query.append("and coder_id in (select coder_id from coder where status = 'A') ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             psSel.setInt(1, fRoundId);
             psSel.setInt(2, fRoundId);
-            
+
             rs = psSel.executeQuery();
 
             boolean found = false;
             while (rs.next()) {
-            	if (!found) {
-            		log.info("The following coders are not present in coder_rank_history for round " + fRoundId);
-            	}
-            	found = true;
-            	log.info("    " + rs.getInt("coder_id"));            	
+                if (!found) {
+                    log.info("The following coders are not present in coder_rank_history for round " + fRoundId);
+                }
+                found = true;
+                log.info("    " + rs.getInt("coder_id"));
             }
             if (!found) {
-            	log.info("coder_rank_history isn't missing any record for round " + fRoundId);
+                log.info("coder_rank_history isn't missing any record for round " + fRoundId);
             }
 
         } catch (SQLException sqle) {
