@@ -229,6 +229,7 @@ public class TCLoadAggregate extends TCLoad {
         int retVal = 0;
         PreparedStatement psSel = null;
         PreparedStatement psIns = null;
+        PreparedStatement psDel = null;
         ResultSet rs = null;
         StringBuffer query = null;
 
@@ -246,6 +247,13 @@ public class TCLoadAggregate extends TCLoad {
             query.append("insert into algo_rating_history (coder_id, round_id, rating, vol, num_ratings, algo_rating_type_id)");
             query.append("values (?,?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("delete from algo_rating_history where round_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setLong(1, fRoundId);
+
+            psDel.executeUpdate();
 
             rs = psSel.executeQuery();
 
@@ -278,6 +286,7 @@ public class TCLoadAggregate extends TCLoad {
             close(rs);
             close(psSel);
             close(psIns);
+            close(psDel);
         }
     }
 
@@ -294,17 +303,18 @@ public class TCLoadAggregate extends TCLoad {
         int retVal = 0;
         PreparedStatement psSel = null;
         PreparedStatement psIns = null;
+        PreparedStatement psDel = null;
         ResultSet rs = null;
         StringBuffer query = null;
 
         try {
-        	int seasonId = getSeasonId(fRoundId);
+            int seasonId = getSeasonId(fRoundId);
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
             query.append(" select coder_id, rating, vol, num_ratings");
             query.append(" from season_algo_rating");
             query.append(" where num_ratings > 0");
-            query.append(" and season_id = " + seasonId);
+            query.append(" and season_id = ").append(seasonId);
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -312,6 +322,13 @@ public class TCLoadAggregate extends TCLoad {
             query.append("insert into season_algo_rating_history (coder_id, round_id, rating, vol, num_ratings, season_id)");
             query.append("values (?,?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("delete from season_algo_rating_history where round_id = ?");
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.setLong(1, fRoundId);
+
+            psDel.executeUpdate();
 
             rs = psSel.executeQuery();
 
@@ -343,6 +360,8 @@ public class TCLoadAggregate extends TCLoad {
         } finally {
             close(rs);
             close(psSel);
+            close(psIns);
+            close(psDel);
         }
     }
 
