@@ -184,7 +184,7 @@ public class TCLoadTCS extends TCLoad {
             doLoadTestcaseAppeal();
 
             doLoadSubmission();
-            
+
             List list = getCurrentRatings();
             doLoadRank(112, ACTIVE_RATING_RANK_TYPE_ID, list);
             doLoadRank(112, OVERALL_RATING_RANK_TYPE_ID, list);
@@ -256,7 +256,7 @@ public class TCLoadTCS extends TCLoad {
 
         String tempKey;
 
-        String[] keys = new String[]{"tccc05_", "usdc_", "component_history", "tcs_ratings_history",
+        String[] keys = new String[]{"tccc05_", "tccc06_", "usdc_", "component_history", "tcs_ratings_history",
                 "member_profile", "Coder_Dev_Data", "Coder_Des_Data", "Component_",
                 "public_home_data", "top_designers", "top_developers", "tco04",
                 "coder_all_ratings", "tco05", "coder_dev", "coder_des", "coder_algo",
@@ -478,32 +478,32 @@ public class TCLoadTCS extends TCLoad {
             long start = System.currentTimeMillis();
 
             // check if submission table is empty, if yes, do a complete load (assume that is the first time a load is done)
-            select = prepareStatement("select count(*) from submission", TARGET_DB); 
+            select = prepareStatement("select count(*) from submission", TARGET_DB);
             rs = select.executeQuery();
             rs.next();
-            
+
             boolean firstRun = rs.getInt(1) == 0;
-            
+
             if (firstRun) log.info("Loading submission table for the first time.  A complete load will be performed.");
-            
+
             final String SELECT = "select submission_id, submitter_id, project_id, submission_url, submission_type " +
-            		"from submission " +
-            		"where cur_version=1 " +
-            		"and submission_type=1 " +
-            		"and is_removed=0 " + 
-            		(firstRun? "" :
-            				  "and modify_date >= ?");
-            
+                    "from submission " +
+                    "where cur_version=1 " +
+                    "and submission_type=1 " +
+                    "and is_removed=0 " +
+                    (firstRun ? "" :
+                            "and modify_date >= ?");
+
             final String UPDATE = "update submission set submitter_id=?, project_id=?, submission_url=?, submission_type=? " +
-            		"where submission_id=?";
-            		
+                    "where submission_id=?";
+
             final String INSERT = "insert into submission (submitter_id, project_id, submission_url, submission_type, submission_id)" +
                     "values (?, ?, ?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
 
             if (!firstRun) {
-            	select.setTimestamp(1, fLastLogTime);
+                select.setTimestamp(1, fLastLogTime);
             }
 
             update = prepareStatement(UPDATE, TARGET_DB);
@@ -1029,9 +1029,22 @@ public class TCLoadTCS extends TCLoad {
     public void doLoadProjectResults() throws Exception {
         log.info("load project results");
         ResultSet projectResults = null;
-        PreparedStatement resultUpdate = null;
+        PreparedStatement projectSelect = null;
         PreparedStatement resultInsert = null;
         PreparedStatement resultSelect = null;
+        ResultSet projects = null;
+
+        final String PROJECTS_SELECT =
+                "select distinct pr.project_id " +
+                        "from project_result pr, " +
+                        "project p, " +
+                        "comp_versions cv, " +
+                        "comp_catalog cc " +
+                        "where p.project_id = pr.project_id " +
+                        "and p.cur_version = 1  " +
+                        "and cv.comp_vers_id = p.comp_vers_id " +
+                        "and cc.component_id = cv.component_id " +
+                        "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pr.modify_date > ?)";
 
 
         final String RESULT_SELECT =
@@ -1063,13 +1076,7 @@ public class TCLoadTCS extends TCLoad {
                         "where p.project_id = pr.project_id " +
                         "and p.cur_version = 1  " +
                         "and cv.comp_vers_id = p.comp_vers_id " +
-                        "and cc.component_id = cv.component_id " +
-                        "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pr.modify_date > ?)";
-
-        final String RESULT_UPDATE =
-                "update project_result set submit_ind = ?, valid_submission_ind = ?, raw_score = ?, final_score = ?, inquire_timestamp = ?, " +
-                        "submit_timestamp = ?, review_complete_timestamp = ?, payment = ?, old_rating = ?, new_rating = ?, old_reliability = ?, new_reliability = ?, " +
-                        "placed = ?, rating_ind = ?, reliability_ind = ?, passed_review_ind = ?, points_awarded = ?, final_points = ?, current_reliability_ind=?,reliable_submission_ind=?  where project_id = ? and user_id = ?";
+                        "and cc.component_id = cv.component_id ";
 
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
@@ -1081,13 +1088,27 @@ public class TCLoadTCS extends TCLoad {
 
             List dRProjects = getDRProjects();
 
-            resultSelect = prepareStatement(RESULT_SELECT, SOURCE_DB);
-            resultSelect.setTimestamp(1, fLastLogTime);
-            resultSelect.setTimestamp(2, fLastLogTime);
-            resultSelect.setTimestamp(3, fLastLogTime);
-            resultSelect.setTimestamp(4, fLastLogTime);
-            resultUpdate = prepareStatement(RESULT_UPDATE, TARGET_DB);
+
+            projectSelect = prepareStatement(PROJECT_SELECT, TARGET_DB);
+            projectSelect.setTimestamp(1, fLastLogTime);
+            projectSelect.setTimestamp(2, fLastLogTime);
+            projectSelect.setTimestamp(3, fLastLogTime);
+            projectSelect.setTimestamp(4, fLastLogTime);
+
             resultInsert = prepareStatement(RESULT_INSERT, TARGET_DB);
+
+            StringBuffer buf = new StringBuffer(1000);
+            buf.append(RESULT_SELECT);
+            buf.append(" and p.project_id in (");
+
+            projects = projectSelect.executeQuery();
+            while (projects.next()) {
+                buf.append(projects.getLong("project_id"));
+                buf.append(",");
+            }
+            buf.setCharAt(buf.length() - 1, ')');
+
+            resultSelect = prepareStatement(buf.toString(), SOURCE_DB);
 
             int count = 0;
             //log.debug("PROCESSING PROJECT RESULTS " + project_id);
@@ -1120,86 +1141,49 @@ public class TCLoadTCS extends TCLoad {
                 }
 
                 count++;
-                resultUpdate.clearParameters();
-
-
-                resultUpdate.setObject(1, projectResults.getObject("submit_ind"));
-                resultUpdate.setObject(2, projectResults.getObject("valid_submission_ind"));
-                resultUpdate.setObject(3, projectResults.getObject("raw_score"));
-                resultUpdate.setObject(4, projectResults.getObject("final_score"));
-                resultUpdate.setObject(5, projectResults.getObject("inquire_timestamp"));
-                resultUpdate.setObject(6, projectResults.getObject("submit_timestamp"));
-                resultUpdate.setObject(7, projectResults.getObject("review_completed_timestamp"));
-                resultUpdate.setObject(8, projectResults.getObject("payment"));
-                resultUpdate.setObject(9, projectResults.getObject("old_rating"));
-                resultUpdate.setObject(10, projectResults.getObject("new_rating"));
-                resultUpdate.setObject(11, projectResults.getObject("old_reliability"));
-                resultUpdate.setObject(12, projectResults.getObject("new_reliability"));
-                resultUpdate.setObject(13, projectResults.getObject("placed"));
-                resultUpdate.setObject(14, projectResults.getObject("rating_ind"));
-                resultUpdate.setObject(15, projectResults.getObject("reliability_ind"));
-                resultUpdate.setObject(16, projectResults.getObject("passed_review_ind"));
 
                 long pointsAwarded = 0;
                 if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
                         dRProjects.contains(new Long(project_id)) &&
                         projectResults.getInt("rating_ind") == 1) {
                     pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
-                    resultUpdate.setLong(17, pointsAwarded);
-                    // adjusts final points. point_adjustment could be negative to substracto points.
-                    resultUpdate.setLong(18, pointsAwarded + projectResults.getInt("point_adjustment"));
+                }
+                resultInsert.clearParameters();
+
+                resultInsert.setLong(1, project_id);
+                resultInsert.setLong(2, projectResults.getLong("user_id"));
+                resultInsert.setObject(3, projectResults.getObject("submit_ind"));
+                resultInsert.setObject(4, projectResults.getObject("valid_submission_ind"));
+                resultInsert.setObject(5, projectResults.getObject("raw_score"));
+                resultInsert.setObject(6, projectResults.getObject("final_score"));
+                resultInsert.setObject(7, projectResults.getObject("inquire_timestamp"));
+                resultInsert.setObject(8, projectResults.getObject("submit_timestamp"));
+                resultInsert.setObject(9, projectResults.getObject("review_completed_timestamp"));
+                resultInsert.setObject(10, projectResults.getObject("payment"));
+                resultInsert.setObject(11, projectResults.getObject("old_rating"));
+                resultInsert.setObject(12, projectResults.getObject("new_rating"));
+                resultInsert.setObject(13, projectResults.getObject("old_reliability"));
+                resultInsert.setObject(14, projectResults.getObject("new_reliability"));
+                resultInsert.setObject(15, projectResults.getObject("placed"));
+                resultInsert.setObject(16, projectResults.getObject("rating_ind"));
+                resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
+                resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
+
+                if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                        dRProjects.contains(new Long(project_id)) &&
+                        projectResults.getInt("rating_ind") == 1) {
+                    resultInsert.setLong(19, pointsAwarded);
+                    resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
                 } else {
-                    resultUpdate.setNull(17, Types.DECIMAL);
-                    resultUpdate.setNull(18, Types.DECIMAL);
+                    resultInsert.setNull(19, Types.DECIMAL);
+                    resultInsert.setNull(20, Types.DECIMAL);
                 }
-                resultUpdate.setInt(19, projectResults.getInt("current_reliability_ind"));
-                resultUpdate.setInt(20, projectResults.getInt("reliable_submission_ind"));
-                resultUpdate.setLong(21, project_id);
-                resultUpdate.setLong(22, projectResults.getLong("user_id"));
+                resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
+                resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
+                //log.debug("before result insert");
+                resultInsert.executeUpdate();
+                //log.debug("after result insert");
 
-                //log.debug("before result update");
-                int retVal = resultUpdate.executeUpdate();
-                //log.debug("after result update");
-
-                if (retVal == 0) {
-
-                    resultInsert.clearParameters();
-
-                    resultInsert.setLong(1, project_id);
-                    resultInsert.setLong(2, projectResults.getLong("user_id"));
-                    resultInsert.setObject(3, projectResults.getObject("submit_ind"));
-                    resultInsert.setObject(4, projectResults.getObject("valid_submission_ind"));
-                    resultInsert.setObject(5, projectResults.getObject("raw_score"));
-                    resultInsert.setObject(6, projectResults.getObject("final_score"));
-                    resultInsert.setObject(7, projectResults.getObject("inquire_timestamp"));
-                    resultInsert.setObject(8, projectResults.getObject("submit_timestamp"));
-                    resultInsert.setObject(9, projectResults.getObject("review_completed_timestamp"));
-                    resultInsert.setObject(10, projectResults.getObject("payment"));
-                    resultInsert.setObject(11, projectResults.getObject("old_rating"));
-                    resultInsert.setObject(12, projectResults.getObject("new_rating"));
-                    resultInsert.setObject(13, projectResults.getObject("old_reliability"));
-                    resultInsert.setObject(14, projectResults.getObject("new_reliability"));
-                    resultInsert.setObject(15, projectResults.getObject("placed"));
-                    resultInsert.setObject(16, projectResults.getObject("rating_ind"));
-                    resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
-                    resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
-
-                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                            dRProjects.contains(new Long(project_id)) &&
-                            projectResults.getInt("rating_ind") == 1) {
-                        resultInsert.setLong(19, pointsAwarded);
-                        resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
-                    } else {
-                        resultInsert.setNull(19, Types.DECIMAL);
-                        resultInsert.setNull(20, Types.DECIMAL);
-                    }
-                    resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
-                    resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
-                    //log.debug("before result insert");
-                    resultInsert.executeUpdate();
-                    //log.debug("after result insert");
-
-                }
                 //printLoadProgress(count, "project result");
             }
             log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
@@ -1211,7 +1195,8 @@ public class TCLoadTCS extends TCLoad {
                     sqle.getMessage());
         } finally {
             close(projectResults);
-            close(resultUpdate);
+            close(projects);
+            close(projectSelect);
             close(resultInsert);
             close(resultSelect);
         }
