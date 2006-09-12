@@ -1032,6 +1032,7 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement projectSelect = null;
         PreparedStatement resultInsert = null;
         PreparedStatement resultSelect = null;
+        PreparedStatement delete = null;
         ResultSet projects = null;
 
         final String PROJECTS_SELECT =
@@ -1083,6 +1084,8 @@ public class TCLoadTCS extends TCLoad {
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
                         "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
+        final String DELETE = "delete from project_result where project_id = ?";
+
         try {
             long start = System.currentTimeMillis();
 
@@ -1097,6 +1100,7 @@ public class TCLoadTCS extends TCLoad {
 
             resultInsert = prepareStatement(RESULT_INSERT, TARGET_DB);
 
+
             StringBuffer buf = new StringBuffer(1000);
             buf.append(RESULT_SELECT);
             buf.append(" and p.project_id in (");
@@ -1110,6 +1114,8 @@ public class TCLoadTCS extends TCLoad {
 
             resultSelect = prepareStatement(buf.toString(), SOURCE_DB);
 
+            delete = prepareStatement(DELETE, TARGET_DB);
+
             int count = 0;
             //log.debug("PROCESSING PROJECT RESULTS " + project_id);
 
@@ -1119,6 +1125,10 @@ public class TCLoadTCS extends TCLoad {
 
             while (projectResults.next()) {
                 long project_id = projectResults.getLong("project_id");
+                delete.clearParameters();
+                delete.setLong(1, project_id);
+                delete.executeUpdate();
+
                 boolean passedReview = false;
                 try {
                     passedReview = projectResults.getInt("passed_review_ind") == 1 ? true : false;
@@ -1194,6 +1204,7 @@ public class TCLoadTCS extends TCLoad {
             throw new Exception("Load of 'project_result / project' table failed.\n" +
                     sqle.getMessage());
         } finally {
+            close(delete);
             close(projectResults);
             close(projects);
             close(projectSelect);
