@@ -1089,7 +1089,7 @@ public class TCLoadTCS extends TCLoad {
             List dRProjects = getDRProjects();
 
 
-            projectSelect = prepareStatement(PROJECT_SELECT, TARGET_DB);
+            projectSelect = prepareStatement(PROJECTS_SELECT, TARGET_DB);
             projectSelect.setTimestamp(1, fLastLogTime);
             projectSelect.setTimestamp(2, fLastLogTime);
             projectSelect.setTimestamp(3, fLastLogTime);
