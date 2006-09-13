@@ -1115,7 +1115,7 @@ public class TCLoadTCS extends TCLoad {
                 delQuery.append(",");
             }
             buf.setCharAt(buf.length() - 1, ')');
-            delQuery.setCharAt(buf.length() - 1, ')');
+            delQuery.setCharAt(delQuery.length() - 1, ')');
 
             resultSelect = prepareStatement(buf.toString(), SOURCE_DB);
 
