@@ -1084,7 +1084,6 @@ public class TCLoadTCS extends TCLoad {
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
                         "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
-        final String DELETE = "delete from project_result where project_id = ?";
 
         try {
             long start = System.currentTimeMillis();
@@ -1105,16 +1104,23 @@ public class TCLoadTCS extends TCLoad {
             buf.append(RESULT_SELECT);
             buf.append(" and p.project_id in (");
 
+            StringBuffer delQuery = new StringBuffer(300);
+            delQuery.append("delete from project_result where project_id in (");
+
             projects = projectSelect.executeQuery();
             while (projects.next()) {
                 buf.append(projects.getLong("project_id"));
                 buf.append(",");
+                delQuery.append(projects.getLong("project_id"));
+                delQuery.append(",");
             }
             buf.setCharAt(buf.length() - 1, ')');
+            delQuery.setCharAt(buf.length() - 1, ')');
 
             resultSelect = prepareStatement(buf.toString(), SOURCE_DB);
 
-            delete = prepareStatement(DELETE, TARGET_DB);
+            delete = prepareStatement(delQuery.toString(), TARGET_DB);
+            delete.executeUpdate();
 
             int count = 0;
             //log.debug("PROCESSING PROJECT RESULTS " + project_id);
@@ -1125,13 +1131,10 @@ public class TCLoadTCS extends TCLoad {
 
             while (projectResults.next()) {
                 long project_id = projectResults.getLong("project_id");
-                delete.clearParameters();
-                delete.setLong(1, project_id);
-                delete.executeUpdate();
 
                 boolean passedReview = false;
                 try {
-                    passedReview = projectResults.getInt("passed_review_ind") == 1 ? true : false;
+                    passedReview = projectResults.getInt("passed_review_ind") == 1;
                 } catch (Exception e) {
                     // do nothing
                 }
