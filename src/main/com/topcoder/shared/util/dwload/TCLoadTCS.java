@@ -1457,8 +1457,17 @@ public class TCLoadTCS extends TCLoad {
                         "and sc.scorecard_type = 2 " +
                         "and sc.is_completed = 1 " +
                         "and sc.cur_version = 1 " +
-                        "and (sc.modify_date > ? OR s.modify_date > ? OR rur.modify_date > ? OR (select max(modify_date) from appeal where successful_ind = 1 and appealer_id = s.submitter_id and cur_version = 1 " +
-                        " and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) > ?";
+                        "and (sc.modify_date > ? " +
+                        " OR s.modify_date > ? " +
+                        " OR rur.modify_date > ? " +
+                        " OR (select max(modify_date) " +
+                        "       from appeal " +
+                        "      where successful_ind = 1 " +
+                        "        and appealer_id = s.submitter_id " +
+                        "        and cur_version = 1 " +
+                        "        and question_id in (select question_id " +
+                        "                              from scorecard_question " +
+                        "                             where scorecard_id = sc.scorecard_id)) > ?)";
 
 
         final String SUBMISSION_UPDATE =
