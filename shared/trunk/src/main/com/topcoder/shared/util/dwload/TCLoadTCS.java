@@ -3170,7 +3170,7 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(9, rs.getObject("appeal_response"));
                     update.setLong(10, rs.getLong("appeal_id"));
                     if (rs.getString("successful_ind") == null) {
-                        update.setNull(11, Types.DECIMAL);
+                        update.setNull(11, Types.INTEGER);
                     } else {
                         update.setInt(11, rs.getInt("successful_ind"));
                     }
@@ -3190,7 +3190,7 @@ public class TCLoadTCS extends TCLoad {
                         insert.setObject(8, rs.getObject("appeal_text"));
                         insert.setObject(9, rs.getObject("appeal_response"));
                         if (rs.getString("successful_ind") == null) {
-                            insert.setNull(10, Types.DECIMAL);
+                            insert.setNull(10, Types.INTEGER);
                         } else {
                             insert.setInt(10, rs.getInt("successful_ind"));
                         }
