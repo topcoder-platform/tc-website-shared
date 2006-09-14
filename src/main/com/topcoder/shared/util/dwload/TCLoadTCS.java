@@ -3111,7 +3111,7 @@ public class TCLoadTCS extends TCLoad {
                 "sq.evaluation_id as final_evaluation_id, " +
                 "a.appeal_text, " +
                 "a.appeal_response, " +
-                "a.raw_evaluation_id " +
+                "a.raw_evaluation_id, " +
                 "a.successful_ind " +
                 "from appeal a, scorecard s, scorecard_question sq " +
                 "where s.scorecard_id = sq.scorecard_id " +
