@@ -1472,8 +1472,7 @@ public class TCLoadTCS extends TCLoad {
                         " OR rur.modify_date > ? " +
                         " OR (select max(modify_date) " +
                         "       from appeal " +
-                        "      where successful_ind = 1 " +
-                        "        and appealer_id = s.submitter_id " +
+                        "      where appealer_id = s.submitter_id " +
                         "        and cur_version = 1 " +
                         "        and question_id in (select question_id " +
                         "                              from scorecard_question " +
