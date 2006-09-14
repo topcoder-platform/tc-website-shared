@@ -1438,7 +1438,7 @@ public class TCLoadTCS extends TCLoad {
                         "score as final_score,  " +
                         "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
-                        "(select count(*) from appeal where successful_ind = 1 and appealer_id = s.submitter_id and cur_version = 1  " +
+                        "(select sum(successful_ind) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_successful_appeals,  " +
                         "rur.r_resp_id as review_resp_id,  " +
                         "scorecard_id,  " +
@@ -1511,7 +1511,11 @@ public class TCLoadTCS extends TCLoad {
                     submissionUpdate.setObject(1, submissionInfo.getObject("raw_score"));
                     submissionUpdate.setObject(2, submissionInfo.getObject("final_score"));
                     submissionUpdate.setObject(3, submissionInfo.getObject("num_appeals"));
-                    submissionUpdate.setObject(4, submissionInfo.getObject("num_successful_appeals"));
+                    if (submissionInfo.getString("num_successful_appeals") == null) {
+                        submissionUpdate.setNull(4, Types.DECIMAL);
+                    } else {
+                        submissionUpdate.setInt(4, submissionInfo.getInt("num_successful_appeals"));
+                    }
                     submissionUpdate.setObject(5, submissionInfo.getObject("review_resp_id"));
                     submissionUpdate.setObject(6, submissionInfo.getObject("scorecard_id"));
                     submissionUpdate.setObject(7, submissionInfo.getObject("scorecard_template_id"));
