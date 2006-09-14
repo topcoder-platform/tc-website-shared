@@ -1446,8 +1446,10 @@ public class TCLoadTCS extends TCLoad {
                         "score as final_score,  " +
                         "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
-                        "(select sum(successful_ind) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
+                        "(select count(*) from appeal where successful_ind = 1 and appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_successful_appeals,  " +
+                        "(select count(*) from appeal where successful_ind is not null and appealer_id = s.submitter_id and cur_version = 1  " +
+                        "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as non_null_successful_appeals,  " +
                         "rur.r_resp_id as review_resp_id,  " +
                         "scorecard_id,  " +
                         "(select distinct template_id from question_template qt, scorecard_question sq  " +
@@ -1519,7 +1521,7 @@ public class TCLoadTCS extends TCLoad {
                     submissionUpdate.setObject(1, submissionInfo.getObject("raw_score"));
                     submissionUpdate.setObject(2, submissionInfo.getObject("final_score"));
                     submissionUpdate.setObject(3, submissionInfo.getObject("num_appeals"));
-                    if (submissionInfo.getString("num_successful_appeals") == null) {
+                    if (submissionInfo.getInt("non_null_successful_appeals") == 0) {
                         submissionUpdate.setNull(4, Types.DECIMAL);
                     } else {
                         submissionUpdate.setInt(4, submissionInfo.getInt("num_successful_appeals"));
