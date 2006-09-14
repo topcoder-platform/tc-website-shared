@@ -1108,7 +1108,9 @@ public class TCLoadTCS extends TCLoad {
             delQuery.append("delete from project_result where project_id in (");
 
             projects = projectSelect.executeQuery();
+            boolean projectsFound = false;
             while (projects.next()) {
+                projectsFound = true;
                 buf.append(projects.getLong("project_id"));
                 buf.append(",");
                 delQuery.append(projects.getLong("project_id"));
@@ -1117,89 +1119,95 @@ public class TCLoadTCS extends TCLoad {
             buf.setCharAt(buf.length() - 1, ')');
             delQuery.setCharAt(delQuery.length() - 1, ')');
 
-            resultSelect = prepareStatement(buf.toString(), SOURCE_DB);
+            if (projectsFound) {
 
-            delete = prepareStatement(delQuery.toString(), TARGET_DB);
-            delete.executeUpdate();
 
-            int count = 0;
-            //log.debug("PROCESSING PROJECT RESULTS " + project_id);
+                resultSelect = prepareStatement(buf.toString(), SOURCE_DB);
+
+                delete = prepareStatement(delQuery.toString(), TARGET_DB);
+                delete.executeUpdate();
+
+                int count = 0;
+                //log.debug("PROCESSING PROJECT RESULTS " + project_id);
 
 //            log.debug("before result select");
-            projectResults = resultSelect.executeQuery();
-            //log.debug("after result select");
+                projectResults = resultSelect.executeQuery();
+                //log.debug("after result select");
 
-            while (projectResults.next()) {
-                long project_id = projectResults.getLong("project_id");
+                while (projectResults.next()) {
+                    long project_id = projectResults.getLong("project_id");
 
-                boolean passedReview = false;
-                try {
-                    passedReview = projectResults.getInt("passed_review_ind") == 1;
-                } catch (Exception e) {
-                    // do nothing
+                    boolean passedReview = false;
+                    try {
+                        passedReview = projectResults.getInt("passed_review_ind") == 1;
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
+                    int placed = 0;
+                    try {
+                        placed = projectResults.getInt("placed");
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
+                    int numSubmissionsPassedReview = 0;
+                    try {
+                        numSubmissionsPassedReview = projectResults.getInt("num_submissions_passed_review");
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
+                    count++;
+
+                    long pointsAwarded = 0;
+                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                            dRProjects.contains(new Long(project_id)) &&
+                            projectResults.getInt("rating_ind") == 1) {
+                        pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
+                    }
+                    resultInsert.clearParameters();
+
+                    resultInsert.setLong(1, project_id);
+                    resultInsert.setLong(2, projectResults.getLong("user_id"));
+                    resultInsert.setObject(3, projectResults.getObject("submit_ind"));
+                    resultInsert.setObject(4, projectResults.getObject("valid_submission_ind"));
+                    resultInsert.setObject(5, projectResults.getObject("raw_score"));
+                    resultInsert.setObject(6, projectResults.getObject("final_score"));
+                    resultInsert.setObject(7, projectResults.getObject("inquire_timestamp"));
+                    resultInsert.setObject(8, projectResults.getObject("submit_timestamp"));
+                    resultInsert.setObject(9, projectResults.getObject("review_completed_timestamp"));
+                    resultInsert.setObject(10, projectResults.getObject("payment"));
+                    resultInsert.setObject(11, projectResults.getObject("old_rating"));
+                    resultInsert.setObject(12, projectResults.getObject("new_rating"));
+                    resultInsert.setObject(13, projectResults.getObject("old_reliability"));
+                    resultInsert.setObject(14, projectResults.getObject("new_reliability"));
+                    resultInsert.setObject(15, projectResults.getObject("placed"));
+                    resultInsert.setObject(16, projectResults.getObject("rating_ind"));
+                    resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
+                    resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
+
+                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                            dRProjects.contains(new Long(project_id)) &&
+                            projectResults.getInt("rating_ind") == 1) {
+                        resultInsert.setLong(19, pointsAwarded);
+                        resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
+                    } else {
+                        resultInsert.setNull(19, Types.DECIMAL);
+                        resultInsert.setNull(20, Types.DECIMAL);
+                    }
+                    resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
+                    resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
+                    //log.debug("before result insert");
+                    resultInsert.executeUpdate();
+                    //log.debug("after result insert");
+
+                    //printLoadProgress(count, "project result");
                 }
-
-                int placed = 0;
-                try {
-                    placed = projectResults.getInt("placed");
-                } catch (Exception e) {
-                    // do nothing
-                }
-
-                int numSubmissionsPassedReview = 0;
-                try {
-                    numSubmissionsPassedReview = projectResults.getInt("num_submissions_passed_review");
-                } catch (Exception e) {
-                    // do nothing
-                }
-
-                count++;
-
-                long pointsAwarded = 0;
-                if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                        dRProjects.contains(new Long(project_id)) &&
-                        projectResults.getInt("rating_ind") == 1) {
-                    pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
-                }
-                resultInsert.clearParameters();
-
-                resultInsert.setLong(1, project_id);
-                resultInsert.setLong(2, projectResults.getLong("user_id"));
-                resultInsert.setObject(3, projectResults.getObject("submit_ind"));
-                resultInsert.setObject(4, projectResults.getObject("valid_submission_ind"));
-                resultInsert.setObject(5, projectResults.getObject("raw_score"));
-                resultInsert.setObject(6, projectResults.getObject("final_score"));
-                resultInsert.setObject(7, projectResults.getObject("inquire_timestamp"));
-                resultInsert.setObject(8, projectResults.getObject("submit_timestamp"));
-                resultInsert.setObject(9, projectResults.getObject("review_completed_timestamp"));
-                resultInsert.setObject(10, projectResults.getObject("payment"));
-                resultInsert.setObject(11, projectResults.getObject("old_rating"));
-                resultInsert.setObject(12, projectResults.getObject("new_rating"));
-                resultInsert.setObject(13, projectResults.getObject("old_reliability"));
-                resultInsert.setObject(14, projectResults.getObject("new_reliability"));
-                resultInsert.setObject(15, projectResults.getObject("placed"));
-                resultInsert.setObject(16, projectResults.getObject("rating_ind"));
-                resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
-                resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
-
-                if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
-                        dRProjects.contains(new Long(project_id)) &&
-                        projectResults.getInt("rating_ind") == 1) {
-                    resultInsert.setLong(19, pointsAwarded);
-                    resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
-                } else {
-                    resultInsert.setNull(19, Types.DECIMAL);
-                    resultInsert.setNull(20, Types.DECIMAL);
-                }
-                resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
-                resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
-                //log.debug("before result insert");
-                resultInsert.executeUpdate();
-                //log.debug("after result insert");
-
-                //printLoadProgress(count, "project result");
+                log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
+            } else {
+                log.info("loaded " + 0 + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
             }
-            log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
 
 
         } catch (SQLException sqle) {
