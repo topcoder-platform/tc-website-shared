@@ -3109,9 +3109,10 @@ public class TCLoadTCS extends TCLoad {
                 "s.author_id as reviewer_id, " +
                 "s.project_id, " +
                 "sq.evaluation_id as final_evaluation_id, " +
-                "a. appeal_text, " +
+                "a.appeal_text, " +
                 "a.appeal_response, " +
                 "a.raw_evaluation_id " +
+                "a.successful_ind " +
                 "from appeal a, scorecard s, scorecard_question sq " +
                 "where s.scorecard_id = sq.scorecard_id " +
                 "and sq.question_id = a.question_id " +
@@ -3125,12 +3126,12 @@ public class TCLoadTCS extends TCLoad {
 
         final String UPDATE =
                 "update appeal set scorecard_question_id = ?, scorecard_id = ?, user_id=?, reviewer_id=?, project_id=?, " +
-                        "raw_evaluation_id=?, final_evaluation_id=?, appeal_text=?, appeal_response=? where appeal_id=?";
+                        "raw_evaluation_id=?, final_evaluation_id=?, appeal_text=?, appeal_response=?, successful_ind = ? where appeal_id=?";
 
         final String INSERT =
                 "insert into appeal (scorecard_question_id, scorecard_id, user_id, reviewer_id, project_id, " +
-                        "raw_evaluation_id, final_evaluation_id, appeal_text, appeal_response, appeal_id) " +
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "raw_evaluation_id, final_evaluation_id, appeal_text, appeal_response, appeal_id, successful_ind) " +
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
         try {
@@ -3168,6 +3169,11 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(8, rs.getObject("appeal_text"));
                     update.setObject(9, rs.getObject("appeal_response"));
                     update.setLong(10, rs.getLong("appeal_id"));
+                    if (rs.getString("successful_ind") == null) {
+                        update.setNull(11, Types.DECIMAL);
+                    } else {
+                        update.setInt(11, rs.getInt("successful_ind"));
+                    }
 
                     int retVal = update.executeUpdate();
 
@@ -3183,7 +3189,12 @@ public class TCLoadTCS extends TCLoad {
                         insert.setObject(7, rs.getObject("final_evaluation_id"));
                         insert.setObject(8, rs.getObject("appeal_text"));
                         insert.setObject(9, rs.getObject("appeal_response"));
-                        insert.setLong(10, rs.getLong("appeal_id"));
+                        if (rs.getString("successful_ind") == null) {
+                            insert.setNull(10, Types.DECIMAL);
+                        } else {
+                            insert.setInt(10, rs.getInt("successful_ind"));
+                        }
+                        insert.setLong(11, rs.getLong("appeal_id"));
 
                         insert.executeUpdate();
                     }
