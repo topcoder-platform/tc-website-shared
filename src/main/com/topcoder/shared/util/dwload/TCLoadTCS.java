@@ -1438,7 +1438,7 @@ public class TCLoadTCS extends TCLoad {
                         "score as final_score,  " +
                         "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
-                        "(select count(*) from appeal where successful_ind = 1 appealer_id = s.submitter_id and cur_version = 1  " +
+                        "(select count(*) from appeal where successful_ind = 1 and appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_successful_appeals,  " +
                         "rur.r_resp_id as review_resp_id,  " +
                         "scorecard_id,  " +
@@ -1457,7 +1457,8 @@ public class TCLoadTCS extends TCLoad {
                         "and sc.scorecard_type = 2 " +
                         "and sc.is_completed = 1 " +
                         "and sc.cur_version = 1 " +
-                        "and (sc.modify_date > ? OR s.modify_date > ? OR rur.modify_date > ?)";
+                        "and (sc.modify_date > ? OR s.modify_date > ? OR rur.modify_date > ? OR (select max(modify_date) from appeal where successful_ind = 1 and appealer_id = s.submitter_id and cur_version = 1 " +
+                        " and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) > ?";
 
 
         final String SUBMISSION_UPDATE =
@@ -1489,6 +1490,7 @@ public class TCLoadTCS extends TCLoad {
                 submissionSelect.setTimestamp(2, fLastLogTime);
                 submissionSelect.setTimestamp(3, fLastLogTime);
                 submissionSelect.setTimestamp(4, fLastLogTime);
+                submissionSelect.setTimestamp(5, fLastLogTime);
                 //log.debug("before submission select");
                 submissionInfo = submissionSelect.executeQuery();
                 //log.debug("after submission select");
