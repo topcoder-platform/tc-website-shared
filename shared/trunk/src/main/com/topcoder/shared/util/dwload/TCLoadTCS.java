@@ -1438,8 +1438,8 @@ public class TCLoadTCS extends TCLoad {
                         "score as final_score,  " +
                         "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
                         "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
-                        //todo populate this
-                        "0 as num_successful_appeals,  " +
+                        "(select count(*) from appeal successful_ind = 1 where appealer_id = s.submitter_id and cur_version = 1  " +
+                        "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_successful_appeals,  " +
                         "rur.r_resp_id as review_resp_id,  " +
                         "scorecard_id,  " +
                         "(select distinct template_id from question_template qt, scorecard_question sq  " +
