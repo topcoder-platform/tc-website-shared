@@ -2972,7 +2972,7 @@ public class TCLoadTCS extends TCLoad {
         ResultSet rs;
 
         PreparedStatement select = null;
-        PreparedStatement update = null;
+        PreparedStatement delete = null;
         PreparedStatement insert = null;
         ResultSet projects;
         PreparedStatement projectSelect;
@@ -2998,8 +2998,8 @@ public class TCLoadTCS extends TCLoad {
                         "and project_id = ? " +
                         "and (sr.modify_date>? OR s.modify_date>? OR sq.modify_date>?) " +
                         "order by scorecard_question_id, scorecard_id, subjective_resp_id";
-        final String UPDATE =
-                "update subjective_response set user_id=?, reviewer_id=?, project_id=?, response_text=?, response_type_id=?,response_type_desc=? where  sort=? and scorecard_question_id = ? and scorecard_id = ?";
+        final String DELETE =
+                "delete from subjective_response where scorecard_question_id = ? and scorecard_id = ?";
 
         final String INSERT =
                 "insert into subjective_response (user_id, reviewer_id, project_id, response_text, response_type_id, response_type_desc, sort, scorecard_question_id, scorecard_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -3009,7 +3009,7 @@ public class TCLoadTCS extends TCLoad {
             long start = System.currentTimeMillis();
 
             select = prepareStatement(SELECT, SOURCE_DB);
-            update = prepareStatement(UPDATE, TARGET_DB);
+            delete = prepareStatement(DELETE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
             projectSelect = prepareStatement(PROJECT_SELECT, SOURCE_DB);
 
@@ -3031,7 +3031,18 @@ public class TCLoadTCS extends TCLoad {
 
                 rs = select.executeQuery();
 
+                boolean deletedOld = false;
                 while (rs.next()) {
+                    if (!deletedOld) {
+                        delete.clearParameters();
+
+                        delete.setLong(1, rs.getLong("scorecard_question_id"));
+                        delete.setLong(2, rs.getLong("scorecard_id"));
+
+                        delete.executeUpdate();
+                        deletedOld = true;
+                    }
+
                     if ((rs.getLong("scorecard_question_id") != prevScorecardQuestion) || (rs.getLong("scorecard_id") != prevScorecard))
                     {
                         sort = 0;
@@ -3041,36 +3052,19 @@ public class TCLoadTCS extends TCLoad {
                         sort++;
                     }
 
+                    insert.clearParameters();
 
-                    update.clearParameters();
+                    insert.setObject(1, rs.getObject("user_id"));
+                    insert.setObject(2, rs.getObject("reviewer_id"));
+                    insert.setObject(3, rs.getObject("project_id"));
+                    insert.setObject(4, rs.getObject("response_text"));
+                    insert.setObject(5, rs.getObject("response_type_id"));
+                    insert.setObject(6, rs.getObject("response_type_desc"));
+                    insert.setInt(7, sort);
+                    insert.setLong(8, rs.getLong("scorecard_question_id"));
+                    insert.setLong(9, rs.getLong("scorecard_id"));
 
-                    update.setObject(1, rs.getObject("user_id"));
-                    update.setObject(2, rs.getObject("reviewer_id"));
-                    update.setObject(3, rs.getObject("project_id"));
-                    update.setObject(4, rs.getObject("response_text"));
-                    update.setObject(5, rs.getObject("response_type_id"));
-                    update.setObject(6, rs.getObject("response_type_desc"));
-                    update.setInt(7, sort);
-                    update.setLong(8, rs.getLong("scorecard_question_id"));
-                    update.setLong(9, rs.getLong("scorecard_id"));
-
-                    int retVal = update.executeUpdate();
-
-                    if (retVal == 0) {
-                        insert.clearParameters();
-
-                        insert.setObject(1, rs.getObject("user_id"));
-                        insert.setObject(2, rs.getObject("reviewer_id"));
-                        insert.setObject(3, rs.getObject("project_id"));
-                        insert.setObject(4, rs.getObject("response_text"));
-                        insert.setObject(5, rs.getObject("response_type_id"));
-                        insert.setObject(6, rs.getObject("response_type_desc"));
-                        insert.setInt(7, sort);
-                        insert.setLong(8, rs.getLong("scorecard_question_id"));
-                        insert.setLong(9, rs.getLong("scorecard_id"));
-
-                        insert.executeUpdate();
-                    }
+                    insert.executeUpdate();
                     count++;
 
                 }
@@ -3085,7 +3079,7 @@ public class TCLoadTCS extends TCLoad {
                     sqle.getMessage());
         } finally {
             close(insert);
-            close(update);
+            close(delete);
             close(select);
         }
     }
