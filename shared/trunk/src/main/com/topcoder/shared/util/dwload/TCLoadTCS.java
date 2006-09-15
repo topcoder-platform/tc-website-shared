@@ -3189,12 +3189,12 @@ public class TCLoadTCS extends TCLoad {
                         insert.setObject(7, rs.getObject("final_evaluation_id"));
                         insert.setObject(8, rs.getObject("appeal_text"));
                         insert.setObject(9, rs.getObject("appeal_response"));
+                        insert.setLong(10, rs.getLong("appeal_id"));
                         if (rs.getString("successful_ind") == null) {
-                            insert.setNull(10, Types.INTEGER);
+                            insert.setNull(11, Types.INTEGER);
                         } else {
-                            insert.setInt(10, rs.getInt("successful_ind"));
+                            insert.setInt(11, rs.getInt("successful_ind"));
                         }
-                        insert.setLong(11, rs.getLong("appeal_id"));
 
                         insert.executeUpdate();
                     }
