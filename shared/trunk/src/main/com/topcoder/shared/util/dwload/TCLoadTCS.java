@@ -3031,23 +3031,20 @@ public class TCLoadTCS extends TCLoad {
 
                 rs = select.executeQuery();
 
-                boolean deletedOld = false;
                 while (rs.next()) {
-                    if (!deletedOld) {
+
+                    if ((rs.getLong("scorecard_question_id") != prevScorecardQuestion) ||
+                            (rs.getLong("scorecard_id") != prevScorecard)) {
+                        sort = 0;
+                        prevScorecardQuestion = rs.getLong("scorecard_question_id");
+                        prevScorecard = rs.getLong("scorecard_id");
                         delete.clearParameters();
 
                         delete.setLong(1, rs.getLong("scorecard_question_id"));
                         delete.setLong(2, rs.getLong("scorecard_id"));
 
                         delete.executeUpdate();
-                        deletedOld = true;
-                    }
 
-                    if ((rs.getLong("scorecard_question_id") != prevScorecardQuestion) || (rs.getLong("scorecard_id") != prevScorecard))
-                    {
-                        sort = 0;
-                        prevScorecardQuestion = rs.getLong("scorecard_question_id");
-                        prevScorecard = rs.getLong("scorecard_id");
                     } else {
                         sort++;
                     }
