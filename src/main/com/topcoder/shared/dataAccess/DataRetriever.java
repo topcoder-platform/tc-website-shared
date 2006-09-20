@@ -372,6 +372,9 @@ public class DataRetriever implements DataRetrieverInt {
             DBMS.close(ps);
         }
 
+        ResultSet rs1 = null;
+        PreparedStatement ps1 = null;
+
         // Now get the inputs of the queries
         try {
             if (queryIdList.length == 0) {
@@ -395,14 +398,14 @@ public class DataRetriever implements DataRetrieverInt {
             query.append("AND cqx.query_id = qi.query_id ");
             query.append("AND qi.input_id = i.input_id ");
             query.append("ORDER BY qi.query_id ASC, qi.sort_order ASC ");
-            ps = conn.prepareStatement(query.toString());
-            ps.setString(1, commandDesc);
-            rs = ps.executeQuery();
+            ps1 = conn.prepareStatement(query.toString());
+            ps1.setString(1, commandDesc);
+            rs1 = ps1.executeQuery();
 
             // Put these in a result set container to avoid requiring the
             // connection to have two open prepared statements at the same
             // time.
-            ResultSetContainer rsc = new ResultSetContainer(rs);
+            ResultSetContainer rsc = new ResultSetContainer(rs1);
 
             rowcount = rsc.getRowCount();
 
@@ -502,8 +505,8 @@ public class DataRetriever implements DataRetrieverInt {
             handleException(e, query.toString(), inputs);
             throw e;
         } finally {
-            DBMS.close(rs);
-            DBMS.close(ps);
+            DBMS.close(rs1);
+            DBMS.close(ps1);
         }
 
         // At this point we've built all queries to run.
