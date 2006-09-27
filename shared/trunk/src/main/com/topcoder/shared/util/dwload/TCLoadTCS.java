@@ -1094,8 +1094,7 @@ public class TCLoadTCS extends TCLoad {
                         " , sum(num_successful_appeals) as num_successful_appeals" +
                         " from submission_review " +
                         " where project_id = ? " +
-                        " and user_id = ?" +
-                        " and num_successful_appeals is not null";
+                        " and user_id = ?";
         final String DW_DATA_UPDATE =
                 "update project_result set num_appeals = ?, num_successful_appeals = ? where project_id = ? and user_id = ?";
 
@@ -1228,8 +1227,16 @@ public class TCLoadTCS extends TCLoad {
                     dwData = dwDataSelect.executeQuery();
                     if (dwData.next()) {
                         dwDataUpdate.clearParameters();
-                        dwDataUpdate.setInt(1, dwData.getInt("num_appeals"));
-                        dwDataUpdate.setInt(2, dwData.getInt("num_successful_appeals"));
+                        if (dwData.getString("num_appeals") == null) {
+                            dwDataUpdate.setNull(1, Types.DECIMAL);
+                        } else {
+                            dwDataUpdate.setInt(1, dwData.getInt("num_appeals"));
+                        }
+                        if (dwData.getString("num_successful_appeals") == null) {
+                            dwDataUpdate.setNull(2, Types.DECIMAL);
+                        } else {
+                            dwDataUpdate.setInt(2, dwData.getInt("num_successful_appeals"));
+                        }
                         dwDataUpdate.setLong(3, project_id);
                         dwDataUpdate.setLong(4, projectResults.getLong("user_id"));
                         dwDataUpdate.executeUpdate();
