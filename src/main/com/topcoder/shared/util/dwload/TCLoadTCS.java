@@ -153,13 +153,15 @@ public class TCLoadTCS extends TCLoad {
 
             doLoadProjects();
 
+            //load submission review before project result because the project result load will use the submission review table
+            doLoadSubmissionReview();
+
             doLoadProjectResults();
 
             doLoadRookies();
 
             doLoadScorecardTemplate();
 
-            doLoadSubmissionReview();
             doLoadSubmissionScreening();
 
             doLoadContestProject();
@@ -1033,7 +1035,10 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement resultInsert = null;
         PreparedStatement resultSelect = null;
         PreparedStatement delete = null;
+        PreparedStatement dwDataSelect = null;
+        PreparedStatement dwDataUpdate = null;
         ResultSet projects = null;
+        ResultSet dwData = null;
 
         final String PROJECTS_SELECT =
                 "select distinct pr.project_id " +
@@ -1084,6 +1089,16 @@ public class TCLoadTCS extends TCLoad {
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
                         "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
+        final String DW_DATA_SELECT =
+                "select sum(num_appeals) as num_appeals" +
+                        " , sum(num_successful_appeals) as num_successful_appeals" +
+                        " from submission_review " +
+                        " where project_id = ? " +
+                        " and user_id = ?" +
+                        " and num_appeals is not null";
+        final String DW_DATA_UPDATE =
+                "update project_result set num_appeals = ?, num_successful_appeals = ? where project_id = ? and user_id = ?";
+
 
         try {
             long start = System.currentTimeMillis();
@@ -1098,6 +1113,9 @@ public class TCLoadTCS extends TCLoad {
             projectSelect.setTimestamp(4, fLastLogTime);
 
             resultInsert = prepareStatement(RESULT_INSERT, TARGET_DB);
+
+            dwDataSelect = prepareStatement(DW_DATA_SELECT, TARGET_DB);
+            dwDataUpdate = prepareStatement(DW_DATA_UPDATE, TARGET_DB);
 
 
             StringBuffer buf = new StringBuffer(1000);
@@ -1203,6 +1221,20 @@ public class TCLoadTCS extends TCLoad {
                     //log.debug("after result insert");
 
                     //printLoadProgress(count, "project result");
+
+                    dwDataSelect.clearParameters();
+                    dwDataSelect.setLong(1, project_id);
+                    dwDataSelect.setLong(2, projectResults.getLong("user_id"));
+                    dwData = dwDataSelect.executeQuery();
+                    if (dwData.next()) {
+                        dwDataUpdate.clearParameters();
+                        dwDataUpdate.setInt(1, dwData.getInt("num_appeals"));
+                        dwDataUpdate.setInt(2, dwData.getInt("num_successful_appeals"));
+                        dwDataUpdate.setLong(4, project_id);
+                        dwDataUpdate.setLong(4, dwData.getLong("user_id"));
+                        dwDataUpdate.executeUpdate();
+                    }
+
                 }
                 log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
             } else {
@@ -1221,6 +1253,10 @@ public class TCLoadTCS extends TCLoad {
             close(projectSelect);
             close(resultInsert);
             close(resultSelect);
+            close(dwDataSelect);
+            close(dwDataUpdate);
+            close(dwData);
+
         }
     }
 
@@ -3230,7 +3266,8 @@ public class TCLoadTCS extends TCLoad {
                 "a.appeal_text, " +
                 "a.appeal_response, " +
                 "a.raw_total_tests, " +
-                "a.raw_total_pass " +
+                "a.raw_total_pass, " +
+                "a.successful_ind " +
                 "from appeal a, scorecard s, testcase_question tq, scorecard_question sq " +
                 "where   s.scorecard_id = sq.scorecard_id  " +
                 "and sq.question_id = tq.question_id  " +
@@ -3245,12 +3282,12 @@ public class TCLoadTCS extends TCLoad {
 
         final String UPDATE =
                 "update testcase_appeal set scorecard_question_id = ?, scorecard_id = ?, user_id=?, reviewer_id=?, project_id=?, " +
-                        "raw_num_passed=?, raw_num_tests=?, final_num_passed=?, final_num_tests=?, appeal_text=?, appeal_response=? where appeal_id=?";
+                        "raw_num_passed=?, raw_num_tests=?, final_num_passed=?, final_num_tests=?, appeal_text=?, appeal_response=?, successful_ind = ? where appeal_id=?";
 
         final String INSERT =
                 "insert into testcase_appeal (scorecard_question_id, scorecard_id, user_id, reviewer_id, project_id, " +
-                        "raw_num_passed, raw_num_tests, final_num_passed, final_num_tests, appeal_text, appeal_response, appeal_id) " +
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "raw_num_passed, raw_num_tests, final_num_passed, final_num_tests, appeal_text, appeal_response, appeal_id, successful_ind) " +
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
             long start = System.currentTimeMillis();
@@ -3289,7 +3326,13 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(9, rs.getObject("final_num_tests"));
                     update.setObject(10, rs.getObject("appeal_text"));
                     update.setObject(11, rs.getObject("appeal_response"));
-                    update.setLong(12, rs.getLong("appeal_id"));
+                    if (rs.getString("successful_ind") == null) {
+                        update.setNull(12, Types.INTEGER);
+                    } else {
+                        update.setInt(12, rs.getInt("successful_ind"));
+                    }
+
+                    update.setLong(13, rs.getLong("appeal_id"));
 
                     int retVal = update.executeUpdate();
 
@@ -3308,6 +3351,12 @@ public class TCLoadTCS extends TCLoad {
                         insert.setObject(10, rs.getObject("appeal_text"));
                         insert.setObject(11, rs.getObject("appeal_response"));
                         insert.setLong(12, rs.getLong("appeal_id"));
+                        if (rs.getString("successful_ind") == null) {
+                            insert.setNull(13, Types.INTEGER);
+                        } else {
+                            insert.setInt(13, rs.getInt("successful_ind"));
+                        }
+
 
                         insert.executeUpdate();
                     }
