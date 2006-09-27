@@ -1581,7 +1581,12 @@ public class TCLoadTCS extends TCLoad {
                         submissionInsert.setObject(4, submissionInfo.getObject("raw_score"));
                         submissionInsert.setObject(5, submissionInfo.getObject("final_score"));
                         submissionInsert.setObject(6, submissionInfo.getObject("num_appeals"));
-                        submissionInsert.setObject(7, submissionInfo.getObject("num_successful_appeals"));
+                        if (submissionInfo.getInt("non_null_successful_appeals") == 0) {
+                            submissionInsert.setNull(7, Types.DECIMAL);
+                        } else {
+                            submissionInsert.setObject(7, submissionInfo.getObject("num_successful_appeals"));
+                        }
+
                         submissionInsert.setObject(8, submissionInfo.getObject("review_resp_id"));
                         submissionInsert.setObject(9, submissionInfo.getObject("scorecard_id"));
                         submissionInsert.setObject(10, submissionInfo.getObject("scorecard_template_id"));
