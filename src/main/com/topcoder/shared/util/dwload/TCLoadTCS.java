@@ -1095,7 +1095,7 @@ public class TCLoadTCS extends TCLoad {
                         " from submission_review " +
                         " where project_id = ? " +
                         " and user_id = ?" +
-                        " and num_appeals is not null";
+                        " and num_successful_appeals is not null";
         final String DW_DATA_UPDATE =
                 "update project_result set num_appeals = ?, num_successful_appeals = ? where project_id = ? and user_id = ?";
 
