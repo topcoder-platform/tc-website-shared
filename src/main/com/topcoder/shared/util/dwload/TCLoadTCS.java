@@ -1230,8 +1230,8 @@ public class TCLoadTCS extends TCLoad {
                         dwDataUpdate.clearParameters();
                         dwDataUpdate.setInt(1, dwData.getInt("num_appeals"));
                         dwDataUpdate.setInt(2, dwData.getInt("num_successful_appeals"));
-                        dwDataUpdate.setLong(4, project_id);
-                        dwDataUpdate.setLong(4, dwData.getLong("user_id"));
+                        dwDataUpdate.setLong(3, project_id);
+                        dwDataUpdate.setLong(4, projectResults.getLong("user_id"));
                         dwDataUpdate.executeUpdate();
                     }
 
