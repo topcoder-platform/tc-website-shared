@@ -20,6 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Hashtable;
 
 public class TCLoadPayments extends TCLoad {
@@ -104,31 +107,39 @@ public class TCLoadPayments extends TCLoad {
         StringBuffer query = null;
 
         try {
-            query = new StringBuffer(100);
-            query.append("select distinct pdx.payment_id from payment_detail pd, payment_detail_xref pdx ");
-            query.append("where pd.payment_detail_id = pdx.payment_detail_id ");
-            query.append("and pd.date_modified > ? ");
-            psSelModified = prepareStatement(query.toString(), SOURCE_DB);
-            psSelModified.setTimestamp(1, fLastLogTime);
-
-            query = new StringBuffer(100);
-            query.append("delete from payment ");
-            query.append("where payment_id in ( ");
-
-            modifiedPayments = psSelModified.executeQuery();
             boolean paymentsFound = false;
-            while (modifiedPayments.next()) {
+
+            // this is to avoid a gigantic delete query the firs time the script is run.
+            if (fLastLogTime.before(new Date((new GregorianCalendar(1990,1,1)).getTimeInMillis()))) {
                 paymentsFound = true;
-                query.append(modifiedPayments.getLong("payment_id"));
-                query.append(",");
+            } else {
+                query = new StringBuffer(100);
+                query.append("select distinct pdx.payment_id from payment_detail pd, payment_detail_xref pdx ");
+                query.append("where pd.payment_detail_id = pdx.payment_detail_id ");
+                query.append("and pd.date_modified > ? ");
+                psSelModified = prepareStatement(query.toString(), SOURCE_DB);
+                psSelModified.setTimestamp(1, fLastLogTime);
+    
+                query = new StringBuffer(100);
+                query.append("delete from payment ");
+                query.append("where payment_id in ( ");
+    
+                modifiedPayments = psSelModified.executeQuery();
+                while (modifiedPayments.next()) {
+                    paymentsFound = true;
+                    query.append(modifiedPayments.getLong("payment_id"));
+                    query.append(",");
+                }
+                query.setCharAt(query.length() - 1, ')');
+
+                if (paymentsFound) {
+                    // delete modified payments
+                    psDel = prepareStatement(query.toString(), TARGET_DB);
+                    psDel.executeUpdate();
+                }
             }
-            query.setCharAt(query.length() - 1, ')');
             
             if (paymentsFound) {
-                // delete modified payments
-                psDel = prepareStatement(query.toString(), TARGET_DB);
-                psDel.executeUpdate();
-                
                 // insert modified payments
                 query = new StringBuffer(100);
                 query.append("select payment_id, user_id, net_amount, gross_amount, payment_desc, ");
