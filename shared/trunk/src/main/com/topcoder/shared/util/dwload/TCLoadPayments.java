@@ -51,7 +51,8 @@ public class TCLoadPayments extends TCLoad {
 
             getLastUpdateTime();
 
-            loadPayments();
+            loadPaymentTypes();
+            //loadPayments();
 
             setLastUpdateTime();
 
@@ -59,6 +60,70 @@ public class TCLoadPayments extends TCLoad {
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
             throw ex;
+        }
+    }
+
+    private void loadPaymentTypes() throws Exception {
+        int count = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psIns = null;
+        PreparedStatement psUpd = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("select payment_type_id, payment_type_desc, show_in_profile_ind, show_details_ind ");
+            query.append("from payment_type_lu ");
+            query.append("where modify_date > ? OR create_date > ? ");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel.setTimestamp(1, fLastLogTime);
+            psSel.setTimestamp(2, fLastLogTime);
+
+            query = new StringBuffer(100);
+            query.append("insert into payment_detail (payment_type_id, payment_type_desc, ");
+            query.append("show_in_profile_ind, show_details_ind) values (?, ?, ?, ?)");
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("update payment_detail set payment_type_desc = ?, ");
+            query.append("show_in_profile_ind = ?, show_details_ind = ?) ");
+            query.append("where payment_type_id = ?");
+            psUpd = prepareStatement(query.toString(), TARGET_DB);
+            
+            rs = psSel.executeQuery();
+
+            while (rs.next()) {
+                psUpd.clearParameters();
+                psUpd.setString(1, rs.getString("payment_type_desc"));
+                psUpd.setLong(2, rs.getLong("show_in_profile_ind"));
+                psUpd.setLong(3, rs.getLong("show_details_ind"));
+                psUpd.setLong(4, rs.getLong("payment_type_id"));
+                int retVal = psUpd.executeUpdate();
+
+                if (retVal == 0) {
+                    //need to insert
+                    psIns.clearParameters();
+                    psIns.setLong(1, rs.getLong("payment_type_id"));
+                    psIns.setString(2, rs.getString("payment_type_desc"));
+                    psIns.setLong(3, rs.getLong("show_in_profile_ind"));
+                    psIns.setLong(4, rs.getLong("show_details_ind"));
+                    psIns.executeUpdate();
+                }
+                
+                count = count + retVal;
+                printLoadProgress(count, "payment types");
+            }
+            log.info("payment types records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'payment_type' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            DBMS.close(rs);            
+            DBMS.close(psSel);
+            DBMS.close(psIns);
+            DBMS.close(psUpd);
         }
     }
 
@@ -143,20 +208,19 @@ public class TCLoadPayments extends TCLoad {
                 // insert modified payments
                 query = new StringBuffer(100);
                 query.append("select payment_id, user_id, net_amount, gross_amount, payment_desc, ");
-                query.append("pd.payment_type_id, payment_type_desc, show_in_profile_ind, show_details_ind, ");
+                query.append("pd.payment_type_id, ");
                 query.append("date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
                 query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id "); 
-                query.append("from payment_detail pd, payment p, payment_type_lu ptl ");
+                query.append("from payment_detail pd, payment p ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
-                query.append("and ptl.payment_type_id = pd.payment_type_id ");
                 query.append("and pd.date_modified > ? ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
                     
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, user_id, net_amount, gross_amount, payment_desc, payment_type_id, ");
-                query.append("payment_type_desc, show_in_profile_ind, show_details_ind, date_due, algorithm_round_id, algorithm_problem_id, "); 
+                query.append("date_due, algorithm_round_id, algorithm_problem_id, "); 
                 query.append("component_contest_id, component_project_id, studio_contest_id, digital_run_stage_id,  ");
                 query.append("digital_run_season_id, parent_payment_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                 psIns = prepareStatement(query.toString(), TARGET_DB);
@@ -172,18 +236,15 @@ public class TCLoadPayments extends TCLoad {
                     psIns.setDouble(4, rs.getDouble("gross_amount"));
                     psIns.setString(5, rs.getString("payment_desc"));
                     psIns.setLong(6, rs.getLong("payment_type_id"));
-                    psIns.setString(7, rs.getString("payment_type_desc"));
-                    psIns.setLong(8, rs.getLong("show_in_profile_ind"));
-                    psIns.setLong(9, rs.getLong("show_details_ind"));
-                    psIns.setDate(10, rs.getDate("date_due"));
-                    psIns.setLong(11, rs.getLong("algorithm_round_id"));
-                    psIns.setLong(12, rs.getLong("algorithm_problem_id"));
-                    psIns.setLong(13, rs.getLong("component_contest_id"));
-                    psIns.setLong(14, rs.getLong("component_project_id"));
-                    psIns.setLong(15, rs.getLong("studio_contest_id"));
-                    psIns.setLong(16, rs.getLong("digital_run_stage_id"));
-                    psIns.setLong(17, rs.getLong("digital_run_season_id"));
-                    psIns.setLong(18, rs.getLong("parent_payment_id"));
+                    psIns.setDate(7, rs.getDate("date_due"));
+                    psIns.setLong(8, rs.getLong("algorithm_round_id"));
+                    psIns.setLong(9, rs.getLong("algorithm_problem_id"));
+                    psIns.setLong(10, rs.getLong("component_contest_id"));
+                    psIns.setLong(11, rs.getLong("component_project_id"));
+                    psIns.setLong(12, rs.getLong("studio_contest_id"));
+                    psIns.setLong(13, rs.getLong("digital_run_stage_id"));
+                    psIns.setLong(14, rs.getLong("digital_run_season_id"));
+                    psIns.setLong(15, rs.getLong("parent_payment_id"));
                     retVal = psIns.executeUpdate();
     
                     count = count + retVal;
