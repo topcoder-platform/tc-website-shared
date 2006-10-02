@@ -173,17 +173,17 @@ public class TCLoadPayments extends TCLoad {
                     psIns.setString(5, rs.getString("payment_desc"));
                     psIns.setLong(6, rs.getLong("payment_type_id"));
                     psIns.setString(7, rs.getString("payment_type_desc"));
-                    psIns.setLong(9, rs.getLong("show_in_profile_ind"));
-                    psIns.setLong(10, rs.getLong("show_details_ind"));
-                    psIns.setDate(11, rs.getDate("date_due"));
-                    psIns.setLong(12, rs.getLong("algorithm_round_id"));
-                    psIns.setLong(13, rs.getLong("algorithm_problem_id"));
-                    psIns.setLong(14, rs.getLong("component_contest_id"));
-                    psIns.setLong(15, rs.getLong("component_project_id"));
-                    psIns.setLong(16, rs.getLong("studio_contest_id"));
-                    psIns.setLong(17, rs.getLong("digital_run_stage_id"));
-                    psIns.setLong(18, rs.getLong("digital_run_season_id"));
-                    psIns.setLong(19, rs.getLong("parent_payment_id"));
+                    psIns.setLong(8, rs.getLong("show_in_profile_ind"));
+                    psIns.setLong(9, rs.getLong("show_details_ind"));
+                    psIns.setDate(10, rs.getDate("date_due"));
+                    psIns.setLong(11, rs.getLong("algorithm_round_id"));
+                    psIns.setLong(12, rs.getLong("algorithm_problem_id"));
+                    psIns.setLong(13, rs.getLong("component_contest_id"));
+                    psIns.setLong(14, rs.getLong("component_project_id"));
+                    psIns.setLong(15, rs.getLong("studio_contest_id"));
+                    psIns.setLong(16, rs.getLong("digital_run_stage_id"));
+                    psIns.setLong(17, rs.getLong("digital_run_season_id"));
+                    psIns.setLong(18, rs.getLong("parent_payment_id"));
                     retVal = psIns.executeUpdate();
     
                     count = count + retVal;
