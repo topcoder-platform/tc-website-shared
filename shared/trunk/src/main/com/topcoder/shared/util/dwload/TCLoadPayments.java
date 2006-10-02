@@ -143,7 +143,8 @@ public class TCLoadPayments extends TCLoad {
                 // insert modified payments
                 query = new StringBuffer(100);
                 query.append("select payment_id, user_id, net_amount, gross_amount, payment_desc, ");
-                query.append("pd.payment_type_id, payment_type_desc, date_due, algorithm_round_id, algorithm_problem_id, ");
+                query.append("pd.payment_type_id, payment_type_desc, show_in_profile_ind, show_details_ind, ");
+                query.append("date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
                 query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id "); 
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl ");
@@ -155,9 +156,9 @@ public class TCLoadPayments extends TCLoad {
                     
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, user_id, net_amount, gross_amount, payment_desc, payment_type_id, ");
-                query.append("payment_type_desc, date_due, algorithm_round_id, algorithm_problem_id, component_contest_id, "); 
-                query.append("component_project_id, studio_contest_id, digital_run_stage_id,  ");
-                query.append("digital_run_season_id, parent_payment_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+                query.append("payment_type_desc, show_in_profile_ind, show_details_ind, date_due, algorithm_round_id, algorithm_problem_id, "); 
+                query.append("component_contest_id, component_project_id, studio_contest_id, digital_run_stage_id,  ");
+                query.append("digital_run_season_id, parent_payment_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                 psIns = prepareStatement(query.toString(), TARGET_DB);
 
             
@@ -172,15 +173,17 @@ public class TCLoadPayments extends TCLoad {
                     psIns.setString(5, rs.getString("payment_desc"));
                     psIns.setLong(6, rs.getLong("payment_type_id"));
                     psIns.setString(7, rs.getString("payment_type_desc"));
-                    psIns.setDate(8, rs.getDate("date_due"));
-                    psIns.setLong(9, rs.getLong("algorithm_round_id"));
-                    psIns.setLong(10, rs.getLong("algorithm_problem_id"));
-                    psIns.setLong(11, rs.getLong("component_contest_id"));
-                    psIns.setLong(12, rs.getLong("component_project_id"));
-                    psIns.setLong(13, rs.getLong("studio_contest_id"));
-                    psIns.setLong(14, rs.getLong("digital_run_stage_id"));
-                    psIns.setLong(15, rs.getLong("digital_run_season_id"));
-                    psIns.setLong(16, rs.getLong("parent_payment_id"));
+                    psIns.setLong(9, rs.getLong("show_in_profile_ind"));
+                    psIns.setLong(10, rs.getLong("show_details_ind"));
+                    psIns.setDate(11, rs.getDate("date_due"));
+                    psIns.setLong(12, rs.getLong("algorithm_round_id"));
+                    psIns.setLong(13, rs.getLong("algorithm_problem_id"));
+                    psIns.setLong(14, rs.getLong("component_contest_id"));
+                    psIns.setLong(15, rs.getLong("component_project_id"));
+                    psIns.setLong(16, rs.getLong("studio_contest_id"));
+                    psIns.setLong(17, rs.getLong("digital_run_stage_id"));
+                    psIns.setLong(18, rs.getLong("digital_run_season_id"));
+                    psIns.setLong(19, rs.getLong("parent_payment_id"));
                     retVal = psIns.executeUpdate();
     
                     count = count + retVal;
