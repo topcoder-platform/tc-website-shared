@@ -52,7 +52,7 @@ public class TCLoadPayments extends TCLoad {
             getLastUpdateTime();
 
             loadPaymentTypes();
-            //loadPayments();
+            loadPayments();
 
             setLastUpdateTime();
 
@@ -81,13 +81,13 @@ public class TCLoadPayments extends TCLoad {
             psSel.setTimestamp(2, fLastLogTime);
 
             query = new StringBuffer(100);
-            query.append("insert into payment_detail (payment_type_id, payment_type_desc, ");
+            query.append("insert into payment_types (payment_type_id, payment_type_desc, ");
             query.append("show_in_profile_ind, show_details_ind) values (?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
-            query.append("update payment_detail set payment_type_desc = ?, ");
-            query.append("show_in_profile_ind = ?, show_details_ind = ?) ");
+            query.append("update payment_types set payment_type_desc = ?, ");
+            query.append("show_in_profile_ind = ?, show_details_ind = ? ");
             query.append("where payment_type_id = ?");
             psUpd = prepareStatement(query.toString(), TARGET_DB);
             
@@ -111,7 +111,7 @@ public class TCLoadPayments extends TCLoad {
                     psIns.executeUpdate();
                 }
                 
-                count = count + retVal;
+                count = count++;
                 printLoadProgress(count, "payment types");
             }
             log.info("payment types records copied = " + count);
