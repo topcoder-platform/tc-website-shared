@@ -1087,7 +1087,8 @@ public class TCLoadTCS extends TCLoad {
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
-                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind, old_rating_id, new_rating_id) " +
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)";
 
         final String DW_DATA_SELECT =
                 "select sum(num_appeals) as num_appeals" +
@@ -1215,6 +1216,8 @@ public class TCLoadTCS extends TCLoad {
                     }
                     resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
                     resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
+                    resultInsert.setInt(23, projectResults.getString("old_rating") == null ? -2 : projectResults.getInt("old_rating"));
+                    resultInsert.setInt(24, projectResults.getString("new_rating") == null ? -2 : projectResults.getInt("new_rating"));
                     //log.debug("before result insert");
                     resultInsert.executeUpdate();
                     //log.debug("after result insert");

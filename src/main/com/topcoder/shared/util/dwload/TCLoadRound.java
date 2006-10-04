@@ -1701,11 +1701,13 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,rated_flag ");                      // 34
             query.append("       ,team_points ");                     // 35
             query.append("       ,team_id  ");                        // 36
-            query.append("       ,region_placed) ");                  // 37
+            query.append("       ,region_placed ");                   // 37
+            query.append("       ,old_rating_id, ");                  // 38
+            query.append("       ,new_rating_id) ");                  //39
             query.append("VALUES (?,?,?,?,?,?,?,?,?,?,");  // 10 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 20 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 30 values
-            query.append("        ?,?,?,?,?,?, ?)");       // 37 total values
+            query.append("        ?,?,?,?,?,?,?,?)");       // 37 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1784,7 +1786,6 @@ public class TCLoadRound extends TCLoad {
                 psIns.setInt(33, rs.getInt("rated_flag") == 1 ? numRatings + 1 : numRatings);
                 psIns.setInt(34, rs.getInt("rated_flag"));
 
-
                 if (rs.getString("team_points") == null) {
                     psIns.setNull(35, java.sql.Types.DECIMAL);
                 } else {
@@ -1802,6 +1803,9 @@ public class TCLoadRound extends TCLoad {
                 } else {
                     psIns.setInt(37, rs.getInt("region_placed"));
                 }
+                //we can just use the rating because the id's and ratings match up.  may not be the case one day.
+                psIns.setInt(38, rs.getInt("old_rating") == 0 ? -2 : rs.getInt("old_rating"));
+                psIns.setInt(39, rs.getInt("new_rating") == 0 ? -2 : rs.getInt("new_rating"));
 
 
                 retVal = psIns.executeUpdate();
