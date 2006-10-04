@@ -1707,7 +1707,7 @@ public class TCLoadRound extends TCLoad {
             query.append("VALUES (?,?,?,?,?,?,?,?,?,?,");  // 10 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 20 values
             query.append("        ?,?,?,?,?,?,?,?,?,?,");  // 30 values
-            query.append("        ?,?,?,?,?,?,?,?)");       // 37 total values
+            query.append("        ?,?,?,?,?,?,?,?,?)");       // 39 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
