@@ -232,7 +232,7 @@ public class TCLoadPayments extends TCLoad {
                 query.append("pd.date_paid, sl.status_id, sl.status_desc "); 
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
-                query.append("and and pd.payment_type_id = ptl.payment_type_id ");
+                query.append("and pd.payment_type_id = ptl.payment_type_id ");
                 query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 ");
                 query.append("and pd.date_modified > ? ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
@@ -241,7 +241,7 @@ public class TCLoadPayments extends TCLoad {
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, payment_desc, payment_type_id, ");
                 query.append("payment_type_desc, reference_id, parent_payment_id, charity_ind, ");
-                query.append("show_in_profile_ind, show_details_ind, payment_type_id, payment_type_desc) ");
+                query.append("show_in_profile_ind, show_details_ind, payment_status_id, payment_status_desc) ");
                 query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                 psInsPayment = prepareStatement(query.toString(), TARGET_DB);
 
@@ -257,7 +257,7 @@ public class TCLoadPayments extends TCLoad {
                 while (rs.next()) {
                     if (rs.getLong("payment_type_id") == 5) {
                         charityFound = true;
-                        charity.append(modifiedPayments.getLong("payment_id"));
+                        charity.append(rs.getLong("parent_payment_id"));
                         charity.append(",");                        
                     } else {
                         psInsPayment.clearParameters();
@@ -296,8 +296,17 @@ public class TCLoadPayments extends TCLoad {
                         psInsUsrPayment.setLong(2, rs.getLong("user_id"));
                         psInsUsrPayment.setDouble(3, rs.getDouble("net_amount"));
                         psInsUsrPayment.setDouble(4, rs.getDouble("gross_amount"));
-                        psInsUsrPayment.setDouble(5, lookupCalendarId(rs.getTimestamp("date_due"),TARGET_DB));
-                        psInsUsrPayment.setDouble(6, lookupCalendarId(rs.getTimestamp("date_paid"),TARGET_DB));
+
+                        if (rs.getTimestamp("date_due") != null) {
+                            psInsUsrPayment.setLong(5, lookupCalendarId(rs.getTimestamp("date_due"),TARGET_DB));
+                        } else {
+                            psInsUsrPayment.setNull(5, Types.DECIMAL);
+                        }
+                        if (rs.getTimestamp("date_paid") != null) {
+                            psInsUsrPayment.setLong(6, lookupCalendarId(rs.getTimestamp("date_paid"),TARGET_DB));
+                        } else {
+                            psInsUsrPayment.setNull(6, Types.DECIMAL);
+                        }
                         retVal = psInsUsrPayment.executeUpdate();
         
                         if (retVal != 1) {
@@ -318,17 +327,19 @@ public class TCLoadPayments extends TCLoad {
                     query.append("update payment set charity_ind = 1 ");
                     query.append("where payment_id in ( ");
                     query.append(charity);
+                    
+                    log.info(query.toString());
                     psUpd = prepareStatement(query.toString(), TARGET_DB);
 
                     retVal = psUpd.executeUpdate();
-                    
+                    log.info("charity updates = " + retVal);                    
                     if (retVal < 1) {
                         throw new SQLException("TCLoadPayments: Load payment for payment_id: could not update charity_ind.");
                     }
                 }
             }            
 
-            log.info("payment records copied = " + count);
+            log.info("total payment records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'payment' table failed.\n" +
