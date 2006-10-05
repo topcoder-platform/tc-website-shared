@@ -336,7 +336,8 @@ public class DataRetriever implements DataRetrieverInt {
             query.append(" q.name, ");
             query.append(" q.ranking, ");
             query.append(" q.column_index, ");
-            query.append(" cqx.sort_order ");
+            query.append(" cqx.sort_order, ");
+            query.append(" c.command_id ");
             query.append("FROM command c, query q, command_query_xref cqx ");
             query.append("WHERE c.command_desc = ? ");
             query.append("AND cqx.command_id = c.command_id ");
@@ -350,7 +351,12 @@ public class DataRetriever implements DataRetrieverInt {
             queryTextMap = new HashMap();
             queryNameMap = new HashMap();
             querySortMap = new HashMap();
+            boolean tracked = false;
             while (rs.next()) {
+                if (!tracked) {
+                    trackExecution(rs.getLong("command_id"), conn);
+                    tracked = true;
+                }
                 rowcount++;
                 Integer tempId = new Integer(rs.getInt(1));
                 qid.add(tempId);
@@ -573,6 +579,21 @@ public class DataRetriever implements DataRetrieverInt {
         }
 
         return resultMap;
+    }
+
+    private void trackExecution(long commandId, Connection conn) {
+        PreparedStatement ps = null;
+
+        try {
+            ps = conn.prepareStatement("insert into command_execution (command_id) values (?)");
+            ps.setLong(1, commandId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            log.error("Couldn't insert row to track the execution of command " + commandId);
+            e.printStackTrace();
+        } finally {
+            DBMS.close(ps);
+        }
     }
 }
 
