@@ -1658,7 +1658,7 @@ public class TCLoadRound extends TCLoad {
             query.append(" and rt.algo_rating_type_id = " + algoType);
             query.append(" and r1.round_id = ?");
             query.append(" and rr2.rated_flag = 1");
-            query.append(" and c2.date < c1.date");
+            query.append(" and (c2.date < c1.date or (c2.date = c1.date and r2.round_id < r1.round_id))");
             query.append(" group by rr2.coder_id");
 
             psSel2 = prepareStatement(query.toString(), TARGET_DB);
