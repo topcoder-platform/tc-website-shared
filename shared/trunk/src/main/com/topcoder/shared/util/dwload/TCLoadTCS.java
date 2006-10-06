@@ -1037,6 +1037,8 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement delete = null;
         PreparedStatement dwDataSelect = null;
         PreparedStatement dwDataUpdate = null;
+        PreparedStatement psNumRatings = null;
+        ResultSet numRatings = null;
         ResultSet projects = null;
         ResultSet dwData = null;
 
@@ -1087,8 +1089,8 @@ public class TCLoadTCS extends TCLoad {
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
-                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind, old_rating_id, new_rating_id) " +
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)";
+                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind, old_rating_id, new_rating_id, num_ratings) " +
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)";
 
         final String DW_DATA_SELECT =
                 "select sum(num_appeals) as num_appeals" +
@@ -1099,6 +1101,19 @@ public class TCLoadTCS extends TCLoad {
         final String DW_DATA_UPDATE =
                 "update project_result set num_appeals = ?, num_successful_appeals = ? where project_id = ? and user_id = ?";
 
+        final String NUM_RATINGS =
+                " select count(*) as count " +
+                        "  , pr2.user_id " +
+                        " from project_result pr2 " +
+                        "  , project p1 " +
+                        "  , project p2 " +
+                        " where pr2.project_id = p2.project_id " +
+                        " and p1.project_id = ? " +
+                        " and pr2.rating_ind = 1 " +
+                        " and p1.phase_id = p2.phase_id " +
+                        " and (p2.rating_date < p1.rating_date " +
+                        "  or (p2.rating_date = p1.rating_date and p2.project_id < p1.project_id)) " +
+                        " group by pr2.user_id ";
 
         try {
             long start = System.currentTimeMillis();
@@ -1117,6 +1132,7 @@ public class TCLoadTCS extends TCLoad {
             dwDataSelect = prepareStatement(DW_DATA_SELECT, TARGET_DB);
             dwDataUpdate = prepareStatement(DW_DATA_UPDATE, TARGET_DB);
 
+            psNumRatings = prepareStatement(NUM_RATINGS, TARGET_DB);
 
             StringBuffer buf = new StringBuffer(1000);
             buf.append(RESULT_SELECT);
@@ -1152,8 +1168,19 @@ public class TCLoadTCS extends TCLoad {
                 projectResults = resultSelect.executeQuery();
                 //log.debug("after result select");
 
+                HashMap ratingsMap;
                 while (projectResults.next()) {
                     long project_id = projectResults.getLong("project_id");
+
+                    psNumRatings.clearParameters();
+                    psNumRatings.setLong(1, project_id);
+                    numRatings = psNumRatings.executeQuery();
+
+                    ratingsMap = new HashMap();
+
+                    while (numRatings.next()) {
+                        ratingsMap.put(new Long(numRatings.getLong("user_id")), new Integer(numRatings.getInt("count")));
+                    }
 
                     boolean passedReview = false;
                     try {
@@ -1218,6 +1245,12 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
                     resultInsert.setInt(23, projectResults.getString("old_rating") == null ? -2 : projectResults.getInt("old_rating"));
                     resultInsert.setInt(24, projectResults.getString("new_rating") == null ? -2 : projectResults.getInt("new_rating"));
+                    Long tempUserId = new Long(projectResults.getLong("user_id"));
+                    int currNumRatings = 0;
+                    if (ratingsMap.containsKey(tempUserId)) {
+                        currNumRatings = ((Integer) ratingsMap.get(tempUserId)).intValue();
+                    }
+                    resultInsert.setInt(25, projectResults.getInt("rating_ind") == 1 ? currNumRatings + 1 : currNumRatings);
                     //log.debug("before result insert");
                     resultInsert.executeUpdate();
                     //log.debug("after result insert");
