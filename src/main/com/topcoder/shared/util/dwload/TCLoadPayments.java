@@ -3,11 +3,7 @@ package com.topcoder.shared.util.dwload;
 /**
  * TCLoadPayments.java
  *
- * TCLoadPayments loads coder information tables from one database to another.
- * The tables that are built by this load procedure are:
- * <ul>
- * <li>payment</li>
- * </ul>
+ * TCLoadPayments loads payments information to the DW.
  *
  * @author pulky
  * @version 1.0.0
@@ -178,7 +174,8 @@ public class TCLoadPayments extends TCLoad {
             boolean paymentsFound = false;
             boolean charityFound = false;
 
-            // this is to avoid a gigantic delete query the firs time the script is run.
+            // this is to avoid a gigantic delete query the first time the script is run. It should
+            // be verified that this code is run for the first time with the target tables empty.
             if (fLastLogTime.before(new Date((new GregorianCalendar(1990,1,1)).getTimeInMillis()))) {
                 paymentsFound = true;
             } else {
