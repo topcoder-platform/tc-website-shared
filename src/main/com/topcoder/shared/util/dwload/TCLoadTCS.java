@@ -803,7 +803,8 @@ public class TCLoadTCS extends TCLoad {
                     " categories cat, " +
                     " phase_instance pi, " +
                     " review_phase rp," +
-                    " project_status ps " +
+                    " project_status ps, " +
+                    " digital_run_ind " +
                     " where p.cur_version = 1  " +
                     " and cv.comp_vers_id = p.comp_vers_id " +
                     " and cc.component_id = cv.component_id " +
@@ -820,19 +821,19 @@ public class TCLoadTCS extends TCLoad {
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
                     "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
-                    "rating_date = ?, num_submissions_passed_review=?, winner_id=?, stage_id = ? where project_id = ? ";
+                    "rating_date = ?, num_submissions_passed_review=?, winner_id=?, stage_id = ?, digital_run_ind = ? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
                     "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
-                    "version_text, rating_date, num_submissions_passed_review, winner_id, stage_id) " +
+                    "version_text, rating_date, num_submissions_passed_review, winner_id, stage_id, digital_run_ind) " +
                     "values (?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
-                    "?, ?) ";
+                    "?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
@@ -891,7 +892,8 @@ public class TCLoadTCS extends TCLoad {
                         update.setNull(26, Types.DATE);
                     }
                 }
-                update.setLong(27, rs.getLong("project_id"));
+                update.setInt(27, rs.getInt("digital_run_ind"));
+                update.setLong(28, rs.getLong("project_id"));
 
                 int retVal = update.executeUpdate();
 
@@ -937,6 +939,7 @@ public class TCLoadTCS extends TCLoad {
                             insert.setNull(27, Types.DATE);
                         }
                     }
+                    insert.setInt(28, rs.getInt("digital_run_ind"));
                     insert.executeUpdate();
                 }
                 count++;
@@ -1003,7 +1006,7 @@ public class TCLoadTCS extends TCLoad {
                     "from " +
                     "   project " +
                     "where " +
-                    "   stage_id is not null";
+                    "   stage_id is not null and digital_run_ind = 1";
 
             select = prepareStatement(SELECT, TARGET_DB);
 
