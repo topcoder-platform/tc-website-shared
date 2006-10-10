@@ -329,6 +329,7 @@ public class DataRetriever implements DataRetrieverInt {
         // Get the list of queries to execute, and the names and texts of the queries
         ResultSet rs = null;
         PreparedStatement ps = null;
+        long commandId = 0;
         try {
             query = new StringBuffer(300);
             query.append("SELECT cqx.query_id, ");
@@ -353,10 +354,7 @@ public class DataRetriever implements DataRetrieverInt {
             querySortMap = new HashMap();
             boolean tracked = false;
             while (rs.next()) {
-                if (!tracked) {
-                    trackExecution(rs.getLong("command_id"), conn);
-                    tracked = true;
-                }
+                commandId = rs.getLong("command_id");
                 rowcount++;
                 Integer tempId = new Integer(rs.getInt(1));
                 qid.add(tempId);
@@ -482,7 +480,7 @@ public class DataRetriever implements DataRetrieverInt {
                 if (inputCode.equals(DataAccessConstants.SORT_COLUMN)) {
                     int colValue = Integer.parseInt(input);
                     colValue++;
-                    input = new String("" + colValue);
+                    input = String.valueOf(colValue);
                 }
 
                 String old = DataAccessConstants.INPUT_DELIMITER + inputCode +
@@ -527,6 +525,7 @@ public class DataRetriever implements DataRetrieverInt {
             //todo by replacing the inputs with ?'s and keeping track of
             //todo what goes where and then calling setXXX on the preparedstatement
             resultMap = new HashMap();
+            long start = System.currentTimeMillis();
             for (i = 0; i < queryIdList.length; i++) {
                 try {
                     Integer lookup = new Integer(queryIdList[i]);
@@ -571,8 +570,9 @@ public class DataRetriever implements DataRetrieverInt {
                     DBMS.close(ps);
 
                 }
-
             }
+            trackExecution(commandId, conn, System.currentTimeMillis()-start);
+
         } catch (Exception e) {
             handleException(e, queryText, inputs);
             throw new Exception("Error while retrieving query data:" + queryText);
@@ -581,12 +581,13 @@ public class DataRetriever implements DataRetrieverInt {
         return resultMap;
     }
 
-    private void trackExecution(long commandId, Connection conn) {
+    private void trackExecution(long commandId, Connection conn, long time) {
         PreparedStatement ps = null;
 
         try {
-            ps = conn.prepareStatement("insert into command_execution (command_id) values (?)");
+            ps = conn.prepareStatement("insert into command_execution (command_id, execution_time) values (?, ?)");
             ps.setLong(1, commandId);
+            ps.setLong(2, time);
             ps.executeUpdate();
         } catch (Exception e) {
             log.error("Couldn't insert row to track the execution of command " + commandId);
