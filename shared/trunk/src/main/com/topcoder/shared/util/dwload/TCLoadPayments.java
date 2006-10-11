@@ -176,7 +176,7 @@ public class TCLoadPayments extends TCLoad {
             query = new StringBuffer(100);
             query.append("select distinct pdx.payment_id from payment_detail pd, payment_detail_xref pdx, payment_type_lu ptl ");
             query.append("where pd.payment_detail_id = pdx.payment_detail_id and pd.payment_type_id = ptl.payment_type_id ");
-            query.append("and pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ? ");
+            query.append("and (pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ? )");
             psSelModified = prepareStatement(query.toString(), SOURCE_DB);
             psSelModified.setTimestamp(1, fLastLogTime);
             psSelModified.setTimestamp(2, fLastLogTime);
@@ -230,7 +230,7 @@ public class TCLoadPayments extends TCLoad {
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
                 query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id <> 69 ");
-                query.append("and pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ? ");
+                query.append("and (pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ?) ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
                 psSel.setTimestamp(2, fLastLogTime);
