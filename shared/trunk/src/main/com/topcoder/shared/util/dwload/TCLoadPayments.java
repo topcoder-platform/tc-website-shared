@@ -194,7 +194,7 @@ public class TCLoadPayments extends TCLoad {
             
             modifiedPayments = psSelModified.executeQuery();
 
-            int i = 1;
+            int i = 0;
             while (modifiedPayments.next()) {
                 paymentsFound = true;
 
@@ -207,12 +207,12 @@ public class TCLoadPayments extends TCLoad {
                 psDelPayment.setLong(1, modifiedPayments.getLong("payment_id"));
                 psDelPayment.executeUpdate();
 
-                if (i % 100 == 0) {
-                    log.info("Deleted " + count + " old payments...");
-                }
                 i++;
+                if (i % 100 == 0) {
+                    log.info("Deleted " + i + " old payments...");
+                }
             }
-            log.info("total old payment deleted = " + count);
+            log.info("total old payment deleted = " + i);
 
             if (paymentsFound) {
                 //StringBuffer charity = new StringBuffer(100);
