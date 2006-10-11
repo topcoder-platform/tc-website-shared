@@ -185,6 +185,8 @@ public class TCLoadPayments extends TCLoad {
                 query.append("and pd.date_modified > ? or ptl.modify_date > ? or ptl.create_date > ? ");
                 psSelModified = prepareStatement(query.toString(), SOURCE_DB);
                 psSelModified.setTimestamp(1, fLastLogTime);
+                psSelModified.setTimestamp(2, fLastLogTime);
+                psSelModified.setTimestamp(3, fLastLogTime);
     
                 delete = new StringBuffer(100);
     
