@@ -16,8 +16,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.sql.Types;
 
@@ -162,60 +160,54 @@ public class TCLoadPayments extends TCLoad {
         PreparedStatement psSel = null;
         PreparedStatement psInsPayment = null;
         PreparedStatement psInsUsrPayment = null;
-        PreparedStatement psDel = null;
-        //PreparedStatement psUpd = null;
+        PreparedStatement psDelUserPayment = null;
+        PreparedStatement psDelPayment = null;
         PreparedStatement psSelModified = null;
         ResultSet modifiedPayments = null;
         ResultSet rs = null;
         StringBuffer query = null;
-        StringBuffer delete = null;
 
         try {
             boolean paymentsFound = false;
-            //boolean charityFound = false;
 
-            // this is to avoid a gigantic delete query the first time the script is run. It should
-            // be verified that this code is run for the first time with the target tables empty.
-            if (fLastLogTime.before(new Date((new GregorianCalendar(1990,1,1)).getTimeInMillis()))) {
+            query = new StringBuffer(100);
+            query.append("select distinct pdx.payment_id from payment_detail pd, payment_detail_xref pdx, payment_type_lu ptl ");
+            query.append("where pd.payment_detail_id = pdx.payment_detail_id and pd.payment_type_id = ptl.payment_type_id ");
+            query.append("and pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ? ");
+            psSelModified = prepareStatement(query.toString(), SOURCE_DB);
+            psSelModified.setTimestamp(1, fLastLogTime);
+            psSelModified.setTimestamp(2, fLastLogTime);
+            psSelModified.setTimestamp(3, fLastLogTime);
+            psSelModified.setTimestamp(4, fLastLogTime);
+
+            query = new StringBuffer(100);
+            query.append("delete from payment ");
+            query.append("where payment_id = ? ");
+
+            psDelPayment = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("delete from user_payment ");
+            query.append("where payment_id = ? ");
+
+            psDelUserPayment = prepareStatement(query.toString(), TARGET_DB);
+            
+            modifiedPayments = psSelModified.executeQuery();
+            int i = 1;
+            while (modifiedPayments.next()) {
                 paymentsFound = true;
-            } else {
-                query = new StringBuffer(100);
-                query.append("select distinct pdx.payment_id from payment_detail pd, payment_detail_xref pdx, payment_type_lu ptl ");
-                query.append("where pd.payment_detail_id = pdx.payment_detail_id and pd.payment_type_id = ptl.payment_type_id ");
-                query.append("and pd.date_modified > ? or ptl.modify_date > ? or ptl.create_date > ? ");
-                psSelModified = prepareStatement(query.toString(), SOURCE_DB);
-                psSelModified.setTimestamp(1, fLastLogTime);
-                psSelModified.setTimestamp(2, fLastLogTime);
-                psSelModified.setTimestamp(3, fLastLogTime);
-    
-                delete = new StringBuffer(100);
-    
-                modifiedPayments = psSelModified.executeQuery();
-                while (modifiedPayments.next()) {
-                    paymentsFound = true;
-                    delete.append(modifiedPayments.getLong("payment_id"));
-                    delete.append(",");
-                }
-                delete.setCharAt(delete.length() - 1, ')');
 
-                if (paymentsFound) {
-                    // delete modified payments
-                    query = new StringBuffer(100);
-                    query.append("delete from payment ");
-                    query.append("where payment_id in ( ");
-                    query.append(delete);
+                // delete modified payments
+                psDelPayment.clearParameters();
+                psDelPayment.setLong(1, modifiedPayments.getLong("payment_id"));
+                psDelPayment.executeUpdate();
 
-                    psDel = prepareStatement(query.toString(), TARGET_DB);
-                    psDel.executeUpdate();
-
-                    query = new StringBuffer(100);
-                    query.append("delete from user_payment ");
-                    query.append("where payment_id in ( ");
-                    query.append(delete);
-
-                    psDel = prepareStatement(query.toString(), TARGET_DB);
-                    psDel.executeUpdate();
-                }
+                psDelUserPayment.clearParameters();
+                psDelUserPayment.setLong(1, modifiedPayments.getLong("payment_id"));
+                psDelUserPayment.executeUpdate();
+                
+                printLoadProgress(i, "Deleting old payments...");
+                i++;
             }
             
             if (paymentsFound) {
@@ -233,9 +225,12 @@ public class TCLoadPayments extends TCLoad {
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
                 query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id <> 69 ");
-                query.append("and pd.date_modified > ? or ptl.modify_date > ? or ptl.create_date > ? ");
+                query.append("and pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ? ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
+                psSel.setTimestamp(2, fLastLogTime);
+                psSel.setTimestamp(3, fLastLogTime);
+                psSel.setTimestamp(4, fLastLogTime);
                     
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, payment_desc, payment_type_id, ");
@@ -254,88 +249,63 @@ public class TCLoadPayments extends TCLoad {
                 rs = psSel.executeQuery();
     
                 while (rs.next()) {
-/*                    if (rs.getLong("payment_type_id") == 5) {
-                        charityFound = true;
-                        charity.append(rs.getLong("parent_payment_id"));
-                        charity.append(",");                        
-                    } else {*/
-                        psInsPayment.clearParameters();
-                        psInsPayment.setLong(1, rs.getLong("payment_id"));
-                        psInsPayment.setString(2, rs.getString("payment_desc"));
-                        psInsPayment.setLong(3, rs.getLong("payment_type_id"));
-                        psInsPayment.setString(4, rs.getString("payment_type_desc"));
-                        long referenceId = selectReferenceId(rs.getInt("payment_reference_id"),
-                            rs.getLong("algorithm_round_id"),
-                            rs.getLong("algorithm_problem_id"),
-                            rs.getLong("component_contest_id"),
-                            rs.getLong("component_project_id"),
-                            rs.getLong("studio_contest_id"),
-                            rs.getLong("digital_run_stage_id"),
-                            rs.getLong("digital_run_season_id"));
-                        if (referenceId > 0) {
-                            psInsPayment.setLong(5, referenceId);
-                        } else {
-                            psInsPayment.setNull(5, Types.DECIMAL);
-                        }
-                        psInsPayment.setLong(6, rs.getLong("parent_payment_id"));
-                        psInsPayment.setInt(7, rs.getInt("charity_ind"));
-                        psInsPayment.setInt(8, rs.getInt("show_in_profile_ind"));
-                        psInsPayment.setInt(9, rs.getInt("show_details_ind"));
-                        psInsPayment.setLong(10, rs.getLong("status_id"));
-                        psInsPayment.setString(11, rs.getString("status_desc"));
-                        retVal = psInsPayment.executeUpdate();
-        
-                        if (retVal != 1) {
-                            throw new SQLException("TCLoadPayments: Load payment for payment_id " + rs.getLong("payment_id") +
-                                    " could not be inserted.");
-                        }
-    
-                        psInsUsrPayment.clearParameters();
-                        psInsUsrPayment.setLong(1, rs.getLong("payment_id"));
-                        psInsUsrPayment.setLong(2, rs.getLong("user_id"));
-                        psInsUsrPayment.setDouble(3, rs.getDouble("net_amount"));
-                        psInsUsrPayment.setDouble(4, rs.getDouble("gross_amount"));
-
-                        if (rs.getTimestamp("date_due") != null) {
-                            psInsUsrPayment.setLong(5, lookupCalendarId(rs.getTimestamp("date_due"),TARGET_DB));
-                        } else {
-                            psInsUsrPayment.setNull(5, Types.DECIMAL);
-                        }
-                        if (rs.getTimestamp("date_paid") != null) {
-                            psInsUsrPayment.setLong(6, lookupCalendarId(rs.getTimestamp("date_paid"),TARGET_DB));
-                        } else {
-                            psInsUsrPayment.setNull(6, Types.DECIMAL);
-                        }
-                        retVal = psInsUsrPayment.executeUpdate();
-        
-                        if (retVal != 1) {
-                            throw new SQLException("TCLoadPayments: Load payment for payment_id " + rs.getLong("payment_id") +
-                                    " could not be inserted.");
-                        }
-    
-                        count++;
-                        printLoadProgress(count, "payments");
+                    psInsPayment.clearParameters();
+                    psInsPayment.setLong(1, rs.getLong("payment_id"));
+                    psInsPayment.setString(2, rs.getString("payment_desc"));
+                    psInsPayment.setLong(3, rs.getLong("payment_type_id"));
+                    psInsPayment.setString(4, rs.getString("payment_type_desc"));
+                    long referenceId = selectReferenceId(rs.getInt("payment_reference_id"),
+                        rs.getLong("algorithm_round_id"),
+                        rs.getLong("algorithm_problem_id"),
+                        rs.getLong("component_contest_id"),
+                        rs.getLong("component_project_id"),
+                        rs.getLong("studio_contest_id"),
+                        rs.getLong("digital_run_stage_id"),
+                        rs.getLong("digital_run_season_id"));
+                    if (referenceId > 0) {
+                        psInsPayment.setLong(5, referenceId);
+                    } else {
+                        psInsPayment.setNull(5, Types.DECIMAL);
                     }
-//                }
-                
-                // finally update the charity_ind.
-  /*              if (charityFound) {
-                    charity.setCharAt(charity.length() - 1, ')');
+                    psInsPayment.setLong(6, rs.getLong("parent_payment_id"));
+                    psInsPayment.setInt(7, rs.getInt("charity_ind"));
+                    psInsPayment.setInt(8, rs.getInt("show_in_profile_ind"));
+                    psInsPayment.setInt(9, rs.getInt("show_details_ind"));
+                    psInsPayment.setLong(10, rs.getLong("status_id"));
+                    psInsPayment.setString(11, rs.getString("status_desc"));
+                    retVal = psInsPayment.executeUpdate();
     
-                    query = new StringBuffer(100);
-                    query.append("update payment set charity_ind = 1 ");
-                    query.append("where payment_id in ( ");
-                    query.append(charity);
-                    
-                    log.info(query.toString());
-                    psUpd = prepareStatement(query.toString(), TARGET_DB);
-
-                    retVal = psUpd.executeUpdate();
-                    log.info("charity updates = " + retVal);                    
-                    if (retVal < 1) {
-                        throw new SQLException("TCLoadPayments: Load payment for payment_id: could not update charity_ind.");
+                    if (retVal != 1) {
+                        throw new SQLException("TCLoadPayments: Load payment for payment_id " + rs.getLong("payment_id") +
+                                " could not be inserted.");
                     }
-                }*/
+
+                    psInsUsrPayment.clearParameters();
+                    psInsUsrPayment.setLong(1, rs.getLong("payment_id"));
+                    psInsUsrPayment.setLong(2, rs.getLong("user_id"));
+                    psInsUsrPayment.setDouble(3, rs.getDouble("net_amount"));
+                    psInsUsrPayment.setDouble(4, rs.getDouble("gross_amount"));
+
+                    if (rs.getTimestamp("date_due") != null) {
+                        psInsUsrPayment.setLong(5, lookupCalendarId(rs.getTimestamp("date_due"),TARGET_DB));
+                    } else {
+                        psInsUsrPayment.setNull(5, Types.DECIMAL);
+                    }
+                    if (rs.getTimestamp("date_paid") != null) {
+                        psInsUsrPayment.setLong(6, lookupCalendarId(rs.getTimestamp("date_paid"),TARGET_DB));
+                    } else {
+                        psInsUsrPayment.setNull(6, Types.DECIMAL);
+                    }
+                    retVal = psInsUsrPayment.executeUpdate();
+    
+                    if (retVal != 1) {
+                        throw new SQLException("TCLoadPayments: Load payment for payment_id " + rs.getLong("payment_id") +
+                                " could not be inserted.");
+                    }
+
+                    count++;
+                    printLoadProgress(count, "payments");
+                }
             }            
 
             log.info("total payment records copied = " + count);
@@ -349,7 +319,8 @@ public class TCLoadPayments extends TCLoad {
             DBMS.close(psSel);
             DBMS.close(psInsPayment);
             DBMS.close(psInsUsrPayment);
-            DBMS.close(psDel);
+            DBMS.close(psDelPayment);
+            DBMS.close(psDelUserPayment);
             //DBMS.close(psUpd);
             DBMS.close(psSelModified);
         }
