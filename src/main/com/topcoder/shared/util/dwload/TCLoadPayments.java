@@ -207,10 +207,13 @@ public class TCLoadPayments extends TCLoad {
                 psDelPayment.setLong(1, modifiedPayments.getLong("payment_id"));
                 psDelPayment.executeUpdate();
 
-                printLoadProgress(i, "Deleting old payments...");
+                if (i % 100 == 0) {
+                    log.info("Deleted " + count + " old payments...");
+                }
                 i++;
             }
-            
+            log.info("total old payment deleted = " + count);
+
             if (paymentsFound) {
                 //StringBuffer charity = new StringBuffer(100);
 
