@@ -6,7 +6,7 @@ package com.topcoder.shared.util.dwload;
  * TCLoadPayments loads payments information to the DW.
  *
  * @author pulky
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 import com.topcoder.shared.util.DBMS;
@@ -163,7 +163,7 @@ public class TCLoadPayments extends TCLoad {
         PreparedStatement psInsPayment = null;
         PreparedStatement psInsUsrPayment = null;
         PreparedStatement psDel = null;
-        PreparedStatement psUpd = null;
+        //PreparedStatement psUpd = null;
         PreparedStatement psSelModified = null;
         ResultSet modifiedPayments = null;
         ResultSet rs = null;
@@ -172,7 +172,7 @@ public class TCLoadPayments extends TCLoad {
 
         try {
             boolean paymentsFound = false;
-            boolean charityFound = false;
+            //boolean charityFound = false;
 
             // this is to avoid a gigantic delete query the first time the script is run. It should
             // be verified that this code is run for the first time with the target tables empty.
@@ -217,7 +217,7 @@ public class TCLoadPayments extends TCLoad {
             }
             
             if (paymentsFound) {
-                StringBuffer charity = new StringBuffer(100);
+                //StringBuffer charity = new StringBuffer(100);
 
                 // insert modified payments
                 query = new StringBuffer(100);
@@ -226,12 +226,12 @@ public class TCLoadPayments extends TCLoad {
                 query.append("ptl.payment_reference_id, date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
                 query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, "); 
-                query.append("pd.date_paid, sl.status_id, sl.status_desc "); 
+                query.append("pd.date_paid, sl.status_id, sl.status_desc, charity_ind "); 
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
-                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 ");
-                query.append("and pd.date_modified > ? ");
+                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id <> 69 ");
+                query.append("and pd.date_modified > ? or ptl.modify_date > ? or ptl.create_date > ? ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
                     
@@ -252,11 +252,11 @@ public class TCLoadPayments extends TCLoad {
                 rs = psSel.executeQuery();
     
                 while (rs.next()) {
-                    if (rs.getLong("payment_type_id") == 5) {
+/*                    if (rs.getLong("payment_type_id") == 5) {
                         charityFound = true;
                         charity.append(rs.getLong("parent_payment_id"));
                         charity.append(",");                        
-                    } else {
+                    } else {*/
                         psInsPayment.clearParameters();
                         psInsPayment.setLong(1, rs.getLong("payment_id"));
                         psInsPayment.setString(2, rs.getString("payment_desc"));
@@ -276,7 +276,7 @@ public class TCLoadPayments extends TCLoad {
                             psInsPayment.setNull(5, Types.DECIMAL);
                         }
                         psInsPayment.setLong(6, rs.getLong("parent_payment_id"));
-                        psInsPayment.setInt(7, 0); //charity
+                        psInsPayment.setInt(7, rs.getInt("charity_ind"));
                         psInsPayment.setInt(8, rs.getInt("show_in_profile_ind"));
                         psInsPayment.setInt(9, rs.getInt("show_details_ind"));
                         psInsPayment.setLong(10, rs.getLong("status_id"));
@@ -314,10 +314,10 @@ public class TCLoadPayments extends TCLoad {
                         count++;
                         printLoadProgress(count, "payments");
                     }
-                }
+//                }
                 
                 // finally update the charity_ind.
-                if (charityFound) {
+  /*              if (charityFound) {
                     charity.setCharAt(charity.length() - 1, ')');
     
                     query = new StringBuffer(100);
@@ -333,7 +333,7 @@ public class TCLoadPayments extends TCLoad {
                     if (retVal < 1) {
                         throw new SQLException("TCLoadPayments: Load payment for payment_id: could not update charity_ind.");
                     }
-                }
+                }*/
             }            
 
             log.info("total payment records copied = " + count);
@@ -348,7 +348,7 @@ public class TCLoadPayments extends TCLoad {
             DBMS.close(psInsPayment);
             DBMS.close(psInsUsrPayment);
             DBMS.close(psDel);
-            DBMS.close(psUpd);
+            //DBMS.close(psUpd);
             DBMS.close(psSelModified);
         }
     }
