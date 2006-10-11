@@ -43,8 +43,10 @@ public class TCLoadPayments extends TCLoad {
         try {
             fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
 
+            log.info("1");
             getLastUpdateTime();
 
+            log.info("2");
             //loadPaymentTypes();
             loadPayments();
 
@@ -169,6 +171,7 @@ public class TCLoadPayments extends TCLoad {
 
         try {
             boolean paymentsFound = false;
+            log.info("3");
 
             query = new StringBuffer(100);
             query.append("select distinct pdx.payment_id from payment_detail pd, payment_detail_xref pdx, payment_type_lu ptl ");
@@ -193,6 +196,8 @@ public class TCLoadPayments extends TCLoad {
             psDelUserPayment = prepareStatement(query.toString(), TARGET_DB);
             
             modifiedPayments = psSelModified.executeQuery();
+            log.info("4");
+
             int i = 1;
             while (modifiedPayments.next()) {
                 paymentsFound = true;
