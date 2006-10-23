@@ -29,6 +29,12 @@ public class ProblemEvent extends RoomMessage {
 
     /** the sourceCoder coder of the event */
     private String sourceCoder;
+    
+    /** Problem source */
+    protected String programText;
+    
+    /** language used */
+    protected int language;
 
     /** Problem being opened */
     public final static int OPENED = 1;
@@ -50,6 +56,9 @@ public class ProblemEvent extends RoomMessage {
 
     /** Problem being system tested */
     public final static int SYSTEMTESTING = 7;
+    
+    /** Saving the problem */
+    public final static int SAVING = 8;
 
     /**
      * No-arg constructor needed by customserialization
@@ -77,8 +86,22 @@ public class ProblemEvent extends RoomMessage {
         this.problemWriter = problemWriter;
         this.sourceCoder = sourceCoder;
         this.timeLeft = timeLeft;
+        this.programText = "";
     }
-
+    
+    public ProblemEvent(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, String programText, int language) {
+        this(room, problemEventType, problemID, problemWriter, sourceCoder, timeLeft);
+        this.programText = programText;
+        this.language = language;
+    }
+    
+    public int getLanguage() {
+        return language;
+    }
+    
+    public String getProgramText() {
+        return programText;
+    }
 
     /**
      * Returns the event type
@@ -136,6 +159,8 @@ public class ProblemEvent extends RoomMessage {
         writer.writeString(problemWriter);
         writer.writeString(sourceCoder);
         writer.writeInt(timeLeft);
+        writer.writeString(programText);
+        writer.writeInt(language);
     }
 
     /**
@@ -156,6 +181,8 @@ public class ProblemEvent extends RoomMessage {
         problemWriter = reader.readString();
         sourceCoder = reader.readString();
         timeLeft = reader.readInt();
+        programText = reader.readString();
+        language = reader.readInt();
     }
 
     /**

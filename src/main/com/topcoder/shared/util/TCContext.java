@@ -95,6 +95,7 @@ public class TCContext {
         Hashtable env = new Hashtable();
         env.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
         env.put(Context.PROVIDER_URL, providerUrl);
+        env.put("jnp.disableDiscovery","true");//stop jboss from multicasting
         //todo comment this in when we're all on jboss.
         //env.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
         return new InitialContext(env);
