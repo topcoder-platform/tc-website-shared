@@ -54,6 +54,12 @@ public class ProblemResult extends ProblemEvent {
         this.result = result;
         this.resultValue = resultValue;
     }
+    
+    public ProblemResult(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, int result, double resultValue, String text, int language) {
+        this(room, problemEventType, problemID, problemWriter, sourceCoder, timeLeft,result, resultValue);
+        this.language = language;
+        this.programText = text;
+    }
 
 
     /**
