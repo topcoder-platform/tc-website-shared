@@ -2215,23 +2215,23 @@ public class TCLoadAggregate extends TCLoad {
 
 
     private static final String POINT_QUERY =
-            " select coder_id, round_id, division_id, problem_id, final_points" +
+            " select coder_id, round_id, division_id, problem_id, time_elapsed" +
                     " from coder_problem" +
                     " where round_id = ?" +
                     " and problem_id = ?" +
                     " and division_id = ?" +
                     " and end_status_id = 150 " +
-                    " order by final_points desc";
+                    " order by time_elapsed asc";
 
     private static final String LANGUAGE_POINT_QUERY =
-            " select coder_id, round_id, division_id, problem_id, final_points" +
+            " select coder_id, round_id, division_id, problem_id, time_elapsed" +
                     " from coder_problem" +
                     " where round_id = ?" +
                     " and problem_id = ?" +
                     " and division_id = ?" +
                     " and language_id = ?" +
                     " and end_status_id = 150 " +
-                    " order by final_points desc";
+                    " order by time_elapsed asc";
 
     private static final String LANGUAGE_QUERY = "select distinct language_id " +
             "from coder_problem " +
