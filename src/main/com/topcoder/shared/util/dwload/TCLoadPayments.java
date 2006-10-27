@@ -167,6 +167,8 @@ public class TCLoadPayments extends TCLoad {
         ResultSet rs = null;
         StringBuffer query = null;
 
+
+        long paymentId = 0;
         try {
             boolean paymentsFound = false;
 
@@ -198,16 +200,18 @@ public class TCLoadPayments extends TCLoad {
             while (modifiedPayments.next()) {
                 paymentsFound = true;
 
+                paymentId = modifiedPayments.getLong("payment_id");
+
                 // delete modified payments
                 psDelUserPayment.clearParameters();
-                psDelUserPayment.setLong(1, modifiedPayments.getLong("payment_id"));
+                psDelUserPayment.setLong(1, paymentId);
                 psDelUserPayment.executeUpdate();
                 
                 psDelPayment.clearParameters();
-                psDelPayment.setLong(1, modifiedPayments.getLong("payment_id"));
+                psDelPayment.setLong(1, paymentId);
                 psDelPayment.executeUpdate();
 
-                log.debug("deleting payment_id = " + modifiedPayments.getLong("payment_id"));
+                log.debug("deleting payment_id = " + paymentId);
                 i++;
                 if (i % 100 == 0) {
                     log.info("Deleted " + i + " old payments...");
@@ -253,9 +257,11 @@ public class TCLoadPayments extends TCLoad {
             
                 rs = psSel.executeQuery();
     
-                while (rs.next()) {
+                while (rs.next()) {                    
+                    paymentId = rs.getLong("payment_id");
+
                     psInsPayment.clearParameters();
-                    psInsPayment.setLong(1, rs.getLong("payment_id"));
+                    psInsPayment.setLong(1, paymentId);
                     psInsPayment.setString(2, rs.getString("payment_desc"));
                     psInsPayment.setLong(3, rs.getLong("payment_type_id"));
                     psInsPayment.setString(4, rs.getString("payment_type_desc"));
@@ -279,7 +285,7 @@ public class TCLoadPayments extends TCLoad {
                     psInsPayment.setLong(10, rs.getLong("status_id"));
                     psInsPayment.setString(11, rs.getString("status_desc"));
 
-                    log.debug("inserting payment_id = " + rs.getLong("payment_id"));
+                    log.debug("inserting payment_id = " + paymentId);
 
                     retVal = psInsPayment.executeUpdate();
     
@@ -289,7 +295,7 @@ public class TCLoadPayments extends TCLoad {
                     }
 
                     psInsUsrPayment.clearParameters();
-                    psInsUsrPayment.setLong(1, rs.getLong("payment_id"));
+                    psInsUsrPayment.setLong(1, paymentId);
                     psInsUsrPayment.setLong(2, rs.getLong("user_id"));
                     psInsUsrPayment.setDouble(3, rs.getDouble("net_amount"));
                     psInsUsrPayment.setDouble(4, rs.getDouble("gross_amount"));
@@ -319,7 +325,7 @@ public class TCLoadPayments extends TCLoad {
             log.info("total payment records copied = " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'payment' table failed.\n" +
+            throw new Exception("Load of 'payment' table failed.\n" + "payment_id = " + paymentId + "\n" +
                     sqle.getMessage());
         } finally {
             DBMS.close(modifiedPayments);
