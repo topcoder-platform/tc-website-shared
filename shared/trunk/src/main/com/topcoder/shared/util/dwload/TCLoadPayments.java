@@ -207,6 +207,7 @@ public class TCLoadPayments extends TCLoad {
                 psDelPayment.setLong(1, modifiedPayments.getLong("payment_id"));
                 psDelPayment.executeUpdate();
 
+                log.debug("deleting payment_id = " + modifiedPayments.getLong("payment_id"));
                 i++;
                 if (i % 100 == 0) {
                     log.info("Deleted " + i + " old payments...");
@@ -277,6 +278,9 @@ public class TCLoadPayments extends TCLoad {
                     psInsPayment.setInt(9, rs.getInt("show_details_ind"));
                     psInsPayment.setLong(10, rs.getLong("status_id"));
                     psInsPayment.setString(11, rs.getString("status_desc"));
+
+                    log.debug("inserting payment_id = " + rs.getLong("payment_id"));
+
                     retVal = psInsPayment.executeUpdate();
     
                     if (retVal != 1) {
