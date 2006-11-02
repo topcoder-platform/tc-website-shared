@@ -1768,7 +1768,7 @@ public class TCLoadTCS extends TCLoad {
                         submissionInsert.setObject(10, submissionInfo.getObject("scorecard_template_id"));
 
                         //log.debug("before submission insert");
-                        // TODO submissionInsert.executeUpdate();
+                        submissionInsert.executeUpdate();
                         //log.debug("after submission insert");
                     }
                     count++;
@@ -1871,7 +1871,7 @@ public class TCLoadTCS extends TCLoad {
                     screeningInsert.setObject(5, screenings.getObject("scorecard_id"));
                     screeningInsert.setObject(6, screenings.getObject("scorecard_template_id"));
 
-                    //TODO MISS TABLE screeningInsert.executeUpdate();
+                    screeningInsert.executeUpdate();
                 }
             }
             log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
