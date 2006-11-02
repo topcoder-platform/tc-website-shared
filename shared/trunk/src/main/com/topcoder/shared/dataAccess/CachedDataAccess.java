@@ -2,8 +2,8 @@ package com.topcoder.shared.dataAccess;
 
 import com.topcoder.shared.distCache.CacheClient;
 import com.topcoder.shared.distCache.CacheClientFactory;
-import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.Connection;
 import java.util.Map;
@@ -82,7 +82,7 @@ public class CachedDataAccess extends DataAccess {
             CacheClient cc = null;
             try {
                 cc = CacheClientFactory.createCacheClient();
-                // map = (Map) (cc.get(key));
+                map = (Map) (cc.get(key));
             } catch (Exception e) {
                 log.error("UNABLE TO ESTABLISH A CONNECTION TO THE CACHE: " + e.getMessage());
                 hasCacheConnection = false;
@@ -95,9 +95,9 @@ public class CachedDataAccess extends DataAccess {
                 /* attempt to add this object to the cache */
                 if (hasCacheConnection) {
                     try {
-                        // TODO cc.set(key, map, expireTime);
+                        cc.set(key, map, expireTime);
                     } catch (Exception e) {
-                        // TODO log.error("UNABLE TO INSERT INTO CACHE: " + e.getMessage());
+                        log.error("UNABLE TO INSERT INTO CACHE: " + e.getMessage());
                     }
                 }
             }
