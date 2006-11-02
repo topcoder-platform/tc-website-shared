@@ -767,6 +767,24 @@ public class TCLoadTCS extends TCLoad {
             close(select);
         }
     }
+    
+    private int converProjectStatus(int newStatusId) {
+		switch (newStatusId) {
+		case 1: // In Progress
+			return 3;
+		case 3: // Terminated
+			return 2;
+		case 7: // Completed
+			return 4;
+		case 5: // All submissions failed screening
+			return 5; // 'Cancelled - Failed Screening'
+		case 4: // All submissions didn't reach minimum review score
+			return 6; // 'Cancelled - Failed Review'
+		case 6: // Remove for Reposting
+			return 7; // 'Cancelled - Zero Submissions'
+		}
+		return 3;
+    }
 
     /**
      * <p/>
@@ -790,8 +808,8 @@ public class TCLoadTCS extends TCLoad {
             "	,(select substr(value,1,200) from project_info where project_id = p.project_id and project_info_type_id = 6) as component_name " +
             "	,(select count(*) from resource where project_id = p.project_id and resource_role_id = 1) as num_registrations " +
             "	,(select count(*) from submission sub inner join upload on sub.upload_id = upload.upload_id and upload.project_id = p.project_id where submission_status_id <> 5) as num_submissions " +
-            "	,(select count(*) from submission s inner join upload on upload.upload_id = s.upload_id where upload.project_id = p.project_id and submission_status_id in (1, 3, 4)) as num_valid_submissions " +
-            "	,(select count(*) from submission s inner join upload u on u.upload_id = s.upload_id where u.project_id = p.project_id and submission_status_id in (1, 4)) as num_submissions_passed_review " +
+            "	,(select count(*) from submission s, upload where upload.upload_id = s.upload_id and upload.project_id = p.project_id and submission_status_id in (1, 3, 4)) as num_valid_submissions " +
+            "	,(select count(*) from submission s, upload u where u.upload_id = s.upload_id and u.project_id = p.project_id and submission_status_id in (1, 4)) as num_submissions_passed_review " +
             "	,p.project_category_id " +
             "	,(select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score " +
             "	,(select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score " +        	            
@@ -812,21 +830,22 @@ public class TCLoadTCS extends TCLoad {
             "	,(select substr(value,1,4) from project_info where p.project_id = project_id  and project_info_type_id = 7) as version_text " +
             "	,pivi.value as rating_date " +
             "	,case when pivt.value is not null then substr(pivt.value,1,4) else null end as winner_id" +
-            "	,case when pict.value is not null then substr(pict.value,1,4) else null end as digital_run_ind   " + 
+            "	,case when pict.value is not null then substr(pict.value,1,4) else '1' end as digital_run_ind   " + 
             "   from project p ," +
             "	project_info pir," +
             "	project_info pivi," +
             "	project_info pivt," +
-            "	project_info pict," +
-            "	categories cat," +
+            "	outer project_info pict," +
+            "	categories cat, " + 
+            " 	comp_catalog cc," +
             "	project_status_lu psl, " +
             "   OUTER project_phase psd, " +
             "   OUTER project_phase ppd " +
-            " where pir.project_id = p.project_id and pir.project_info_type_id = 5 and " +
+            " where pir.project_id = p.project_id and pir.project_info_type_id = 2 and " +
             " pivi.project_id = p.project_id and pivi.project_info_type_id = 22 and " +
             " pivt.project_id = p.project_id and pivt.project_info_type_id = 23 and " +
             " pict.project_id = p.project_id and pict.project_info_type_id = 26 and " +
-            " cat.category_id = pir.value and psl.project_status_id = p.project_status_id and " +
+            " cc.component_id = pir.value and cc.root_category_id = cat.category_id and psl.project_status_id = p.project_status_id and " +
             " psd.project_id = p.project_id and psd.phase_type_id = 2 and ppd.project_id = p.project_id and ppd.phase_type_id = 1 "
             + " and  (p.modify_date > ? OR pir.modify_date > ? OR pivi.modify_date > ? OR pivt.modify_date > ? OR pict.modify_date > ?OR psd.modify_date > ? OR ppd.modify_date > ?)"
             ;
@@ -894,7 +913,7 @@ public class TCLoadTCS extends TCLoad {
                 update.setLong(14, rs.getLong("component_id"));
                 update.setLong(15, rs.getLong("review_phase_id"));
                 update.setString(16, rs.getString("review_phase_name"));
-                update.setLong(17, rs.getLong("project_stat_id"));
+                update.setLong(17, converProjectStatus(rs.getInt("project_stat_id")));
                 update.setString(18, rs.getString("project_stat_name"));
                 update.setLong(19, rs.getLong("level_id"));
                 update.setInt(20, rs.getInt("viewable"));
@@ -952,7 +971,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setLong(15, rs.getLong("component_id"));
                     insert.setLong(16, rs.getLong("review_phase_id"));
                     insert.setString(17, rs.getString("review_phase_name"));
-                    insert.setLong(18, rs.getLong("project_stat_id"));
+                    insert.setLong(18, converProjectStatus(rs.getInt("project_stat_id")));
                     insert.setString(19, rs.getString("project_stat_name"));
                     insert.setLong(20, rs.getLong("level_id"));
                     insert.setInt(21, rs.getInt("viewable"));
@@ -1167,17 +1186,14 @@ public class TCLoadTCS extends TCLoad {
                 "select distinct pr.project_id " +
                         "from project_result pr, " +
                         "project p, " +
-                        "project_info pi1, " +
-                        "project_info pi2, " +
+                        "project_info pi, " +
                         "comp_versions cv, " +
                         "comp_catalog cc " +
                         "where p.project_id = pr.project_id " +
-                        "and p.project_id = pi1.project_id and pi1.project_info_type_id = 1 " +
-                        "and p.project_id = pi2.project_id and pi1.project_info_type_id = 2 " +
-                        "and cv.comp_vers_id = pi1.value " +
-                        "and cc.component_id = pi2.value " +
+                        "and p.project_id = pi.project_id and pi.project_info_type_id = 2 " +
+                        "and cv.component_id = pi.value " +
+                        "and cc.component_id = cv.component_id and cv.phase_id in (112, 113) " +
                         "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pr.modify_date > ?)";
-
 
         final String RESULT_SELECT =
         	" select pr.project_id " +
@@ -1224,8 +1240,7 @@ public class TCLoadTCS extends TCLoad {
         	"    from project_result pr, " +
         	"    project p ,project_info pi ,comp_catalog cc " +
         	"    where p.project_id = pr.project_id and p.project_id = pi.project_id and pi.project_info_type_id = 2 and " +
-        	" cc.component_id = pi.value "
-            + "and   (p.modify_date > ? OR pr.modify_date > ? OR pi.modify_date > ? OR cc.modify_date > ?)";
+        	" cc.component_id = pi.value ";
 
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
@@ -1373,7 +1388,7 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
-                    if (projectResults.getLong("project_status_id") == STATUS_COMPLETED &&
+                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
                             dRProjects.contains(new Long(project_id)) &&
                             projectResults.getInt("rating_ind") == 1) {
                         resultInsert.setLong(19, pointsAwarded);
@@ -3067,6 +3082,26 @@ public class TCLoadTCS extends TCLoad {
         }
     }
 
+    private String getEvaluationId(int questionType, String answer) {
+    	if (answer == null || answer.trim().length() == 0) {
+    		return "1";
+    	}
+    	switch (questionType) {
+    	case 1: // scale 1-4
+    		return answer.substring(0, 1);
+    	case 2: // scale 1-10
+    		return answer.substring(0, 1);
+    	case 3: // test case
+    		return "1";
+    	case 4: // Yes/No
+    		if ("Yes".equals(answer) || "1".equals(answer)) {
+    			return "5";
+    		} else {
+    			return "6";
+    		}
+    	}
+    	return "1";
+    }
 
     public void doLoadScorecardResponse() throws Exception {
         log.info("load scorecard_response");
@@ -3084,15 +3119,17 @@ public class TCLoadTCS extends TCLoad {
         "    (select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id, " +
         "    (select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id, " +
         "    u.project_id,   " +
-        "    ri.answer answer  " + 
+        "    ri.answer answer," +
+        "	 sq.scorecard_question_type_id  " + 
         "    from review_item  ri," +
         "    	review r," +
         "    	resource res," +
         "    	submission s," +
-        "    	upload u" +
-        "    where  ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
-        "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
-        "u.project_id = ?  "
+        "    	upload u," +
+        "		scorecard_question sq" +
+        "    where  ri.scorecard_question_id and sq.scorecard_question_id and ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
+        " r.submission_id = s.submission_id and u.upload_id = s.upload_id and sq.scorecard_question_type_id in (1,2,4) and " +
+        " u.project_id = ?  "
         + "    and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR u.modify_date > ? OR s.modify_date > ?)"
         ;
 
@@ -3134,19 +3171,7 @@ public class TCLoadTCS extends TCLoad {
                     questionId = rs.getLong("scorecard_question_id");
 
                     String answer = rs.getString("answer");
-                    String evaluationId = answer;
-                    // TODO it seems OR app expect to use 1 for Yes, 0 for No
-                    if ("Yes".equalsIgnoreCase(answer)) {
-                    	evaluationId = "7";
-                    } else if ("No".equalsIgnoreCase(answer)) {
-                    	evaluationId = "8";
-                    } else {
-                    	try {
-                    		Integer.parseInt(answer);
-                    	} catch(Exception e) {
-                    		evaluationId = "1";
-                    	}
-                    }
+                    String evaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);
 
                     update.setObject(1, rs.getObject("user_id"));
                     update.setObject(2, rs.getObject("reviewer_id"));
@@ -3217,7 +3242,7 @@ public class TCLoadTCS extends TCLoad {
             "    	submission s," +
             "    	upload u," +
             "    	scorecard_question sq " +
-            "    where ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
+            "    where ri.review_id = r.review_id = r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
             "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
             "sq.scorecard_question_id = ri.scorecard_question_id and sq.scorecard_question_type_id = 3 "
             + " and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR sq.modify_date > ?) "
