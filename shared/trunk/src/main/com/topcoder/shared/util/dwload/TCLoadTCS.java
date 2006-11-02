@@ -9,6 +9,9 @@ import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -125,6 +128,9 @@ public class TCLoadTCS extends TCLoad {
         return true;
     }
 
+    private boolean isDebug = false;
+    private int DEBUG_COUNT = 100;
+
     /**
      * This method performs the load for the coder information tables
      */
@@ -142,8 +148,7 @@ public class TCLoadTCS extends TCLoad {
             fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
             getLastUpdateTime();
 
-
-            doLoadReviewResp();
+            //doLoadReviewResp();
             doLoadEvent();
             doLoadUserEvent();
 
@@ -173,7 +178,7 @@ public class TCLoadTCS extends TCLoad {
 
             doLoadRoyalty();
 
-            doLoadEvaluationLU();
+            // doLoadEvaluationLU();
 
             doLoadScorecardQuestion();
 
@@ -489,13 +494,14 @@ public class TCLoadTCS extends TCLoad {
 
             if (firstRun) log.info("Loading submission table for the first time.  A complete load will be performed.");
 
-            final String SELECT = "select submission_id, submitter_id, project_id, submission_url, submission_type " +
-                    "from submission " +
-                    "where cur_version=1 " +
-                    "and submission_type=1 " +
-                    "and is_removed=0 " +
-                    (firstRun ? "" :
-                            "and modify_date >= ?");
+            final String SELECT = "select submission_id, ri.value as submitter_id,u.project_id, u.parameter as submission_url, 1 as submission_type " +
+            "from submission s, upload u, resource r, resource_info ri " +
+            "where s.upload_id = u.upload_id and u.resource_id = r.resource_id " +
+            "and r.resource_id = ri.resource_id and ri.resource_info_type_id = 1 " +
+            "and u.upload_type_id = 1 and s.submission_status_id <> 5 " +
+            (firstRun ? "" :
+                    "and (s.modify_date > ? OR u.modify_date > ? OR r.modify_date >= ? OR ri.modify_date >= ?)")
+        ;
 
             final String UPDATE = "update submission set submitter_id=?, project_id=?, submission_url=?, submission_type=? " +
                     "where submission_id=?";
@@ -507,6 +513,9 @@ public class TCLoadTCS extends TCLoad {
 
             if (!firstRun) {
                 select.setTimestamp(1, fLastLogTime);
+                select.setTimestamp(2, fLastLogTime);
+                select.setTimestamp(3, fLastLogTime);
+                select.setTimestamp(4, fLastLogTime);
             }
 
             update = prepareStatement(UPDATE, TARGET_DB);
@@ -574,6 +583,9 @@ public class TCLoadTCS extends TCLoad {
 
             int count = 0;
             while (rs.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 count++;
                 //log.debug("PROCESSING USER " + rs.getInt("user_id"));
 
@@ -629,13 +641,13 @@ public class TCLoadTCS extends TCLoad {
                     " where pr.user_id = ur.user_id " +
                     " and pr.project_id = p.project_id " +
                     " and pr.rating_ind = 1 " +
-                    " and p.project_type_id+111 = ur.phase_id) as highest_rating " +
+                    " and p.project_category_id+111 = ur.phase_id) as highest_rating " +
                     " , (select min(pr.new_rating) " +
                     " from project_result pr, project p " +
                     " where pr.user_id = ur.user_id " +
                     " and pr.project_id = p.project_id " +
                     " and pr.rating_ind = 1 " +
-                    " and p.project_type_id+111 = ur.phase_id) as lowest_rating " +
+                    " and p.project_category_id+111 = ur.phase_id) as lowest_rating " +
                     " from user_rating ur " +
                     " where ur.mod_date_time > ?";
 
@@ -653,6 +665,9 @@ public class TCLoadTCS extends TCLoad {
 
             int count = 0;
             while (rs.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 count++;
                 //log.debug("PROCESSING USER " + rs.getInt("user_id"));
 
@@ -670,22 +685,26 @@ public class TCLoadTCS extends TCLoad {
                 update.setObject(9, rs.getObject("phase_id"));
 
 
-                int retVal = update.executeUpdate();
-
-                if (retVal == 0) {
-                    //need to insert
-                    insert.clearParameters();
-                    insert.setLong(1, rs.getLong("user_id"));
-                    insert.setObject(2, rs.getObject("rating"));
-                    insert.setObject(3, rs.getObject("phase_id"));
-                    insert.setObject(4, rs.getObject("vol"));
-                    insert.setObject(5, rs.getObject("rating_no_vol"));
-                    insert.setObject(6, rs.getObject("num_ratings"));
-                    insert.setObject(7, rs.getObject("last_rated_project_id"));
-                    insert.setInt(8, rs.getInt("highest_rating"));
-                    insert.setInt(9, rs.getInt("lowest_rating"));
-
-                    insert.executeUpdate();
+                try {
+	                int retVal = update.executeUpdate();
+	
+	                if (retVal == 0) {
+	                    //need to insert
+	                    insert.clearParameters();
+	                    insert.setLong(1, rs.getLong("user_id"));
+	                    insert.setObject(2, rs.getObject("rating"));
+	                    insert.setObject(3, rs.getObject("phase_id"));
+	                    insert.setObject(4, rs.getObject("vol"));
+	                    insert.setObject(5, rs.getObject("rating_no_vol"));
+	                    insert.setObject(6, rs.getObject("num_ratings"));
+	                    insert.setObject(7, rs.getObject("last_rated_project_id"));
+	                    insert.setInt(8, rs.getInt("highest_rating"));
+	                    insert.setInt(9, rs.getInt("lowest_rating"));
+	
+	                    insert.executeUpdate();
+	                }
+                } catch(SQLException e) {
+                	//log.info(e.getMessage());
                 }
 
             }
@@ -766,56 +785,51 @@ public class TCLoadTCS extends TCLoad {
             long start = System.currentTimeMillis();
 
             //get data from source DB
-            final String SELECT = "select p.project_id, cc.component_id, cc.component_name, " +
-                    " case when exists (select 1 from component_inquiry where project_id = p.project_id) then " +
-                    "  (select count(*) from component_inquiry where project_id = p.project_id) " +
-                    "    else  (case when exists (select 1 from component_inquiry where component_id = cc.component_id and version = cv.version)  then " +
-                    "            (select count(distinct user_id) from component_inquiry ci1 where component_id = cc.component_id and version = cv.version) else null end) end as num_registrations, " +
-                    " case when exists  (select '1' from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) then " +
-                    "     (select count(*) from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 0) " +
-                    " else (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1) end " +
-                    "   as num_submissions,  " +
-                    "  (select count(*) from project_result pr where project_id = p.project_id and valid_submission_ind = 1 and not  " +
-                    " exists (select * from submission where cur_version = 1 and project_id = p.project_id and submission_type = 1 and is_removed = 1 and submitter_id = pr.user_id))  " +
-                    "    as num_valid_submissions, " +
-                    "  (select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
-                    " (select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score, " +
-                    " (select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score, " +
-                    " case when p.project_type_id = 1 then 112 else 113 end as phase_id, " +
-                    " (select description from phase where phase_id = (case when p.project_type_id = 1 then 112 else 113 end)) as phase_desc, " +
-                    " cc.root_category_id as category_id, " +
-                    " (select category_name from categories where category_id = case when cc.root_category_id in (5801776,5801778) then 5801776 when cc.root_category_id in (5801777,5801779) then 5801777 else cc.root_category_id end) as category_desc, " +
-                    " (select start_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) as posting_date, " +
-                    " (select end_date from phase_instance where phase_id = 1 and cur_version = 1 and project_id = p.project_id) as submitby_date, " +
-                    " (select max(level_id) from comp_version_dates where comp_vers_id = p.comp_vers_id and phase_id = p.project_type_id + 111) as level_id, " +
-                    " p.complete_date, " +
-                    " rp.review_phase_id, " +
-                    " rp.review_phase_name," +
-                    " ps.project_stat_id," +
-                    " ps.project_stat_name, " +
-                    " cat.viewable, " +
-                    " cv.version as version_id, " +
-                    " cv.version_text as version_text, " +
-                    " p.rating_date, " +
-                    " p.winner_id, " +
-                    " p.digital_run_ind " +
-                    " from project p, " +
-                    " comp_versions cv, " +
-                    " comp_catalog cc," +
-                    " categories cat, " +
-                    " phase_instance pi, " +
-                    " review_phase rp," +
-                    " project_status ps " +
-                    " where p.cur_version = 1  " +
-                    " and cv.comp_vers_id = p.comp_vers_id " +
-                    " and cc.component_id = cv.component_id " +
-                    " and cc.root_category_id = cat.category_id " +
-                    " and pi.cur_version = 1 " +
-                    " and pi.phase_instance_id = p.phase_instance_id " +
-                    " and rp.review_phase_id = pi.phase_id " +
-                    " and ps.project_stat_id = p.project_stat_id " +
-                    " and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pi.modify_date > ?)";
-            //todo update if any of the project result records have been modified.
+            final String SELECT = "select p.project_id " +
+            "	,(select substr(value,1,20) from project_info where project_id = p.project_id and project_info_type_id = 2) as component_id " +
+            "	,(select substr(value,1,200) from project_info where project_id = p.project_id and project_info_type_id = 6) as component_name " +
+            "	,(select count(*) from resource where project_id = p.project_id and resource_role_id = 1) as num_registrations " +
+            "	,(select count(*) from submission sub inner join upload on sub.upload_id = upload.upload_id and upload.project_id = p.project_id where submission_status_id <> 5) as num_submissions " +
+            "	,(select count(*) from submission s inner join upload on upload.upload_id = s.upload_id where upload.project_id = p.project_id and submission_status_id in (1, 3, 4)) as num_valid_submissions " +
+            "	,(select count(*) from submission s inner join upload u on u.upload_id = s.upload_id where u.project_id = p.project_id and submission_status_id in (1, 4)) as num_submissions_passed_review " +
+            "	,p.project_category_id " +
+            "	,(select avg(case when raw_score is null then 0 else raw_score end) from project_result where project_id = p.project_id and raw_score is not null) as avg_raw_score " +
+            "	,(select avg(case when final_score is null then 0 else final_score end) from project_result where project_id = p.project_id and final_score is not null) as avg_final_score " +        	            
+            "	,case when p.project_category_id = 1 then 112 else 113 end  as phase_id " +
+            "	,case when p.project_category_id = 1 then 'Design' else 'Development' end as phase_desc " +
+            "	,cat.category_id " +
+            "	,cat.category_name as category_desc " +
+            "	,case when ppd.actual_start_time is not null then ppd.actual_start_time else psd.actual_start_time end as posting_date " +
+            "	,psd.actual_end_time as submitby_date " +
+            "	,1 as level_id " +
+            "	,(select value from project_info where p.project_id = project_id  and project_info_type_id = 21) as complete_date  " +
+            "	,(select phase_type_id from project_phase where project_phase_id = (select min(project_phase_id) from project_phase where project_id = p.project_id and phase_status_id = 2)) as review_phase_id " +
+            "	,(select name from phase_type_lu where phase_type_id = (select phase_type_id from project_phase where project_phase_id = (select min(project_phase_id) from project_phase where project_id = p.project_id and phase_status_id = 2))) as review_phase_name " +
+            "	,p.project_status_id as project_stat_id " +
+            "	,psl.name as project_stat_name " +
+            "	,cat.viewable as viewable " +
+            "	,(select substr(value,1,4) from project_info where p.project_id = project_id  and project_info_type_id = 3) as version_id " +
+            "	,(select substr(value,1,4) from project_info where p.project_id = project_id  and project_info_type_id = 7) as version_text " +
+            "	,pivi.value as rating_date " +
+            "	,case when pivt.value is not null then substr(pivt.value,1,4) else null end as winner_id" +
+            "	,case when pict.value is not null then substr(pict.value,1,4) else null end as digital_run_ind   " + 
+            "   from project p ," +
+            "	project_info pir," +
+            "	project_info pivi," +
+            "	project_info pivt," +
+            "	project_info pict," +
+            "	categories cat," +
+            "	project_status_lu psl, " +
+            "   OUTER project_phase psd, " +
+            "   OUTER project_phase ppd " +
+            " where pir.project_id = p.project_id and pir.project_info_type_id = 5 and " +
+            " pivi.project_id = p.project_id and pivi.project_info_type_id = 22 and " +
+            " pivt.project_id = p.project_id and pivt.project_info_type_id = 23 and " +
+            " pict.project_id = p.project_id and pict.project_info_type_id = 26 and " +
+            " cat.category_id = pir.value and psl.project_status_id = p.project_status_id and " +
+            " psd.project_id = p.project_id and psd.phase_type_id = 2 and ppd.project_id = p.project_id and ppd.phase_type_id = 1 "
+            + " and  (p.modify_date > ? OR pir.modify_date > ? OR pivi.modify_date > ? OR pivt.modify_date > ? OR pict.modify_date > ?OR psd.modify_date > ? OR ppd.modify_date > ?)"
+            ;
 
             final String UPDATE = "update project set component_name = ?,  num_registrations = ?, " +
                     "num_submissions = ?, num_valid_submissions = ?, avg_raw_score = ?, avg_final_score = ?, " +
@@ -824,6 +838,7 @@ public class TCLoadTCS extends TCLoad {
                     "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
                     "rating_date = ?, num_submissions_passed_review=?, winner_id=?, stage_id = ?, digital_run_ind = ? where project_id = ? ";
 
+            // modified by brain_cn: change project_id from the first to the last
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
@@ -841,15 +856,20 @@ public class TCLoadTCS extends TCLoad {
             select.setTimestamp(2, fLastLogTime);
             select.setTimestamp(3, fLastLogTime);
             select.setTimestamp(4, fLastLogTime);
+            select.setTimestamp(5, fLastLogTime);
+            select.setTimestamp(6, fLastLogTime);
+            select.setTimestamp(7, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
             rs = select.executeQuery();
             int count = 0;
             while (rs.next()) {
-
+            	
                 if (rs.getLong("version_id") > 999) {
-                    throw new Exception("component " + rs.getString("component_name") + " has a version > 999");
+                	log.info("the version id is more than 999");
+                	continue;
+                    // throw new Exception("component " + rs.getString("component_name") + " has a version > 999");
                 }
 
                 //update record, if 0 rows affected, insert record
@@ -865,7 +885,12 @@ public class TCLoadTCS extends TCLoad {
                 update.setString(10, rs.getString("category_desc"));
                 update.setDate(11, rs.getDate("posting_date"));
                 update.setDate(12, rs.getDate("submitby_date"));
-                update.setDate(13, rs.getDate("complete_date"));
+                java.util.Date completeDate = convertToDate(rs.getString("complete_date")); 
+                if (completeDate != null) {
+                	update.setDate(13, new java.sql.Date(completeDate.getTime()));
+                } else {
+                	update.setNull(13, Types.DATE);
+                }
                 update.setLong(14, rs.getLong("component_id"));
                 update.setLong(15, rs.getLong("review_phase_id"));
                 update.setString(16, rs.getString("review_phase_name"));
@@ -875,7 +900,12 @@ public class TCLoadTCS extends TCLoad {
                 update.setInt(20, rs.getInt("viewable"));
                 update.setInt(21, (int) rs.getLong("version_id"));
                 update.setString(22, rs.getString("version_text"));
-                update.setDate(23, rs.getDate("rating_date"));
+                java.util.Date ratingDate = convertToDate(rs.getString("rating_date")); 
+                if (ratingDate != null) {
+                	update.setDate(23, new java.sql.Date(ratingDate.getTime()));
+                } else {
+                	update.setNull(23, Types.DATE);
+                }
                 update.setInt(24, rs.getInt("num_submissions_passed_review"));
                 if (rs.getString("winner_id") == null) {
                     update.setNull(25, Types.DECIMAL);
@@ -893,14 +923,13 @@ public class TCLoadTCS extends TCLoad {
                         update.setNull(26, Types.DATE);
                     }
                 }
-                update.setInt(27, rs.getInt("digital_run_ind"));
+                String digitRun = rs.getString("digital_run_ind");
+                update.setInt(27, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0 );
                 update.setLong(28, rs.getLong("project_id"));
-
                 int retVal = update.executeUpdate();
 
                 if (retVal == 0) {
                     //need to insert
-
                     insert.setLong(1, rs.getLong("project_id"));
                     insert.setString(2, rs.getString("component_name"));
                     insert.setObject(3, rs.getObject("num_registrations"));
@@ -914,7 +943,12 @@ public class TCLoadTCS extends TCLoad {
                     insert.setString(11, rs.getString("category_desc"));
                     insert.setDate(12, rs.getDate("posting_date"));
                     insert.setDate(13, rs.getDate("submitby_date"));
-                    insert.setDate(14, rs.getDate("complete_date"));
+                    completeDate = convertToDate(rs.getString("complete_date")); 
+                    if (completeDate != null) {
+                    	insert.setDate(14, new java.sql.Date(completeDate.getTime()));
+                    } else {
+                    	insert.setNull(14, Types.DATE);
+                    }
                     insert.setLong(15, rs.getLong("component_id"));
                     insert.setLong(16, rs.getLong("review_phase_id"));
                     insert.setString(17, rs.getString("review_phase_name"));
@@ -924,7 +958,12 @@ public class TCLoadTCS extends TCLoad {
                     insert.setInt(21, rs.getInt("viewable"));
                     insert.setInt(22, (int) rs.getLong("version_id"));
                     insert.setString(23, rs.getString("version_text"));
-                    insert.setDate(24, rs.getDate("rating_date"));
+                    ratingDate = convertToDate(rs.getString("rating_date")); 
+                    if (ratingDate != null) {
+                    	insert.setDate(24, new java.sql.Date(ratingDate.getTime()));
+                    } else {
+                    	insert.setNull(24, Types.DATE);
+                    }
                     insert.setInt(25, rs.getInt("num_submissions_passed_review"));
                     if (rs.getString("winner_id") == null) {
                         insert.setNull(26, Types.DECIMAL);
@@ -940,7 +979,8 @@ public class TCLoadTCS extends TCLoad {
                             insert.setNull(27, Types.DATE);
                         }
                     }
-                    insert.setInt(28, rs.getInt("digital_run_ind"));
+					digitRun = rs.getString("digital_run_ind");
+                    insert.setInt(28, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0 );
                     insert.executeUpdate();
                 }
                 count++;
@@ -950,6 +990,7 @@ public class TCLoadTCS extends TCLoad {
 
 
         } catch (SQLException sqle) {
+        	sqle.printStackTrace();
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'project_result / project' table failed.\n" +
                     sqle.getMessage());
@@ -959,6 +1000,82 @@ public class TCLoadTCS extends TCLoad {
             close(insert);
             close(update);
         }
+    }
+
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm", Locale.US);
+    private static java.util.Date convertToDate(String str) {
+    	if (str == null) {
+    		return null;
+    	}
+    	try {
+			return DATE_FORMAT.parse(str.trim());
+		} catch (ParseException e) {
+			return null;
+		}
+    }
+
+    /**
+     * Prepare update/insert project statment argument from given restultSet.
+     * 
+     * @param pstmt the pstmt
+     * @param rs the resultSet
+     * @throws Exception if error occurs while set argument
+     */
+    private void prepareProjectDML(PreparedStatement pstmt, ResultSet rs) throws Exception {
+        //pstmt record, if 0 rows affected, insert record
+        pstmt.setString(1, rs.getString("component_name"));
+        pstmt.setObject(2, rs.getObject("num_registrations"));
+        pstmt.setInt(3, rs.getInt("num_submissions"));
+        pstmt.setInt(4, rs.getInt("num_valid_submissions"));
+        pstmt.setObject(5, rs.getObject("avg_raw_score"));
+        pstmt.setObject(6, rs.getObject("avg_final_score"));
+        pstmt.setInt(7, rs.getInt("phase_id"));
+        pstmt.setString(8, rs.getString("phase_desc"));
+        pstmt.setInt(9, rs.getInt("category_id"));
+        pstmt.setString(10, rs.getString("category_desc"));
+        pstmt.setDate(11, rs.getDate("posting_date"));
+        pstmt.setDate(12, rs.getDate("submitby_date"));
+        java.util.Date completeDate = convertToDate(rs.getString("complete_date")); 
+        if (completeDate != null) {
+            pstmt.setDate(13, new java.sql.Date(completeDate.getTime()));
+        } else {
+        	pstmt.setNull(13, Types.DATE);
+        }
+        pstmt.setLong(14, rs.getLong("component_id"));
+        pstmt.setLong(15, rs.getLong("review_phase_id"));
+        pstmt.setString(16, rs.getString("review_phase_name"));
+        pstmt.setLong(17, rs.getLong("project_stat_id"));
+        pstmt.setString(18, rs.getString("project_stat_name"));
+        pstmt.setLong(19, rs.getLong("level_id"));
+        pstmt.setInt(20, rs.getInt("viewable"));
+        // notes: the original version_id is string type
+        pstmt.setInt(21, (int) rs.getLong("version_id"));
+        pstmt.setString(22, rs.getString("version_text"));
+        // notes: the original rating_date is string type
+        java.util.Date ratingDate = convertToDate(rs.getString("rating_date")); 
+        if (ratingDate != null) {
+            pstmt.setDate(23, new java.sql.Date(ratingDate.getTime()));
+        } else {
+        	pstmt.setNull(23, Types.DATE);
+        }
+        pstmt.setInt(24, rs.getInt("num_submissions_passed_review"));
+        // notes: the original winner_id is string type
+        if (rs.getString("winner_id") == null) {
+            pstmt.setNull(25, Types.DECIMAL);
+        } else {
+            pstmt.setLong(25, rs.getLong("winner_id"));
+        }
+
+        if (rs.getDate("posting_date") == null) {
+            pstmt.setNull(26, Types.DATE);
+        } else {
+            try {
+                pstmt.setLong(26, calculateStage(rs.getDate("posting_date")));
+            } catch (Exception e) {
+                pstmt.setNull(26, Types.DATE);
+            }
+        }
+        pstmt.setLong(27, rs.getLong("project_id"));  	
     }
 
     /**
@@ -1050,45 +1167,65 @@ public class TCLoadTCS extends TCLoad {
                 "select distinct pr.project_id " +
                         "from project_result pr, " +
                         "project p, " +
+                        "project_info pi1, " +
+                        "project_info pi2, " +
                         "comp_versions cv, " +
                         "comp_catalog cc " +
                         "where p.project_id = pr.project_id " +
-                        "and p.cur_version = 1  " +
-                        "and cv.comp_vers_id = p.comp_vers_id " +
-                        "and cc.component_id = cv.component_id " +
+                        "and p.project_id = pi1.project_id and pi1.project_info_type_id = 1 " +
+                        "and p.project_id = pi2.project_id and pi1.project_info_type_id = 2 " +
+                        "and cv.comp_vers_id = pi1.value " +
+                        "and cc.component_id = pi2.value " +
                         "and (p.modify_date > ? OR cv.modify_date > ? OR cc.modify_date > ? OR pr.modify_date > ?)";
 
 
         final String RESULT_SELECT =
-                "select pr.project_id, pr.user_id, " +
-                        "case when exists(select '1' from submission s where s.cur_version = 1 and s.project_id = pr.project_id " +
-                        "and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) then 1 " +
-                        "when exists(select '1' from submission s where s.cur_version = 1 and s.project_id = pr.project_id " +
-                        "and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 1) then 0 " +
-                        "else pr.valid_submission_ind end as submit_ind, " +
-                        "case  when exists(select '1' from submission s where s.cur_version = 1 and s.project_id = pr.project_id " +
-                        "and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 1) then 0 " +
-                        "else pr.valid_submission_ind  end as valid_submission_ind, " +
-                        "pr.raw_score, " +
-                        "pr.final_score, " +
-                        "case when exists (select create_time from component_inquiry where project_id = p.project_id and user_id = pr.user_id) then " +
-                        "(select min(create_time) from component_inquiry where project_id = p.project_id and user_id = pr.user_id) else " +
-                        "(select min(create_time) from component_inquiry where component_id = cc.component_id and user_id = pr.user_id) end as inquire_timestamp, " +
-                        "(select submission_date from submission s where s.cur_version = 1 and s.project_id = pr.project_id and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) as submit_timestamp, " +
-                        "(select max(pm_review_timestamp) from scorecard where scorecard_type = 2 and is_completed = 1 and submission_id = " +
-                        "   (select submission_id from submission s where s.cur_version = 1 and s.project_id = pr.project_id and s.submitter_id = pr.user_id and submission_type = 1 and is_removed = 0) " +
-                        " and project_id = pr.project_id and cur_version = 1) as review_completed_timestamp, " +
-                        "(select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review, " +
-                        "pr.payment, pr.old_rating, pr.new_rating, " +
-                        "pr.old_reliability, pr.new_reliability, pr.placed, pr.rating_ind, pr.reliability_ind, pr.passed_review_ind, p.project_stat_id, pr.point_adjustment, pr.current_reliability_ind, pr.reliable_submission_ind " +
-                        "from project_result pr, " +
-                        "project p, " +
-                        "comp_versions cv, " +
-                        "comp_catalog cc " +
-                        "where p.project_id = pr.project_id " +
-                        "and p.cur_version = 1  " +
-                        "and cv.comp_vers_id = p.comp_vers_id " +
-                        "and cc.component_id = cv.component_id ";
+        	" select pr.project_id " +
+        	"    , pr.user_id " +
+        	"    ,case when exists(select '1' from submission s,upload u,resource r, resource_info ri  " +
+        	"    		where r.resource_id = ri.resource_id and ri.resource_info_type_id = 1 and u.resource_id = r.resource_id " +
+        	"			and u.upload_id = s.upload_id and u.project_id = pr.project_id and ri.value = pr.user_id and s.submission_status_id <> 5)  " +
+        	"    then 1  " +
+        	"    when exists(select '1' from submission s,upload u,resource r, resource_info ri  " +
+        	"    		where r.resource_id = ri.resource_id and ri.resource_info_type_id = 1 and u.resource_id = r.resource_id " +
+        	"			and u.upload_id = s.upload_id and u.project_id = pr.project_id and ri.value = pr.user_id and submission_status_id = 5)  " +
+        	"    then 0  " +
+        	"    else pr.valid_submission_ind end as submit_ind " +
+        	"    ,case when exists(select '1' from submission s,upload u,resource r, resource_info ri " +
+        	"    		where r.resource_id = ri.resource_id and ri.resource_info_type_id = 1 and u.resource_id = r.resource_id " +
+        	" 			and u.upload_id = s.upload_id and u.project_id = pr.project_id and ri.value = pr.user_id and submission_status_id = 5) then 0  " +
+        	"    else pr.valid_submission_ind end as valid_submission_ind " +
+        	"    ,pr.raw_score " +
+        	"    ,pr.final_score " +
+        	"    ,case when exists (select create_time from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  " +
+        	"    then (select min(create_time) from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  " +
+        	"    else (select min(create_time) from component_inquiry where component_id = cc.component_id and user_id = pr.user_id) end as inquire_timestamp " +
+        	"    ,(select max(u.create_date) from submission s,upload u,resource r,resource_info ri " +
+        	"    		where ri.resource_id = r.resource_id and ri.resource_info_type_id = 1 and r.resource_id = u.resource_id " +
+        	"			and u.upload_id = s.upload_id and u.project_id = pr.project_id and ri.value = pr.user_id and submission_status_id <> 5) as submit_timestamp  " +
+        	"    ,(select max(r.modify_date) from review r,scorecard s,submission sub, upload u,resource res,resource_info ri  " +
+        	"    		where ri.resource_id = res.resource_id and ri.resource_info_type_id = 1 and res.resource_id = u.resource_id " +
+        	"			and u.upload_id = sub.upload_id and sub.submission_id = r.submission_id and r.scorecard_id = s.scorecard_id " +
+        	"			and s.scorecard_type_id = 2 and r.committed = 1 and u.project_id = pr.project_id and ri.value = pr.user_id and sub.submission_status_id <> 5) as review_completed_timestamp " +
+        	"    ,(select count(*) from project_result pr where project_id = p.project_id and pr.passed_review_ind = 1) as num_submissions_passed_review " +
+        	"    , pr.payment " +
+        	"    , pr.old_rating " +
+        	"    , pr.new_rating " +
+        	"    , pr.old_reliability " +
+        	"    , pr.new_reliability " +
+        	"    , pr.placed " +
+        	"    , pr.rating_ind " +
+        	"    , pr.reliability_ind " +
+        	"    , pr.passed_review_ind " +
+        	"    , p.project_status_id as project_stat_id " +
+        	"    , pr.point_adjustment" +
+        	"	 , pr.current_reliability_ind " +
+        	"	 , pr.reliable_submission_ind " +
+        	"    from project_result pr, " +
+        	"    project p ,project_info pi ,comp_catalog cc " +
+        	"    where p.project_id = pr.project_id and p.project_id = pi.project_id and pi.project_info_type_id = 2 and " +
+        	" cc.component_id = pi.value "
+            + "and   (p.modify_date > ? OR pr.modify_date > ? OR pi.modify_date > ? OR cc.modify_date > ?)";
 
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
@@ -1118,7 +1255,7 @@ public class TCLoadTCS extends TCLoad {
                         " and (p2.rating_date < p1.rating_date " +
                         "  or (p2.rating_date = p1.rating_date and p2.project_id < p1.project_id)) " +
                         " group by pr2.user_id ";
-
+        
         try {
             long start = System.currentTimeMillis();
 
@@ -1236,7 +1373,7 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
-                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                    if (projectResults.getLong("project_status_id") == STATUS_COMPLETED &&
                             dRProjects.contains(new Long(project_id)) &&
                             projectResults.getInt("rating_ind") == 1) {
                         resultInsert.setLong(19, pointsAwarded);
@@ -1247,6 +1384,7 @@ public class TCLoadTCS extends TCLoad {
                     }
                     resultInsert.setInt(21, projectResults.getInt("current_reliability_ind"));
                     resultInsert.setInt(22, projectResults.getInt("reliable_submission_ind"));
+
                     resultInsert.setInt(23, projectResults.getString("old_rating") == null ? -2 : projectResults.getInt("old_rating"));
                     resultInsert.setInt(24, projectResults.getString("new_rating") == null ? -2 : projectResults.getInt("new_rating"));
                     Long tempUserId = new Long(projectResults.getLong("user_id"));
@@ -1255,6 +1393,7 @@ public class TCLoadTCS extends TCLoad {
                         currNumRatings = ((Integer) ratingsMap.get(tempUserId)).intValue();
                     }
                     resultInsert.setInt(25, projectResults.getInt("rating_ind") == 1 ? currNumRatings + 1 : currNumRatings);
+
                     //log.debug("before result insert");
                     resultInsert.executeUpdate();
                     //log.debug("after result insert");
@@ -1287,7 +1426,6 @@ public class TCLoadTCS extends TCLoad {
             } else {
                 log.info("loaded " + 0 + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
             }
-
 
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
@@ -1522,46 +1660,34 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement projectSelect = null;
 
         final String SUBMISSION_SELECT =
-                "select sc.project_id,  " +
-                        "s.submitter_id as user_id,  " +
-                        "author_id as reviewer_id,  " +
-                        "sc.raw_score as raw_score, " +
-                        "score as final_score,  " +
-                        "(select count(distinct appeal_id) from appeal where appealer_id = s.submitter_id and cur_version = 1  " +
-                        "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_appeals,  " +
-                        "(select count(*) from appeal where successful_ind = 1 and appealer_id = s.submitter_id and cur_version = 1  " +
-                        "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as num_successful_appeals,  " +
-                        "(select count(*) from appeal where successful_ind is not null and appealer_id = s.submitter_id and cur_version = 1  " +
-                        "and question_id in (select question_id from scorecard_question where scorecard_id = sc.scorecard_id)) as non_null_successful_appeals,  " +
-                        "rur.r_resp_id as review_resp_id,  " +
-                        "scorecard_id,  " +
-                        "(select distinct template_id from question_template qt, scorecard_question sq  " +
-                        "where qt.q_template_v_id = sq.q_template_v_id and sq.cur_version = 1 and qt.cur_version = 1 and sq.scorecard_id = sc.scorecard_id)  as scorecard_template_id  " +
-                        "from scorecard sc, submission s, r_user_role rur " +
-                        "where s.cur_version = 1  " +
-                        "and s.submission_id = sc.submission_id  " +
-                        "and rur.project_id = sc.project_id " +
-                        "and rur.cur_version = 1 " +
-                        "and rur.login_id = sc.author_id " +
-                        "and rur.r_role_id = 3 " +
-                        "and s.submission_type = 1   " +
-                        "and s.is_removed = 0  " +
-                        "and sc.project_id = ? " +
-                        "and sc.scorecard_type = 2 " +
-                        "and sc.is_completed = 1 " +
-                        "and sc.cur_version = 1 " +
-                        "and (sc.modify_date > ? " +
-                        " OR s.modify_date > ? " +
-                        " OR rur.modify_date > ? " +
-                        " OR (select max(modify_date) " +
-                        "       from appeal " +
-                        "      where appealer_id = s.submitter_id " +
-                        "        and cur_version = 1 " +
-                        "        and question_id in (select question_id " +
-                        "                              from scorecard_question " +
-                        "                             where scorecard_id = sc.scorecard_id)) > ?)";
-
-
+        	 "select u.project_id " +
+             ",(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " +
+             ",(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " +
+             ",(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 10) as raw_score " +
+             ",r.score as final_score " +
+             ",(select count(*) from review_item_comment ric,review_item ri " +
+             "		where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and ric.comment_type_id = 4) as num_appeals " +
+             ",(select count(*) from review_item_comment ric,review_item ri  " +
+             "		where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and ric.comment_type_id = 4 and ric.extra_info = 'Succeeded')  " +
+             "	as num_successful_appeals " +
+             ",(select count(*) from review_item_comment ric,review_item ri " +
+             "		where ric.review_item_id = ri.review_item_id " +
+             "		and ri.review_id = r.review_id and ric.comment_type_id = 4 and ric.extra_info is not null)  " +
+             "	as non_null_successful_appeals " +
+     		",case  " +
+     		"	when exists (select 1 from resource where resource_id = r.resource_id and resource_role_id = 7) then 1 " +
+     		"	when exists (select 1 from resource where resource_id = r.resource_id and resource_role_id = 6) then 2 " +
+     		"	when exists (select 1 from resource where resource_id = r.resource_id and resource_role_id = 5) then 3 " +
+     		"	else null end as review_resp_id " +
+             ",r.review_id as scorecard_id " +
+             ",r.scorecard_id as scorecard_template_id " +
+             " from review r ,submission s ,upload u ,resource res " +
+             "where r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+             "res.resource_id = r.resource_id and resource_role_id in (4, 5, 6, 7) and " +
+             "u.project_id = ?"
+             + " and (r.modify_date > ? or s.modify_date > ? or u.modify_date > ? or res.modify_date > ?)";
+         ;
+        
         final String SUBMISSION_UPDATE =
                 "update submission_review set raw_score = ?, final_score = ?, num_appeals = ?, num_successful_appeals = ?, review_resp_id = ?,  scorecard_id = ?, scorecard_template_id = ? " +
                         "where project_id = ? and user_id = ? and reviewer_id = ?";
@@ -1586,6 +1712,9 @@ public class TCLoadTCS extends TCLoad {
             projects = projectSelect.executeQuery();
 
             while (projects.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 submissionSelect.clearParameters();
                 submissionSelect.setLong(1, projects.getLong("project_id"));
                 submissionSelect.setTimestamp(2, fLastLogTime);
@@ -1639,11 +1768,11 @@ public class TCLoadTCS extends TCLoad {
                         submissionInsert.setObject(10, submissionInfo.getObject("scorecard_template_id"));
 
                         //log.debug("before submission insert");
-                        submissionInsert.executeUpdate();
+                        // TODO submissionInsert.executeUpdate();
                         //log.debug("after submission insert");
                     }
                     count++;
-                    //printLoadProgress(count, "submission review");
+                    printLoadProgress(count, "submission review");
                 }
             }
 
@@ -1675,26 +1804,20 @@ public class TCLoadTCS extends TCLoad {
 
 
         final String SCREENING_SELECT =
-                "select pr.project_id,  " +
-                        "pr.user_id, " +
-                        "sc.author_id as reviewer_id,  " +
-                        "sc.score as final_score,  " +
-                        "sc.scorecard_id,  " +
-                        "         (select distinct template_id from question_template qt, scorecard_question sq  " +
-                        "         where qt.q_template_v_id = sq.q_template_v_id and sq.cur_version = 1 and qt.cur_version = 1 and sq.scorecard_id = sc.scorecard_id)  as scorecard_template_id  " +
-                        "from project_result pr, submission s, scorecard sc " +
-                        "where s.cur_version = 1  " +
-                        "and s.project_id = pr.project_id  " +
-                        "and s.submitter_id = pr.user_id  " +
-                        "and s.submission_type = 1  " +
-                        "and s.is_removed = 0 " +
-                        "and sc.scorecard_type = 1  " +
-                        "and sc.is_completed = 1  " +
-                        "and sc.submission_id = s.submission_id " +
-                        "and sc.project_id = pr.project_id " +
-                        "and sc.cur_version = 1 " +
-                        "and (pr.modify_date > ? OR sc.modify_date > ?)";
-
+        	"select u.project_id " +
+            ",(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " +
+            ",(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " +
+            ",r.score as final_score " +
+            ",r.review_id as scorecard_id " +
+            ",r.scorecard_id as scorecard_template_id " +
+            "from review r," +
+            "	submission s," +
+            "   upload u," +
+            "   resource res " +
+            "where r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+            "res.resource_id = r.resource_id and resource_role_id in (2, 3) and " +
+            "(r.modify_date > ? OR s.modify_date > ? or u.modify_date > ? or res.modify_date > ?)	"
+        ;
 
         final String SCREENING_UPDATE =
                 "update submission_screening set reviewer_id = ?, final_score = ?, scorecard_id = ?, scorecard_template_id = ? " +
@@ -1710,6 +1833,8 @@ public class TCLoadTCS extends TCLoad {
             screeningSelect = prepareStatement(SCREENING_SELECT, SOURCE_DB);
             screeningSelect.setTimestamp(1, fLastLogTime);
             screeningSelect.setTimestamp(2, fLastLogTime);
+            screeningSelect.setTimestamp(3, fLastLogTime);
+            screeningSelect.setTimestamp(4, fLastLogTime);
             screeningUpdate = prepareStatement(SCREENING_UPDATE, TARGET_DB);
             screeningInsert = prepareStatement(SCREENING_INSERT, TARGET_DB);
 
@@ -1718,6 +1843,9 @@ public class TCLoadTCS extends TCLoad {
             screenings = screeningSelect.executeQuery();
 
             while (screenings.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 long project_id = screenings.getLong("project_id");
                 count++;
                 screeningUpdate.clearParameters();
@@ -1743,9 +1871,7 @@ public class TCLoadTCS extends TCLoad {
                     screeningInsert.setObject(5, screenings.getObject("scorecard_id"));
                     screeningInsert.setObject(6, screenings.getObject("scorecard_template_id"));
 
-                    screeningInsert.executeUpdate();
-
-
+                    //TODO MISS TABLE screeningInsert.executeUpdate();
                 }
             }
             log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
@@ -1772,7 +1898,7 @@ public class TCLoadTCS extends TCLoad {
         final String SELECT = "select x.contest_id, x.project_id  " +
                 "from contest_project_xref x, project p " +
                 "where x.project_id = ? and p.project_id = x.project_id " +
-                " and p.cur_version = 1 and (p.modify_date > ? or x.create_date > ?)";
+                " and (p.modify_date > ? or x.create_date > ?)";
 
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
                 "values (?, ?)";
@@ -2662,10 +2788,10 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement insert = null;
 
 
-        final String SELECT = "select template_id as scorecard_template_id, " +
-                "scorecard_type as scorecard_type_id, " +
-                "template_name as scorecard_type_desc  " +
-                "from scorecard_template where modify_date > ?";
+        final String SELECT = "select scorecard_id as scorecard_template_id, " +
+                "s.scorecard_type_id as scorecard_type_id,   " +
+                "stl.name as scorecard_type_desc from scorecard s, scorecard_type_lu stl " +
+                "where s.scorecard_type_id = stl.scorecard_type_id and s.modify_date > ?;";
 
 
         final String UPDATE =
@@ -2810,26 +2936,26 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement insert = null;
 
 
-        final String SELECT = "select  qt.q_template_v_id as scorecard_question_id, " +
-                "qt.template_id as scorecard_template_id, " +
-                "qt.question_text, " +
-                "qt.question_weight, " +
-                "qt.section_id, " +
-                "ss.section_name as section_desc, " +
-                "ss.section_weight, " +
-                "ss.group_id as section_group_id, " +
-                "sg.group_name as section_group_desc,  " +
-                "round (sg.group_seq_loc) || \".\" || round(ss.section_seq_loc) || \".\" || round(qt.question_seq_loc)  as question_desc,  " +
-                "sg.group_seq_loc, ss.section_seq_loc, qt.question_seq_loc  " +
-                "from question_template qt, scorecard_section ss, sc_section_group sg  " +
-                "where qt.cur_version = 1  " +
-                "and ss.section_id = qt.section_id  " +
-                "and sg.group_id = ss.group_id  " +
-                //we can't make this join because then if we load before a review fills out a new scorecard, we'll never get the new questions over
-                //"and exists (select q_template_v_id from scorecard_question where qt.q_template_v_id = q_template_v_id) " +
-                "and (qt.modify_date > ?) " +
-                "order by scorecard_template_id, sg.group_seq_loc, ss.section_seq_loc, qt.question_seq_loc  ";
-
+        final String SELECT = 	 "select qt.scorecard_question_id as scorecard_question_id " +
+        ",sg.scorecard_id as scorecard_template_id " +
+        ",qt.description || qt.guideline as question_text " +
+        ",round(qt.weight) as question_weight " +
+        ",qt.scorecard_section_id as section_id " +
+        ",ss.name as section_desc " +
+        ",round(ss.weight*sg.weight/100) as section_weight " +
+        ",ss.scorecard_group_id as section_group_id " +
+        ",sg.name as section_group_desc " +
+        ",sg.sort || '.' || ss.sort || '.' || qt.sort  as question_desc " +
+        ",sg.sort as group_seq_loc " +
+        ",ss.sort as section_seq_loc  " +
+        ",qt.sort as question_seq_loc " +
+        "from scorecard_question qt," +
+        "	scorecard_section ss," +  
+        "	scorecard_group sg " + 
+        "where qt.scorecard_section_id = ss.scorecard_section_id and ss.scorecard_group_id = sg.scorecard_group_id and " +
+        "(qt.modify_date > ? or ss.modify_date > ? or sg.modify_date > ? )  " +
+        "    order by scorecard_template_id, group_seq_loc, section_seq_loc, question_seq_loc "
+        ;
 
         final String UPDATE =
                 "update scorecard_question set scorecard_template_id=?, question_text=?,question_weight=?, section_id=?,section_desc=?, " +
@@ -2848,6 +2974,8 @@ public class TCLoadTCS extends TCLoad {
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
+            select.setTimestamp(2, fLastLogTime);
+            select.setTimestamp(3, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
@@ -2859,7 +2987,6 @@ public class TCLoadTCS extends TCLoad {
             int sort = 0;
 
             while (rs.next()) {
-
                 if (rs.getLong("scorecard_template_id") != prevTemplate) {
                     sort = 0;
                     prevTemplate = rs.getLong("scorecard_template_id");
@@ -2952,19 +3079,22 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement projectSelect;
 
 
-        final String SELECT = "select sq.q_template_v_id  as scorecard_question_id, " +
-//"select (select q_template_v_id from question_template qt where qt.q_template_v_id = sq.q_template_v_id and cur_version=1) as scorecard_question_id, " +
-                "s.scorecard_id, " +
-                "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
-                "s.author_id as reviewer_id, " +
-                "s.project_id, " +
-                "sq.evaluation_id " +
-                "from scorecard_question sq, scorecard s " +
-                "where s.scorecard_id = sq.scorecard_id " +
-                "and s.cur_version = 1 " +
-                "and sq.cur_version = 1 " +
-                "and project_id = ?" +
-                "and (sq.modify_date > ? OR s.modify_date > ?)";
+        final String SELECT = 	"select ri.scorecard_question_id  as scorecard_question_id,   " +
+        "    r.scorecard_id as scorecard_id,   " +
+        "    (select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id, " +
+        "    (select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id, " +
+        "    u.project_id,   " +
+        "    ri.answer answer  " + 
+        "    from review_item  ri," +
+        "    	review r," +
+        "    	resource res," +
+        "    	submission s," +
+        "    	upload u" +
+        "    where  ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
+        "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+        "u.project_id = ?  "
+        + "    and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR u.modify_date > ? OR s.modify_date > ?)"
+        ;
 
         final String UPDATE =
                 "update scorecard_response set user_id=?, reviewer_id=?, project_id=?, evaluation_id=? where scorecard_question_id = ? and scorecard_id = ?";
@@ -2986,10 +3116,16 @@ public class TCLoadTCS extends TCLoad {
             int count = 0;
 
             while (projects.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 select.clearParameters();
                 select.setLong(1, projects.getLong("project_id"));
                 select.setTimestamp(2, fLastLogTime);
                 select.setTimestamp(3, fLastLogTime);
+                select.setTimestamp(4, fLastLogTime);
+                select.setTimestamp(5, fLastLogTime);
+                select.setTimestamp(6, fLastLogTime);
 
                 rs = select.executeQuery();
 
@@ -2997,27 +3133,46 @@ public class TCLoadTCS extends TCLoad {
                     update.clearParameters();
                     questionId = rs.getLong("scorecard_question_id");
 
+                    String answer = rs.getString("answer");
+                    String evaluationId = answer;
+                    // TODO it seems OR app expect to use 1 for Yes, 0 for No
+                    if ("Yes".equalsIgnoreCase(answer)) {
+                    	evaluationId = "7";
+                    } else if ("No".equalsIgnoreCase(answer)) {
+                    	evaluationId = "8";
+                    } else {
+                    	try {
+                    		Integer.parseInt(answer);
+                    	} catch(Exception e) {
+                    		evaluationId = "1";
+                    	}
+                    }
+
                     update.setObject(1, rs.getObject("user_id"));
                     update.setObject(2, rs.getObject("reviewer_id"));
                     update.setObject(3, rs.getObject("project_id"));
-                    update.setObject(4, rs.getObject("evaluation_id"));
+                    update.setString(4, evaluationId);
                     update.setLong(5, questionId);
                     update.setLong(6, rs.getLong("scorecard_id"));
 
-                    int retVal = update.executeUpdate();
-
-                    if (retVal == 0) {
-                        insert.clearParameters();
-
-                        insert.setObject(1, rs.getObject("user_id"));
-                        insert.setObject(2, rs.getObject("reviewer_id"));
-                        insert.setObject(3, rs.getObject("project_id"));
-                        insert.setObject(4, rs.getObject("evaluation_id"));
-                        insert.setLong(5, questionId);
-                        insert.setLong(6, rs.getLong("scorecard_id"));
-
-                        insert.executeUpdate();
-                    }
+                    try {
+	                    int retVal = update.executeUpdate();
+	
+	                    if (retVal == 0) {
+	                        insert.clearParameters();
+	
+	                        insert.setObject(1, rs.getObject("user_id"));
+	                        insert.setObject(2, rs.getObject("reviewer_id"));
+	                        insert.setObject(3, rs.getObject("project_id"));
+	                        update.setString(4, evaluationId);
+	                        insert.setLong(5, questionId);
+	                        insert.setLong(6, rs.getLong("scorecard_id"));
+	
+	                        insert.executeUpdate();
+	                    }
+	                } catch(SQLException e) {
+	                	//log.info(e.getMessage());
+	                }
 
                     count++;
 
@@ -3050,22 +3205,23 @@ public class TCLoadTCS extends TCLoad {
 
 
         final String SELECT =
-                //"select (select q_template_id from question_template qt where qt.q_template_v_id = sq.q_template_v_id and cur_version=1)  as scorecard_question_id, " +
-                "select sq.q_template_v_id as scorecard_question_id, " +
-                        "       s.scorecard_id, " +
-                        "       (select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
-                        "       s.author_id as reviewer_id, " +
-                        "       s.project_id, " +
-                        "       tq.total_tests as num_tests, " +
-                        "       tq.total_pass as num_passed " +
-                        "from testcase_question tq, scorecard s, scorecard_question sq " +
-                        "where s.scorecard_id = sq.scorecard_id " +
-                        "and sq.question_id = tq.question_id " +
-                        "and sq.cur_version = 1 " +
-                        "and s.cur_version = 1  " +
-                        "and tq.cur_version = 1 " +
-                        "and (tq.modify_date > ? OR sq.modify_date > ? OR s.modify_date > ?)";
-
+        	"select ri.scorecard_question_id  as scorecard_question_id," +  
+            "    r.scorecard_id as scorecard_id," +  
+            "    (select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id," +
+            "    (select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id," +
+            "    u.project_id," +  
+            "    ri.answer answer" + 
+            "    from review_item  ri," +
+            "    	review r," + 
+            "    	resource res," + 
+            "    	submission s," +
+            "    	upload u," +
+            "    	scorecard_question sq " +
+            "    where ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
+            "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+            "sq.scorecard_question_id = ri.scorecard_question_id and sq.scorecard_question_type_id = 3 "
+            + " and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR sq.modify_date > ?) "
+        ;
         final String UPDATE =
                 "update testcase_response set user_id=?, reviewer_id=?, project_id=?, num_tests=?, num_passed=? where scorecard_question_id = ? and scorecard_id = ?";
 
@@ -3080,6 +3236,9 @@ public class TCLoadTCS extends TCLoad {
             select.setTimestamp(1, fLastLogTime);
             select.setTimestamp(2, fLastLogTime);
             select.setTimestamp(3, fLastLogTime);
+            select.setTimestamp(4, fLastLogTime);
+            select.setTimestamp(5, fLastLogTime);
+            select.setTimestamp(6, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
@@ -3088,31 +3247,47 @@ public class TCLoadTCS extends TCLoad {
             rs = select.executeQuery();
 
             while (rs.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
 
                 update.clearParameters();
 
+                // The answer should be like num_passed/num_tests
+                String answer = rs.getString("answer");
+                String[] tests = answer == null ? new String[0] : answer.split("/");
+                String numTests = "1";
+                String numPassed = "1";
+                if (tests.length >= 2) {
+                	numPassed = tests[0];
+                	numTests = tests[1];
+                }
                 update.setObject(1, rs.getObject("user_id"));
                 update.setObject(2, rs.getObject("reviewer_id"));
                 update.setObject(3, rs.getObject("project_id"));
-                update.setObject(4, rs.getObject("num_tests"));
-                update.setObject(5, rs.getObject("num_passed"));
+                update.setObject(4, numTests);
+                update.setObject(5, numPassed);
                 update.setLong(6, rs.getLong("scorecard_question_id"));
                 update.setLong(7, rs.getLong("scorecard_id"));
 
-                int retVal = update.executeUpdate();
-
-                if (retVal == 0) {
-                    insert.clearParameters();
-
-                    insert.setObject(1, rs.getObject("user_id"));
-                    insert.setObject(2, rs.getObject("reviewer_id"));
-                    insert.setObject(3, rs.getObject("project_id"));
-                    insert.setObject(4, rs.getObject("num_tests"));
-                    insert.setObject(5, rs.getObject("num_passed"));
-                    insert.setLong(6, rs.getLong("scorecard_question_id"));
-                    insert.setLong(7, rs.getLong("scorecard_id"));
-
-                    insert.executeUpdate();
+                try {
+	                int retVal = update.executeUpdate();
+	
+	                if (retVal == 0) {
+	                    insert.clearParameters();
+	
+	                    insert.setObject(1, rs.getObject("user_id"));
+	                    insert.setObject(2, rs.getObject("reviewer_id"));
+	                    insert.setObject(3, rs.getObject("project_id"));
+	                    insert.setObject(4, numTests);
+	                    insert.setObject(5, numTests);
+	                    insert.setLong(6, rs.getLong("scorecard_question_id"));
+	                    insert.setLong(7, rs.getLong("scorecard_id"));
+	
+	                    insert.executeUpdate();
+	                }
+                } catch(SQLException e) {
+                	//log.info(e.getMessage());
                 }
                 count++;
 
@@ -3145,25 +3320,29 @@ public class TCLoadTCS extends TCLoad {
 
 
         final String SELECT =
-                //"select (select q_template_id from question_template qt where qt.q_template_v_id = sq.q_template_v_id and cur_version=1) as scorecard_question_id, " +
-                "select sq.q_template_v_id as scorecard_question_id, " +
-                        "s.scorecard_id, " +
-                        "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
-                        "s.author_id as reviewer_id, " +
-                        "s.project_id, " +
-                        "sr.response_text, " +
-                        "sr.response_type_id, " +
-                        "(select response_type_name from response_type where sr.response_type_id = response_type_id) as response_type_desc, " +
-                        " subjective_resp_id " +
-                        "from subjective_resp sr, scorecard s, scorecard_question sq " +
-                        "where s.scorecard_id = sq.scorecard_id " +
-                        "and sq.question_id = sr.question_id " +
-                        "and s.cur_version = 1 " +
-                        "and sr.cur_version = 1 " +
-                        "and sq.cur_version = 1 " +
-                        "and project_id = ? " +
-                        "and (sr.modify_date>? OR s.modify_date>? OR sq.modify_date>?) " +
-                        "order by scorecard_question_id, scorecard_id, subjective_resp_id";
+        	"select ri.scorecard_question_id  as scorecard_question_id " +
+            "    ,r.scorecard_id as scorecard_id " +
+            "    ,(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " +
+            "    ,(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " +
+            "    ,u.project_id " +
+            "    ,ric.content as response_text " +
+            "    ,ric.comment_type_id as response_type_id " +
+            "    ,ctl.name as response_type_desc " +
+            "    ,ric.review_item_comment_id subjective_resp_id " +
+            "    from review_item_comment ric, " +
+            "    	comment_type_lu ctl," +
+            "    	review_item  ri, " +
+            "    	review r," +
+            "    	submission s," +
+            "    	upload u," +
+            "    	resource res " +
+            "    where  ric.comment_type_id = ctl.comment_type_id and ric.review_item_id = ri.review_item_id and " +
+            "ri.review_id = r.review_id and r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+            "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
+            "ric.comment_type_id in (1, 2, 3) and u.project_id = ? " +
+            " and (ric.modify_date > ? OR ri.modify_date > ? OR r.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR res.modify_date > ?) " +
+            "order by scorecard_question_id, scorecard_id, subjective_resp_id  "
+        ;
         final String DELETE =
                 "delete from subjective_response where scorecard_question_id = ? and scorecard_id = ?";
 
@@ -3189,11 +3368,17 @@ public class TCLoadTCS extends TCLoad {
             projects = projectSelect.executeQuery();
 
             while (projects.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 select.clearParameters();
                 select.setLong(1, projects.getLong("project_id"));
                 select.setTimestamp(2, fLastLogTime);
                 select.setTimestamp(3, fLastLogTime);
                 select.setTimestamp(4, fLastLogTime);
+                select.setTimestamp(5, fLastLogTime);
+                select.setTimestamp(6, fLastLogTime);
+                select.setTimestamp(7, fLastLogTime);
 
                 rs = select.executeQuery();
 
@@ -3226,10 +3411,13 @@ public class TCLoadTCS extends TCLoad {
                     insert.setInt(7, sort);
                     insert.setLong(8, rs.getLong("scorecard_question_id"));
                     insert.setLong(9, rs.getLong("scorecard_id"));
-
-                    insert.executeUpdate();
+                    
+                    try {
+                        insert.executeUpdate();
+	                } catch(SQLException e) {
+	                	//log.info(e.getMessage());
+	                }
                     count++;
-
                 }
             }
 
@@ -3258,29 +3446,32 @@ public class TCLoadTCS extends TCLoad {
         ResultSet projects;
         PreparedStatement projectSelect;
 
-
-        final String SELECT = "select a.appeal_id, " +
-                "sq.q_template_v_id as scorecard_question_id, " +
-                "s.scorecard_id, " +
-                "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
-                "s.author_id as reviewer_id, " +
-                "s.project_id, " +
-                "sq.evaluation_id as final_evaluation_id, " +
-                "a.appeal_text, " +
-                "a.appeal_response, " +
-                "a.raw_evaluation_id, " +
-                "a.successful_ind " +
-                "from appeal a, scorecard s, scorecard_question sq " +
-                "where s.scorecard_id = sq.scorecard_id " +
-                "and sq.question_id = a.question_id " +
-                "and sq.cur_version = 1 " +
-                "and s.cur_version = 1  " +
-                "and a.cur_version = 1 " +
-                "and a.is_resolved = 1 " +
-                "and sq.evaluation_id is not null " +
-                "and project_id = ? " +
-                "and (a.modify_date>? OR s.modify_date>? OR sq.modify_date>?)";
-
+        final String SELECT = "select ric.review_item_comment_id as appeal_id " + 
+    	"	,ri.scorecard_question_id  as scorecard_question_id " + 
+        "    ,r.scorecard_id as scorecard_id " + 
+        "    ,(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " + 
+        "    ,(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " + 
+        "    ,u.project_id " + 
+        "    ,ri.answer as final_evaluation_id " + 
+        "    ,ric.content as appeal_text " + 
+        "    ,ric_resp.content as appeal_response " + 
+        "	 ,ric.extra_info as successful_ind " + 
+        "    ,ric_resp.extra_info as raw_evaluation_id " + 
+        "    from review_item_comment ric, " +
+        "		review_item  ri, " + 
+        "    	review r, " + 
+        "    	submission s,  " + 
+        "    	upload u, " + 
+        "    	resource res,  " + 
+        "    	review_item_comment ric_resp " + 
+        "    where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and " +
+        "	r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+        "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
+        "ric_resp.review_item_id = ri.review_item_id and ric_resp.comment_type_id = 5 and " +
+        "	ric.comment_type_id = 4  and u.project_id = ? " 
+        + "    and (ric.modify_date > ? OR ri.modify_date > ? OR r.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR res.modify_date > ? OR ric_resp.modify_date > ?) "
+        ;
+        
         final String UPDATE =
                 "update appeal set scorecard_question_id = ?, scorecard_id = ?, user_id=?, reviewer_id=?, project_id=?, " +
                         "raw_evaluation_id=?, final_evaluation_id=?, appeal_text=?, appeal_response=?, successful_ind = ? where appeal_id=?";
@@ -3304,11 +3495,18 @@ public class TCLoadTCS extends TCLoad {
             projects = projectSelect.executeQuery();
 
             while (projects.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 select.clearParameters();
                 select.setLong(1, projects.getLong("project_id"));
                 select.setTimestamp(2, fLastLogTime);
                 select.setTimestamp(3, fLastLogTime);
                 select.setTimestamp(4, fLastLogTime);
+                select.setTimestamp(5, fLastLogTime);
+                select.setTimestamp(6, fLastLogTime);
+                select.setTimestamp(7, fLastLogTime);
+                select.setTimestamp(8, fLastLogTime);
 
                 rs = select.executeQuery();
 
@@ -3321,40 +3519,84 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(3, rs.getObject("user_id"));
                     update.setObject(4, rs.getObject("reviewer_id"));
                     update.setObject(5, rs.getObject("project_id"));
-                    update.setObject(6, rs.getObject("raw_evaluation_id"));
-                    update.setObject(7, rs.getObject("final_evaluation_id"));
+
+                    String answer = rs.getString("raw_evaluation_id");
+                    String rawEvaluationId = answer;
+                    // TODO it seems OR app expect to use 1 for Yes, 0 for No
+                    if ("Yes".equalsIgnoreCase(answer)) {
+                    	rawEvaluationId = "7";
+                    } else if ("No".equalsIgnoreCase(answer)) {
+                    	rawEvaluationId = "8";
+                    }
+                    
+                    try {
+                    	Integer.parseInt(rawEvaluationId);
+                    } catch(NumberFormatException e) {
+                    	rawEvaluationId = null;
+                    }
+                    update.setObject(6, rawEvaluationId);
+                    
+                    answer = rs.getString("final_evaluation_id");
+                    String finalEvaluationId = answer;
+                    // TODO it seems OR app expect to use 1 for Yes, 0 for No
+                    if ("Yes".equalsIgnoreCase(answer)) {
+                    	finalEvaluationId = "7";
+                    } else if ("No".equalsIgnoreCase(answer)) {
+                    	finalEvaluationId = "8";
+                    }
+
+                    try {
+                    	Integer.parseInt(finalEvaluationId);
+                    } catch(NumberFormatException e) {
+                    	finalEvaluationId = null;
+                    }
+                    update.setObject(7, finalEvaluationId);
                     update.setObject(8, rs.getObject("appeal_text"));
                     update.setObject(9, rs.getObject("appeal_response"));
-                    if (rs.getString("successful_ind") == null) {
+                
+                    String successfulInd = rs.getString("successful_ind"); 
+                    if (successfulInd == null) {
                         update.setNull(10, Types.INTEGER);
                     } else {
-                        update.setInt(10, rs.getInt("successful_ind"));
+                    	if ("Succeeded".equals(successfulInd)) {
+                    		update.setInt(10, 1);
+                    	} else {
+                    		update.setInt(10, 0);
+                    	}
                     }
                     update.setLong(11, rs.getLong("appeal_id"));
 
-                    int retVal = update.executeUpdate();
-
-                    if (retVal == 0) {
-                        insert.clearParameters();
-
-                        insert.setLong(1, rs.getLong("scorecard_question_id"));
-                        insert.setLong(2, rs.getLong("scorecard_id"));
-                        insert.setObject(3, rs.getObject("user_id"));
-                        insert.setObject(4, rs.getObject("reviewer_id"));
-                        insert.setObject(5, rs.getObject("project_id"));
-                        insert.setObject(6, rs.getObject("raw_evaluation_id"));
-                        insert.setObject(7, rs.getObject("final_evaluation_id"));
-                        insert.setObject(8, rs.getObject("appeal_text"));
-                        insert.setObject(9, rs.getObject("appeal_response"));
-                        insert.setLong(10, rs.getLong("appeal_id"));
-                        if (rs.getString("successful_ind") == null) {
-                            insert.setNull(11, Types.INTEGER);
-                        } else {
-                            insert.setInt(11, rs.getInt("successful_ind"));
-                        }
-
-                        insert.executeUpdate();
-                    }
+                    try {
+	                    int retVal = update.executeUpdate();
+	
+	                    if (retVal == 0) {
+	                        insert.clearParameters();
+	
+	                        insert.setLong(1, rs.getLong("scorecard_question_id"));
+	                        insert.setLong(2, rs.getLong("scorecard_id"));
+	                        insert.setObject(3, rs.getObject("user_id"));
+	                        insert.setObject(4, rs.getObject("reviewer_id"));
+	                        insert.setObject(5, rs.getObject("project_id"));
+	                        insert.setObject(6, rawEvaluationId);
+	                        insert.setObject(7, finalEvaluationId);
+	                        insert.setObject(8, rs.getObject("appeal_text"));
+	                        insert.setObject(9, rs.getObject("appeal_response"));
+	                        insert.setLong(10, rs.getLong("appeal_id"));
+	                        if (successfulInd == null) {
+	                            insert.setNull(11, Types.INTEGER);
+	                        } else {
+	                        	if ("Succeeded".equals(successfulInd)) {
+	                        		insert.setInt(11, 1);
+	                        	} else {
+	                        		insert.setInt(11, 0);
+	                        	}
+	                        }
+	
+	                        insert.executeUpdate();
+	                    }
+	                } catch(SQLException e) {
+	                	//log.info(e.getMessage());
+	                }
                     count++;
 
                 }
@@ -3384,31 +3626,34 @@ public class TCLoadTCS extends TCLoad {
         ResultSet projects;
         PreparedStatement projectSelect;
 
-
-        final String SELECT = "select a.appeal_id, " +
-                "sq.q_template_v_id as scorecard_question_id, " +
-                "s.scorecard_id, " +
-                "(select submitter_id from submission where submission_id = s.submission_id and cur_version=1) as user_id, " +
-                "s.author_id as reviewer_id, " +
-                "s.project_id, " +
-                "tq.total_tests as final_num_tests, " +
-                "tq.total_pass as final_num_passed, " +
-                "a.appeal_text, " +
-                "a.appeal_response, " +
-                "a.raw_total_tests, " +
-                "a.raw_total_pass, " +
-                "a.successful_ind " +
-                "from appeal a, scorecard s, testcase_question tq, scorecard_question sq " +
-                "where   s.scorecard_id = sq.scorecard_id  " +
-                "and sq.question_id = tq.question_id  " +
-                "and tq.question_id = a.question_id " +
-                "and tq.cur_version = 1 " +
-                "and s.cur_version = 1  " +
-                "and a.cur_version = 1 " +
-                "and a.is_resolved = 1 " +
-                "and project_id = ? " +
-                "and (a.modify_date>? OR s.modify_date>? OR tq.modify_date>? OR sq.modify_date>?)";
-
+        final String SELECT = 	"select ric.review_item_comment_id as appeal_id " + 
+		",ri.scorecard_question_id  as scorecard_question_id " + 
+        ",r.scorecard_id as scorecard_id " + 
+        ",(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " + 
+        ",(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " + 
+        ",u.project_id " + 
+        ",ri.answer as answer " + 
+        ",ric.content as appeal_text " + 
+        ",ric.extra_info as successful_ind " + 
+        ",ric_resp.content as appeal_response " + 
+        ",ric_resp.extra_info as raw_answer " + 
+        "from review_item_comment ric,  " +
+        "	review_item  ri, " +
+        "	review r, " +
+        "	submission s, " +
+        "	upload u, " +
+        "	resource res, " +
+        "	scorecard_question sq, " +
+        "	review_item_comment ric_resp " + 
+        "where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and " +
+        "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
+        "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
+        "ri.scorecard_question_id = sq.scorecard_question_id and sq.scorecard_question_type_id = 3 and " +
+        "ric_resp.review_item_id = ri.review_item_id and ric_resp.comment_type_id = 5 and " +
+        "ric.comment_type_id = 4 and u.project_id = ? "
+        + " and (ric.modify_date > ? OR ri.modify_date > ? OR r.modify_date > ? OR s.modify_date > ?" +
+        		" OR u.modify_date > ? OR res.modify_date > ? OR sq.modify_date > ? OR ric_resp.modify_date > ?) " 
+    ;
 
         final String UPDATE =
                 "update testcase_appeal set scorecard_question_id = ?, scorecard_id = ?, user_id=?, reviewer_id=?, project_id=?, " +
@@ -3432,12 +3677,19 @@ public class TCLoadTCS extends TCLoad {
             projects = projectSelect.executeQuery();
 
             while (projects.next()) {
+            	if (isDebug && count > DEBUG_COUNT) {
+            		break;
+            	}
                 select.clearParameters();
                 select.setLong(1, projects.getLong("project_id"));
                 select.setTimestamp(2, fLastLogTime);
                 select.setTimestamp(3, fLastLogTime);
                 select.setTimestamp(4, fLastLogTime);
                 select.setTimestamp(5, fLastLogTime);
+                select.setTimestamp(6, fLastLogTime);
+                select.setTimestamp(7, fLastLogTime);
+                select.setTimestamp(8, fLastLogTime);
+                select.setTimestamp(9, fLastLogTime);
 
                 rs = select.executeQuery();
 
@@ -3450,46 +3702,78 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(3, rs.getObject("user_id"));
                     update.setObject(4, rs.getObject("reviewer_id"));
                     update.setObject(5, rs.getObject("project_id"));
-                    update.setObject(6, rs.getObject("raw_total_pass"));
-                    update.setObject(7, rs.getObject("raw_total_tests"));
-                    update.setObject(8, rs.getObject("final_num_passed"));
-                    update.setObject(9, rs.getObject("final_num_tests"));
+
+                    String answer = rs.getString("raw_answer");
+                    String[] tests = answer == null ? new String[0] : answer.split("/");
+                    String rawNumTests = "1";
+                    String rawNumPassed = "1";
+                    if (tests.length >= 2) {
+                    	rawNumPassed = tests[0];
+                    	rawNumTests = tests[1];
+                    }
+                    
+                    update.setObject(6, rawNumPassed);
+                    update.setObject(7, rawNumTests);
+                    
+                    answer = rs.getString("answer");
+                    tests = answer == null ? new String[0] : answer.split("/");
+                    String finalNumTests = "1";
+                    String finalNumPassed = "1";
+                    if (tests.length >= 2) {
+                    	finalNumPassed = tests[0];
+                    	finalNumTests = tests[1];
+                    }
+                    
+                    update.setObject(8, finalNumPassed);
+                    update.setObject(9, finalNumTests);
                     update.setObject(10, rs.getObject("appeal_text"));
                     update.setObject(11, rs.getObject("appeal_response"));
-                    if (rs.getString("successful_ind") == null) {
+                    String successfulInd = rs.getString("successful_ind"); 
+                    if (successfulInd == null) {
                         update.setNull(12, Types.INTEGER);
                     } else {
-                        update.setInt(12, rs.getInt("successful_ind"));
+                    	if ("Succeeded".equals(successfulInd)) {
+                    		update.setInt(12, 1);
+                    	} else {
+                    		update.setInt(12, 0);
+                    	}
                     }
 
                     update.setLong(13, rs.getLong("appeal_id"));
 
-                    int retVal = update.executeUpdate();
-
-                    if (retVal == 0) {
-                        insert.clearParameters();
-
-                        insert.setLong(1, rs.getLong("scorecard_question_id"));
-                        insert.setLong(2, rs.getLong("scorecard_id"));
-                        insert.setObject(3, rs.getObject("user_id"));
-                        insert.setObject(4, rs.getObject("reviewer_id"));
-                        insert.setObject(5, rs.getObject("project_id"));
-                        insert.setObject(6, rs.getObject("raw_total_pass"));
-                        insert.setObject(7, rs.getObject("raw_total_tests"));
-                        insert.setObject(8, rs.getObject("final_num_passed"));
-                        insert.setObject(9, rs.getObject("final_num_tests"));
-                        insert.setObject(10, rs.getObject("appeal_text"));
-                        insert.setObject(11, rs.getObject("appeal_response"));
-                        insert.setLong(12, rs.getLong("appeal_id"));
-                        if (rs.getString("successful_ind") == null) {
-                            insert.setNull(13, Types.INTEGER);
-                        } else {
-                            insert.setInt(13, rs.getInt("successful_ind"));
-                        }
-
-
-                        insert.executeUpdate();
-                    }
+                    try {
+	                    int retVal = update.executeUpdate();
+	
+	                    if (retVal == 0) {
+	                        insert.clearParameters();
+	
+	                        insert.setLong(1, rs.getLong("scorecard_question_id"));
+	                        insert.setLong(2, rs.getLong("scorecard_id"));
+	                        insert.setObject(3, rs.getObject("user_id"));
+	                        insert.setObject(4, rs.getObject("reviewer_id"));
+	                        insert.setObject(5, rs.getObject("project_id"));
+	                        insert.setObject(6, rawNumPassed);
+	                        insert.setObject(7, rawNumTests);
+	                        insert.setObject(8, finalNumPassed);
+	                        insert.setObject(9, finalNumTests);
+	                        insert.setObject(10, rs.getObject("appeal_text"));
+	                        insert.setObject(11, rs.getObject("appeal_response"));
+	                        insert.setLong(12, rs.getLong("appeal_id"));
+	                        if (successfulInd == null) {
+	                            insert.setNull(13, Types.INTEGER);
+	                        } else {
+	                        	if ("Succeeded".equals(successfulInd)) {
+	                        		insert.setInt(13, 1);
+	                        	} else {
+	                        		insert.setInt(13, 0);
+	                        	}
+	                        }
+	
+	                        insert.executeUpdate();
+	                    }
+	                } catch(SQLException e) {
+	                	//log.info(e.getMessage());
+	                }
                     count++;
 
                 }

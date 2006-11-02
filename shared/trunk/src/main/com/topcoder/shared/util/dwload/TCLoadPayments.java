@@ -256,6 +256,37 @@ public class TCLoadPayments extends TCLoad {
 
             
                 rs = psSel.executeQuery();
+                while (rs.next()) {                    
+                    paymentId = rs.getLong("payment_id");
+
+                    psInsPayment.clearParameters();
+                    psInsPayment.setLong(1, paymentId);
+                    psInsPayment.setString(2, rs.getString("payment_desc"));
+                    psInsPayment.setLong(3, rs.getLong("payment_type_id"));
+                    psInsPayment.setString(4, rs.getString("payment_type_desc"));
+                    long referenceId = selectReferenceId(rs.getInt("payment_reference_id"),
+                        rs.getLong("algorithm_round_id"),
+                        rs.getLong("algorithm_problem_id"),
+                        rs.getLong("component_contest_id"),
+                        rs.getLong("component_project_id"),
+                        rs.getLong("studio_contest_id"),
+                        rs.getLong("digital_run_stage_id"),
+                        rs.getLong("digital_run_season_id"));
+                    if (referenceId > 0) {
+                        psInsPayment.setLong(5, referenceId);
+                    } else {
+                        psInsPayment.setNull(5, Types.DECIMAL);
+                    }
+                    psInsPayment.setLong(6, rs.getLong("parent_payment_id"));
+                    psInsPayment.setInt(7, rs.getInt("charity_ind"));
+                    psInsPayment.setInt(8, rs.getInt("show_in_profile_ind"));
+                    psInsPayment.setInt(9, rs.getInt("show_details_ind"));
+                    psInsPayment.setLong(10, rs.getLong("status_id"));
+                    psInsPayment.setString(11, rs.getString("status_desc"));
+
+                    log.debug("inserting payment_id = " + paymentId);
+
+                    retVal = psInsPayment.executeUpdate();
     
                 while (rs.next()) {                    
                     paymentId = rs.getLong("payment_id");

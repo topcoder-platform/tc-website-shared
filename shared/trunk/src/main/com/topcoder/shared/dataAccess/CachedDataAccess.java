@@ -82,7 +82,7 @@ public class CachedDataAccess extends DataAccess {
             CacheClient cc = null;
             try {
                 cc = CacheClientFactory.createCacheClient();
-                map = (Map) (cc.get(key));
+                // map = (Map) (cc.get(key));
             } catch (Exception e) {
                 log.error("UNABLE TO ESTABLISH A CONNECTION TO THE CACHE: " + e.getMessage());
                 hasCacheConnection = false;
@@ -95,9 +95,9 @@ public class CachedDataAccess extends DataAccess {
                 /* attempt to add this object to the cache */
                 if (hasCacheConnection) {
                     try {
-                        cc.set(key, map, expireTime);
+                        // TODO cc.set(key, map, expireTime);
                     } catch (Exception e) {
-                        log.error("UNABLE TO INSERT INTO CACHE: " + e.getMessage());
+                        // TODO log.error("UNABLE TO INSERT INTO CACHE: " + e.getMessage());
                     }
                 }
             }
