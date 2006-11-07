@@ -3100,7 +3100,7 @@ public class TCLoadTCS extends TCLoad {
     			return "6";
     		}
     	}
-    	return "1";
+    	return null;
     }
 
     public void doLoadScorecardResponse() throws Exception {
@@ -3176,7 +3176,11 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(1, rs.getObject("user_id"));
                     update.setObject(2, rs.getObject("reviewer_id"));
                     update.setObject(3, rs.getObject("project_id"));
-                    update.setString(4, evaluationId);
+                    if (evaluationId != null) {
+                    	update.setString(4, evaluationId);
+                    } else {
+                    	update.setNull(4, Types.INTEGER);
+                    }
                     update.setLong(5, questionId);
                     update.setLong(6, rs.getLong("scorecard_id"));
 
@@ -3189,7 +3193,11 @@ public class TCLoadTCS extends TCLoad {
 	                        insert.setObject(1, rs.getObject("user_id"));
 	                        insert.setObject(2, rs.getObject("reviewer_id"));
 	                        insert.setObject(3, rs.getObject("project_id"));
-	                        update.setString(4, evaluationId);
+	                        if (evaluationId != null) {
+	                        	insert.setString(4, evaluationId);
+	                        } else {
+	                        	insert.setNull(4, Types.INTEGER);
+	                        }
 	                        insert.setLong(5, questionId);
 	                        insert.setLong(6, rs.getLong("scorecard_id"));
 	
@@ -3242,7 +3250,7 @@ public class TCLoadTCS extends TCLoad {
             "    	submission s," +
             "    	upload u," +
             "    	scorecard_question sq " +
-            "    where ri.review_id = r.review_id = r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
+            "    where ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
             "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
             "sq.scorecard_question_id = ri.scorecard_question_id and sq.scorecard_question_type_id = 3 "
             + " and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR sq.modify_date > ?) "
@@ -3481,15 +3489,17 @@ public class TCLoadTCS extends TCLoad {
         "    ,ric.content as appeal_text " + 
         "    ,ric_resp.content as appeal_response " + 
         "	 ,ric.extra_info as successful_ind " + 
-        "    ,ric_resp.extra_info as raw_evaluation_id " + 
+        "    ,ric_resp.extra_info as raw_evaluation_id" +
+        "	 ,sq.scorecard_question_type_id " + 
         "    from review_item_comment ric, " +
         "		review_item  ri, " + 
         "    	review r, " + 
         "    	submission s,  " + 
         "    	upload u, " + 
         "    	resource res,  " + 
-        "    	review_item_comment ric_resp " + 
-        "    where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and " +
+        "    	review_item_comment ric_resp," +
+        "		scorecard_question sq" + 
+        "    where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and ri.scorecard_question_id = sq.scorecard_question_id and " +
         "	r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
         "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
         "ric_resp.review_item_id = ri.review_item_id and ric_resp.comment_type_id = 5 and " +
@@ -3546,36 +3556,20 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(5, rs.getObject("project_id"));
 
                     String answer = rs.getString("raw_evaluation_id");
-                    String rawEvaluationId = answer;
-                    // TODO it seems OR app expect to use 1 for Yes, 0 for No
-                    if ("Yes".equalsIgnoreCase(answer)) {
-                    	rawEvaluationId = "7";
-                    } else if ("No".equalsIgnoreCase(answer)) {
-                    	rawEvaluationId = "8";
-                    }
-                    
-                    try {
-                    	Integer.parseInt(rawEvaluationId);
-                    } catch(NumberFormatException e) {
-                    	rawEvaluationId = null;
-                    }
-                    update.setObject(6, rawEvaluationId);
-                    
-                    answer = rs.getString("final_evaluation_id");
-                    String finalEvaluationId = answer;
-                    // TODO it seems OR app expect to use 1 for Yes, 0 for No
-                    if ("Yes".equalsIgnoreCase(answer)) {
-                    	finalEvaluationId = "7";
-                    } else if ("No".equalsIgnoreCase(answer)) {
-                    	finalEvaluationId = "8";
+                    String evaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);
+                    if (evaluationId != null) {
+                    	update.setString(6, evaluationId);
+                    } else {
+                    	update.setNull(6, Types.INTEGER);
                     }
 
-                    try {
-                    	Integer.parseInt(finalEvaluationId);
-                    } catch(NumberFormatException e) {
-                    	finalEvaluationId = null;
+                    answer = rs.getString("final_evaluation_id");
+                    String finalEvaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);                    
+                    if (finalEvaluationId != null) {
+                    	update.setString(7, finalEvaluationId);
+                    } else {
+                    	update.setNull(7, Types.INTEGER);
                     }
-                    update.setObject(7, finalEvaluationId);
                     update.setObject(8, rs.getObject("appeal_text"));
                     update.setObject(9, rs.getObject("appeal_response"));
                 
@@ -3602,8 +3596,16 @@ public class TCLoadTCS extends TCLoad {
 	                        insert.setObject(3, rs.getObject("user_id"));
 	                        insert.setObject(4, rs.getObject("reviewer_id"));
 	                        insert.setObject(5, rs.getObject("project_id"));
-	                        insert.setObject(6, rawEvaluationId);
-	                        insert.setObject(7, finalEvaluationId);
+	                        if (evaluationId != null) {
+	                        	insert.setString(6, evaluationId);
+	                        } else {
+	                        	insert.setNull(6, Types.INTEGER);
+	                        }             
+	                        if (finalEvaluationId != null) {
+	                        	insert.setString(7, finalEvaluationId);
+	                        } else {
+	                        	insert.setNull(7, Types.INTEGER);
+	                        }
 	                        insert.setObject(8, rs.getObject("appeal_text"));
 	                        insert.setObject(9, rs.getObject("appeal_response"));
 	                        insert.setLong(10, rs.getLong("appeal_id"));
