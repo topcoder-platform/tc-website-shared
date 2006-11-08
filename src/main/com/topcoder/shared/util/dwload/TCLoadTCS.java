@@ -148,16 +148,19 @@ public class TCLoadTCS extends TCLoad {
             fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
             getLastUpdateTime();
 
-            //doLoadReviewResp();
+            doLoadReviewResp();
             doLoadEvent();
             doLoadUserEvent();
 
             doLoadContests();
 
-            doLoadContestPrize();
-            doLoadUserContestPrize();
+            // TODO doLoadContestPrize();
+            // TODO doLoadUserContestPrize();
 
             doLoadProjects();
+
+            // load scorecard template before subission review because submission_review will use this table
+            doLoadScorecardTemplate();
 
             //load submission review before project result because the project result load will use the submission review table
             doLoadSubmissionReview();
@@ -165,8 +168,6 @@ public class TCLoadTCS extends TCLoad {
             doLoadProjectResults();
 
             doLoadRookies();
-
-            doLoadScorecardTemplate();
 
             doLoadSubmissionScreening();
 
@@ -178,7 +179,7 @@ public class TCLoadTCS extends TCLoad {
 
             doLoadRoyalty();
 
-            // doLoadEvaluationLU();
+            // the evaluation is removed doLoadEvaluationLU();
 
             doLoadScorecardQuestion();
 
@@ -704,7 +705,9 @@ public class TCLoadTCS extends TCLoad {
 	                    insert.executeUpdate();
 	                }
                 } catch(SQLException e) {
-                	//log.info(e.getMessage());
+                	log.info(e.getMessage());
+                	log.debug("the project_id: " + rs.getObject("phase_id"));
+                	continue;
                 }
 
             }
@@ -826,15 +829,15 @@ public class TCLoadTCS extends TCLoad {
             "	,p.project_status_id as project_stat_id " +
             "	,psl.name as project_stat_name " +
             "	,cat.viewable as viewable " +
-            "	,(select substr(value,1,4) from project_info where p.project_id = project_id  and project_info_type_id = 3) as version_id " +
-            "	,(select substr(value,1,4) from project_info where p.project_id = project_id  and project_info_type_id = 7) as version_text " +
+            "	,(select substr(value,1,20) from project_info where p.project_id = project_id  and project_info_type_id = 3) as version_id " +
+            "	,(select substr(value,1,20) from project_info where p.project_id = project_id  and project_info_type_id = 7) as version_text " +
             "	,pivi.value as rating_date " +
-            "	,case when pivt.value is not null then substr(pivt.value,1,4) else null end as winner_id" +
+            "	,case when pivt.value is not null then substr(pivt.value,1,20) else null end as winner_id" +
             "	,case when pict.value is not null then substr(pict.value,1,4) else '1' end as digital_run_ind   " + 
             "   from project p ," +
             "	project_info pir," +
             "	project_info pivi," +
-            "	project_info pivt," +
+            "	outer project_info pivt," +
             "	outer project_info pict," +
             "	categories cat, " + 
             " 	comp_catalog cc," +
@@ -1727,9 +1730,6 @@ public class TCLoadTCS extends TCLoad {
             projects = projectSelect.executeQuery();
 
             while (projects.next()) {
-            	if (isDebug && count > DEBUG_COUNT) {
-            		break;
-            	}
                 submissionSelect.clearParameters();
                 submissionSelect.setLong(1, projects.getLong("project_id"));
                 submissionSelect.setTimestamp(2, fLastLogTime);
@@ -1783,7 +1783,12 @@ public class TCLoadTCS extends TCLoad {
                         submissionInsert.setObject(10, submissionInfo.getObject("scorecard_template_id"));
 
                         //log.debug("before submission insert");
-                        submissionInsert.executeUpdate();
+                        try {
+                        	submissionInsert.executeUpdate();
+                        } catch(Exception e) {
+                        	log.info(e.getMessage());
+                        	log.debug("the scorecard_template_id is " + submissionInfo.getObject("scorecard_template_id") + " scorecard: " + submissionInfo.getObject("scorecard_id"));
+                        }
                         //log.debug("after submission insert");
                     }
                     count++;
@@ -1886,7 +1891,11 @@ public class TCLoadTCS extends TCLoad {
                     screeningInsert.setObject(5, screenings.getObject("scorecard_id"));
                     screeningInsert.setObject(6, screenings.getObject("scorecard_template_id"));
 
-                    screeningInsert.executeUpdate();
+                    try {
+                    	screeningInsert.executeUpdate();
+                    } catch(Exception e) {
+                    	log.debug("the scorecard_template_id is " + screenings.getObject("scorecard_template_id") + " scorecard: " + screenings.getObject("scorecard_id"));
+                    }
                 }
             }
             log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
@@ -3082,25 +3091,29 @@ public class TCLoadTCS extends TCLoad {
         }
     }
 
-    private String getEvaluationId(int questionType, String answer) {
+    private int getEvaluationId(int questionType, String answer) {
     	if (answer == null || answer.trim().length() == 0) {
-    		return "1";
+    		return 0;
     	}
     	switch (questionType) {
     	case 1: // scale 1-4
-    		return answer.substring(0, 1);
     	case 2: // scale 1-10
-    		return answer.substring(0, 1);
+    		answer = answer.substring(0, 1);
+    		break;
     	case 3: // test case
-    		return "1";
+    		return 0;
     	case 4: // Yes/No
     		if ("Yes".equals(answer) || "1".equals(answer)) {
-    			return "5";
+    			return 5;
     		} else {
-    			return "6";
+    			return 6;
     		}
     	}
-    	return null;
+    	try {
+    		return Integer.parseInt(answer);
+    	} catch(Exception e) {
+    		return 0;
+    	}
     }
 
     public void doLoadScorecardResponse() throws Exception {
@@ -3115,7 +3128,7 @@ public class TCLoadTCS extends TCLoad {
 
 
         final String SELECT = 	"select ri.scorecard_question_id  as scorecard_question_id,   " +
-        "    r.scorecard_id as scorecard_id,   " +
+        "    r.review_id as scorecard_id,   " +
         "    (select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id, " +
         "    (select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id, " +
         "    u.project_id,   " +
@@ -3127,8 +3140,8 @@ public class TCLoadTCS extends TCLoad {
         "    	submission s," +
         "    	upload u," +
         "		scorecard_question sq" +
-        "    where  ri.scorecard_question_id and sq.scorecard_question_id and ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
-        " r.submission_id = s.submission_id and u.upload_id = s.upload_id and sq.scorecard_question_type_id in (1,2,4) and " +
+        "    where  ri.scorecard_question_id = sq.scorecard_question_id and ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (4,5,6,7) and " +
+        " r.submission_id = s.submission_id and u.upload_id = s.upload_id and sq.scorecard_question_type_id in (1,2,4) and answer <> '' and " +
         " u.project_id = ?  "
         + "    and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR u.modify_date > ? OR s.modify_date > ?)"
         ;
@@ -3171,13 +3184,13 @@ public class TCLoadTCS extends TCLoad {
                     questionId = rs.getLong("scorecard_question_id");
 
                     String answer = rs.getString("answer");
-                    String evaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);
+                    int evaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);
 
                     update.setObject(1, rs.getObject("user_id"));
                     update.setObject(2, rs.getObject("reviewer_id"));
                     update.setObject(3, rs.getObject("project_id"));
-                    if (evaluationId != null) {
-                    	update.setString(4, evaluationId);
+                    if (evaluationId != 0) {
+                    	update.setInt(4, evaluationId);
                     } else {
                     	update.setNull(4, Types.INTEGER);
                     }
@@ -3193,8 +3206,8 @@ public class TCLoadTCS extends TCLoad {
 	                        insert.setObject(1, rs.getObject("user_id"));
 	                        insert.setObject(2, rs.getObject("reviewer_id"));
 	                        insert.setObject(3, rs.getObject("project_id"));
-	                        if (evaluationId != null) {
-	                        	insert.setString(4, evaluationId);
+	                        if (evaluationId != 0) {
+	                        	insert.setInt(4, evaluationId);
 	                        } else {
 	                        	insert.setNull(4, Types.INTEGER);
 	                        }
@@ -3204,7 +3217,8 @@ public class TCLoadTCS extends TCLoad {
 	                        insert.executeUpdate();
 	                    }
 	                } catch(SQLException e) {
-	                	//log.info(e.getMessage());
+	                	log.info(e.getMessage());
+                    	log.debug("answer:" + answer + "the evaluationId is " + evaluationId + " questionId: " + questionId + " scorecard_id:" + rs.getLong("scorecard_id") + " project+_id:" + rs.getObject("project_id"));
 	                }
 
                     count++;
@@ -3239,7 +3253,7 @@ public class TCLoadTCS extends TCLoad {
 
         final String SELECT =
         	"select ri.scorecard_question_id  as scorecard_question_id," +  
-            "    r.scorecard_id as scorecard_id," +  
+            "    r.review_id as scorecard_id," +  
             "    (select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id," +
             "    (select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id," +
             "    u.project_id," +  
@@ -3250,7 +3264,7 @@ public class TCLoadTCS extends TCLoad {
             "    	submission s," +
             "    	upload u," +
             "    	scorecard_question sq " +
-            "    where ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2,3,4,5,6,7) and " +
+            "    where ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (4,5,6,7) and " +
             "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
             "sq.scorecard_question_id = ri.scorecard_question_id and sq.scorecard_question_type_id = 3 "
             + " and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR sq.modify_date > ?) "
@@ -3292,8 +3306,14 @@ public class TCLoadTCS extends TCLoad {
                 String numTests = "1";
                 String numPassed = "1";
                 if (tests.length >= 2) {
-                	numPassed = tests[0];
-                	numTests = tests[1];
+                	try {
+                		Integer.parseInt(tests[0]);
+                		Integer.parseInt(tests[1]);
+                		numPassed = tests[0];
+                    	numTests = tests[1];
+                	} catch(Exception e) {
+                		log.debug("the answer for testcase is: " + answer);
+                	}
                 }
                 update.setObject(1, rs.getObject("user_id"));
                 update.setObject(2, rs.getObject("reviewer_id"));
@@ -3320,7 +3340,8 @@ public class TCLoadTCS extends TCLoad {
 	                    insert.executeUpdate();
 	                }
                 } catch(SQLException e) {
-                	//log.info(e.getMessage());
+                	log.info(e.getMessage());
+                	log.debug("answer:" + answer + "project_id " + rs.getObject("project_id"));
                 }
                 count++;
 
@@ -3354,7 +3375,7 @@ public class TCLoadTCS extends TCLoad {
 
         final String SELECT =
         	"select ri.scorecard_question_id  as scorecard_question_id " +
-            "    ,r.scorecard_id as scorecard_id " +
+            "    ,r.review_id as scorecard_id " +
             "    ,(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " +
             "    ,(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " +
             "    ,u.project_id " +
@@ -3371,7 +3392,7 @@ public class TCLoadTCS extends TCLoad {
             "    	resource res " +
             "    where  ric.comment_type_id = ctl.comment_type_id and ric.review_item_id = ri.review_item_id and " +
             "ri.review_id = r.review_id and r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
-            "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
+            "r.resource_id = res.resource_id and res.resource_role_id in (4, 5, 6, 7) and " +
             "ric.comment_type_id in (1, 2, 3) and u.project_id = ? " +
             " and (ric.modify_date > ? OR ri.modify_date > ? OR r.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR res.modify_date > ?) " +
             "order by scorecard_question_id, scorecard_id, subjective_resp_id  "
@@ -3448,7 +3469,8 @@ public class TCLoadTCS extends TCLoad {
                     try {
                         insert.executeUpdate();
 	                } catch(SQLException e) {
-	                	//log.info(e.getMessage());
+	                	log.info(e.getMessage());
+	                	log.debug("project_id " + rs.getObject("project_id"));
 	                }
                     count++;
                 }
@@ -3481,7 +3503,7 @@ public class TCLoadTCS extends TCLoad {
 
         final String SELECT = "select ric.review_item_comment_id as appeal_id " + 
     	"	,ri.scorecard_question_id  as scorecard_question_id " + 
-        "    ,r.scorecard_id as scorecard_id " + 
+        "    ,r.review_id as scorecard_id " + 
         "    ,(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " + 
         "    ,(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " + 
         "    ,u.project_id " + 
@@ -3501,7 +3523,7 @@ public class TCLoadTCS extends TCLoad {
         "		scorecard_question sq" + 
         "    where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and ri.scorecard_question_id = sq.scorecard_question_id and " +
         "	r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
-        "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
+        "r.resource_id = res.resource_id and res.resource_role_id in (4, 5, 6, 7) and " +
         "ric_resp.review_item_id = ri.review_item_id and ric_resp.comment_type_id = 5 and " +
         "	ric.comment_type_id = 4  and u.project_id = ? " 
         + "    and (ric.modify_date > ? OR ri.modify_date > ? OR r.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR res.modify_date > ? OR ric_resp.modify_date > ?) "
@@ -3556,17 +3578,17 @@ public class TCLoadTCS extends TCLoad {
                     update.setObject(5, rs.getObject("project_id"));
 
                     String answer = rs.getString("raw_evaluation_id");
-                    String evaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);
-                    if (evaluationId != null) {
-                    	update.setString(6, evaluationId);
+                    int evaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);
+                    if (evaluationId != 0) {
+                    	update.setInt(6, evaluationId);
                     } else {
                     	update.setNull(6, Types.INTEGER);
                     }
 
                     answer = rs.getString("final_evaluation_id");
-                    String finalEvaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);                    
-                    if (finalEvaluationId != null) {
-                    	update.setString(7, finalEvaluationId);
+                    int finalEvaluationId = getEvaluationId(rs.getInt("scorecard_question_type_id"), answer);                    
+                    if (finalEvaluationId != 0) {
+                    	update.setInt(7, finalEvaluationId);
                     } else {
                     	update.setNull(7, Types.INTEGER);
                     }
@@ -3596,13 +3618,13 @@ public class TCLoadTCS extends TCLoad {
 	                        insert.setObject(3, rs.getObject("user_id"));
 	                        insert.setObject(4, rs.getObject("reviewer_id"));
 	                        insert.setObject(5, rs.getObject("project_id"));
-	                        if (evaluationId != null) {
-	                        	insert.setString(6, evaluationId);
+	                        if (evaluationId != 0) {
+	                        	insert.setInt(6, evaluationId);
 	                        } else {
 	                        	insert.setNull(6, Types.INTEGER);
-	                        }             
-	                        if (finalEvaluationId != null) {
-	                        	insert.setString(7, finalEvaluationId);
+	                        } 
+	                        if (finalEvaluationId != 0) {
+	                        	insert.setInt(7, finalEvaluationId);
 	                        } else {
 	                        	insert.setNull(7, Types.INTEGER);
 	                        }
@@ -3618,11 +3640,12 @@ public class TCLoadTCS extends TCLoad {
 	                        		insert.setInt(11, 0);
 	                        	}
 	                        }
-	
+
 	                        insert.executeUpdate();
 	                    }
 	                } catch(SQLException e) {
-	                	//log.info(e.getMessage());
+	                	log.info(e.getMessage());
+	                	log.debug("answer:" + answer + "project_id " + rs.getObject("project_id"));
 	                }
                     count++;
 
@@ -3655,7 +3678,7 @@ public class TCLoadTCS extends TCLoad {
 
         final String SELECT = 	"select ric.review_item_comment_id as appeal_id " + 
 		",ri.scorecard_question_id  as scorecard_question_id " + 
-        ",r.scorecard_id as scorecard_id " + 
+        ",r.review_id as scorecard_id " + 
         ",(select value from resource_info where resource_id = u.resource_id and resource_info_type_id = 1) as user_id " + 
         ",(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " + 
         ",u.project_id " + 
@@ -3674,7 +3697,7 @@ public class TCLoadTCS extends TCLoad {
         "	review_item_comment ric_resp " + 
         "where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and " +
         "r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
-        "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
+        "r.resource_id = res.resource_id and res.resource_role_id in (4, 5, 6, 7) and " +
         "ri.scorecard_question_id = sq.scorecard_question_id and sq.scorecard_question_type_id = 3 and " +
         "ric_resp.review_item_id = ri.review_item_id and ric_resp.comment_type_id = 5 and " +
         "ric.comment_type_id = 4 and u.project_id = ? "
@@ -3799,7 +3822,8 @@ public class TCLoadTCS extends TCLoad {
 	                        insert.executeUpdate();
 	                    }
 	                } catch(SQLException e) {
-	                	//log.info(e.getMessage());
+	                	log.info(e.getMessage());
+	                	log.debug("answer:" + answer + "project_id " + rs.getObject("project_id"));
 	                }
                     count++;
 
