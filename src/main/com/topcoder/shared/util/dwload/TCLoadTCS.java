@@ -706,7 +706,7 @@ public class TCLoadTCS extends TCLoad {
 	                }
                 } catch(SQLException e) {
                 	log.info(e.getMessage());
-                	log.debug("the project_id: " + rs.getObject("phase_id"));
+                	log.debug("the project_id: " + rs.getObject("last_rated_project_id"));
                 	continue;
                 }
 
@@ -3140,7 +3140,7 @@ public class TCLoadTCS extends TCLoad {
         "    	submission s," +
         "    	upload u," +
         "		scorecard_question sq" +
-        "    where  ri.scorecard_question_id = sq.scorecard_question_id and ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (4,5,6,7) and " +
+        "    where  ri.scorecard_question_id = sq.scorecard_question_id and ri.review_id = r.review_id and r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4,5,6,7) and " +
         " r.submission_id = s.submission_id and u.upload_id = s.upload_id and sq.scorecard_question_type_id in (1,2,4) and answer <> '' and " +
         " u.project_id = ?  "
         + "    and (ri.modify_date > ? OR r.modify_date > ? OR res.modify_date > ? OR u.modify_date > ? OR s.modify_date > ?)"
@@ -3380,8 +3380,8 @@ public class TCLoadTCS extends TCLoad {
             "    ,(select value from resource_info where resource_id = r.resource_id and resource_info_type_id = 1) as reviewer_id " +
             "    ,u.project_id " +
             "    ,ric.content as response_text " +
-            "    ,ric.comment_type_id as response_type_id " +
-            "    ,ctl.name as response_type_desc " +
+            "    ,case when ric.comment_type_id = 1 then 3 when ric.comment_type_id = 3 then 1 else 2 end as response_type_id " +
+            "    ,case when ric.comment_type_id = 1 then 'Comment' when ric.comment_type_id = 3 then 'Required' else 'Recommended' end as response_type_desc " +
             "    ,ric.review_item_comment_id subjective_resp_id " +
             "    from review_item_comment ric, " +
             "    	comment_type_lu ctl," +
@@ -3392,7 +3392,7 @@ public class TCLoadTCS extends TCLoad {
             "    	resource res " +
             "    where  ric.comment_type_id = ctl.comment_type_id and ric.review_item_id = ri.review_item_id and " +
             "ri.review_id = r.review_id and r.submission_id = s.submission_id and u.upload_id = s.upload_id and " +
-            "r.resource_id = res.resource_id and res.resource_role_id in (4, 5, 6, 7) and " +
+            "r.resource_id = res.resource_id and res.resource_role_id in (2, 3, 4, 5, 6, 7) and " +
             "ric.comment_type_id in (1, 2, 3) and u.project_id = ? " +
             " and (ric.modify_date > ? OR ri.modify_date > ? OR r.modify_date > ? OR s.modify_date > ? OR u.modify_date > ? OR res.modify_date > ?) " +
             "order by scorecard_question_id, scorecard_id, subjective_resp_id  "
