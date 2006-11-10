@@ -1416,7 +1416,7 @@ public class TCLoadTCS extends TCLoad {
                     count++;
 
                     long pointsAwarded = 0;
-                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                    if (converProjectStatus(projectResults.getInt("project_stat_id")) == STATUS_COMPLETED &&
                             dRProjects.contains(new Long(project_id)) &&
                             projectResults.getInt("rating_ind") == 1) {
                         pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
@@ -1451,7 +1451,7 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
-                    if (projectResults.getLong("project_stat_id") == STATUS_COMPLETED &&
+                    if (converProjectStatus(projectResults.getInt("project_stat_id")) == STATUS_COMPLETED &&
                             dRProjects.contains(new Long(project_id)) &&
                             projectResults.getInt("rating_ind") == 1) {
                         resultInsert.setLong(19, pointsAwarded);
