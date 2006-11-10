@@ -880,18 +880,19 @@ public class TCLoadTCS extends TCLoad {
             "	,p.project_status_id as project_stat_id " +
             "	,psl.name as project_stat_name " +
             "	,cat.viewable as viewable " +
-            "	,cv.version as version_id " +
-            "	,cv.version_text as version_text " +
+            "	,substr(pi2.value,1,20) as version_id " +
+            "	,substr(pi3.value,1,40) as version_text " +
             "	,pivi.value as rating_date " +
             "	,case when pivt.value is not null then substr(pivt.value,1,20) else null end as winner_id" +
             "	,case when pict.value is not null then substr(pict.value,1,4) else '1' end as digital_run_ind   " + 
             "   from project p ," +
             "	project_info pir," +
-            "	comp_versions cv," +
             "	outer project_info pivi," +
             "	outer project_info pivt," +
             "	outer project_info pict," +
             "	outer project_info pi1," +
+            "	outer project_info pi2," +
+            "	outer project_info pi3," +
             "	categories cat, " + 
             " 	comp_catalog cc," +
             "	project_status_lu psl, " +
@@ -907,8 +908,10 @@ public class TCLoadTCS extends TCLoad {
             "	and pict.project_info_type_id = 26 " +
             "	and pi1.project_id = p.project_id " +
             "	and pi1.project_info_type_id = 21 " +
-            "	and cv.component_id = cc.component_id " +
-            "	and cv.phase_id in (112, 113) " +
+            "	and pi2.project_id = p.project_id " +
+            "	and pi2.project_info_type_id = 3 " +
+            "	and pi3.project_id = p.project_id " +
+            "	and pi3.project_info_type_id = 7 " +
             "	and cc.component_id = pir.value " +
             "	and cc.root_category_id = cat.category_id " +
             "	and psl.project_status_id = p.project_status_id " +
@@ -923,6 +926,8 @@ public class TCLoadTCS extends TCLoad {
             "	OR pict.modify_date > ? " +
             " 	OR psd.modify_date > ? " +
             " 	OR pi1.modify_date > ? " +
+            " 	OR pi2.modify_date > ? " +
+            " 	OR pi3.modify_date > ? " +
             "	OR ppd.modify_date > ? " +
             (needLoadMovedProject() ? " OR p.modify_user <> 'Converter' " +
             					  " OR pir.modify_user <> 'Converter' " +
@@ -930,6 +935,8 @@ public class TCLoadTCS extends TCLoad {
             					  " OR pict.modify_user <> 'Converter' " +
             					  " OR psd.modify_user <> 'Converter' " +
             					  " OR pi1.modify_user <> 'Converter' " +
+            					  " OR pi2.modify_user <> 'Converter' " +
+            					  " OR pi3.modify_user <> 'Converter' " +
             					  " OR ppd.modify_user <> 'Converter' " +
             		")" 
             		: ")")
@@ -963,6 +970,8 @@ public class TCLoadTCS extends TCLoad {
             select.setTimestamp(6, fLastLogTime);
             select.setTimestamp(7, fLastLogTime);
             select.setTimestamp(8, fLastLogTime);
+            select.setTimestamp(9, fLastLogTime);
+            select.setTimestamp(10, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
