@@ -311,6 +311,7 @@ public class TCLoadRound extends TCLoad {
         int retVal = 0;
         int algoType = 0;
         PreparedStatement psSel = null;
+        PreparedStatement psRatedRound = null;
         PreparedStatement psSelNumCompetitions = null;
         PreparedStatement psSelRatedRounds = null;
         PreparedStatement psSelMinMaxRatings = null;
@@ -322,6 +323,18 @@ public class TCLoadRound extends TCLoad {
         try {
             algoType = getRoundType(fRoundId);
 
+            query = new StringBuffer(100);
+            query.append(" SELECT 1 FROM round");
+            query.append(" WHERE round_id = " + fRoundId);
+            query.append(" AND rated_ind = 1");
+            psRatedRound = prepareStatement(query.toString(), SOURCE_DB);
+            rs = psRatedRound.executeQuery();
+            
+            if (!rs.next()) {
+            	log.info("Not loading rating, since the round is not rated");
+            	return;
+            }
+            
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
             query.append("SELECT rr.coder_id ");    // 1
@@ -333,6 +346,7 @@ public class TCLoadRound extends TCLoad {
             query.append("          FROM group_user gu ");
             query.append("         WHERE gu.user_id = rr.coder_id ");
             query.append("           AND gu.group_id IN (13,14))");
+            query.append("           AND rr.rated_flag = 1");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -479,6 +493,7 @@ public class TCLoadRound extends TCLoad {
         } finally {
             close(rs);
             close(rs2);
+            close(psRatedRound);
             close(psSel);
             close(psSelNumCompetitions);
             close(psSelRatedRounds);
