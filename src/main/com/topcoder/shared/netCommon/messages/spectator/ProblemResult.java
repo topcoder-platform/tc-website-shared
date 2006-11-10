@@ -20,6 +20,9 @@ public class ProblemResult extends ProblemEvent {
 
     /** the point value associated with the result */
     private double resultValue;
+    
+    /** challenge args */
+    private Object[] args = new Object[0];
 
     /** was successful */
     public final static int SUCCESSFUL = 1;
@@ -55,10 +58,21 @@ public class ProblemResult extends ProblemEvent {
         this.resultValue = resultValue;
     }
     
+    public ProblemResult(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, int result, double resultValue, Object[] args) {
+        super(room, problemEventType, problemID, problemWriter, sourceCoder, timeLeft);
+        this.result = result;
+        this.resultValue = resultValue;
+        this.args = args;
+    }
+    
     public ProblemResult(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, int result, double resultValue, String text, int language) {
         this(room, problemEventType, problemID, problemWriter, sourceCoder, timeLeft,result, resultValue);
         this.language = language;
         this.programText = text;
+    }
+    
+    public Object[] getArgs() {
+        return args;
     }
 
 
@@ -91,6 +105,7 @@ public class ProblemResult extends ProblemEvent {
         super.customWriteObject(writer);
         writer.writeInt(result);
         writer.writeDouble(resultValue);
+        writer.writeObjectArray(args);
     }
 
     /**
@@ -108,6 +123,7 @@ public class ProblemResult extends ProblemEvent {
         super.customReadObject(reader);
         result = reader.readInt();
         resultValue = reader.readDouble();
+        args = reader.readObjectArray();
     }
 
     /**
