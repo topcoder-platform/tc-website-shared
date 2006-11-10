@@ -141,6 +141,7 @@ public class TCLoadTCS extends TCLoad {
      */
     private boolean needLoadMovedProject() {
     	return this.fLastLogTime == null ? true : this.fLastLogTime.before(java.sql.Date.valueOf("2006-11-11"));
+    	//return false;
     }
     
     /**
@@ -1923,15 +1924,19 @@ public class TCLoadTCS extends TCLoad {
                     	rs.next();
                     	int countResp = rs.getInt(1);
                     	if (countResp > 1) {
-                    		// update current with max + 1
+                    		// the count of review_resp_id is 4 is large than 1
                     		maxReviewRespSelect.clearParameters();
                     		maxReviewRespSelect.setLong(1, projectId);
                     		maxReviewRespSelect.setLong(2, userId);
                         	rs = maxReviewRespSelect.executeQuery();
                         	rs.next();
                     		int maxRespId = rs.getInt(1);
+                			maxRespId++;
+                    		if (maxRespId > 6) {
+                    			maxRespId = 5;
+                    		}
                     		reviewRespUpdate.clearParameters();
-                    		reviewRespUpdate.setLong(1, maxRespId + 1);
+                    		reviewRespUpdate.setLong(1, maxRespId);
                     		reviewRespUpdate.setLong(2, projectId);
                     		reviewRespUpdate.setLong(3, userId);
                     		reviewRespUpdate.setLong(4, reviewerId);
