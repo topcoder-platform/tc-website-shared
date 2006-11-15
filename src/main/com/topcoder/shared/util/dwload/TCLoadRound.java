@@ -57,6 +57,8 @@ public class TCLoadRound extends TCLoad {
     private int CHALLENGE_NULLIFIED = 92;   // challengenullified
     private boolean FULL_LOAD = false;//fullload
 
+    private static int PROBLEM_WRITER_USER_TYPE_ID = 5;
+    private static int PROBLEM_TESTER_USER_TYPE_ID = 6;
     /**
      * This Hashtable stores the start date of a particular round so
      * that we don't have to look it up each time.
@@ -202,6 +204,8 @@ public class TCLoadRound extends TCLoad {
 
             loadChallenge();
 
+            loadProblemAuthors();
+            
             setLastUpdateTime();
 
             log.info("SUCCESS: Round " + fRoundId +
@@ -2617,6 +2621,113 @@ public class TCLoadRound extends TCLoad {
             close(psDel);
         }
     }
+
+    
+
+    /**
+     * This loads the 'problem_tester' and problem_writer tables
+     */
+    private void loadProblemAuthors() throws Exception {
+        int retVal = 0;
+        int count = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psCheckWriter = null;
+        PreparedStatement psCheckTester = null;
+        PreparedStatement psInsWriter = null;
+        PreparedStatement psInsTester = null;
+        ResultSet rs = null;
+        ResultSet rs2 = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append(" SELECT component_id, user_id, user_type_id ");
+            query.append(" FROM component_user_xref ");
+            query.append(" WHERE component_id in (SELECT component_id FROM round_component WHERE round_id = ?) ");
+            query.append(" AND user_type_id in (" + PROBLEM_WRITER_USER_TYPE_ID +", " + PROBLEM_TESTER_USER_TYPE_ID + ") ");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT INTO problem_writer ");
+            query.append(" (writer_id, problem_id) ");
+            query.append(" VALUES (?,?)");            
+            psInsWriter = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append(" INSERT INTO problem_tester ");
+            query.append(" (tester_id, problem_id) ");
+            query.append(" VALUES (?,?)");            
+            psInsTester = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT 1 FROM problem_writer WHERE writer_id =? AND problem_id=?");
+            psCheckWriter = prepareStatement(query.toString(), TARGET_DB);
+
+            query = new StringBuffer(100);
+            query.append("SELECT 1 FROM problem_tester WHERE tester_id =? AND problem_id=?");
+            psCheckTester = prepareStatement(query.toString(), TARGET_DB);
+
+            psSel.setInt(1, fRoundId);
+            rs = psSel.executeQuery();
+            while (rs.next()) {
+                long problem_id = rs.getLong("component_id");
+                long user_id = rs.getLong("user_id");
+                int type = rs.getInt("user_type_id");
+                
+                if (type == PROBLEM_WRITER_USER_TYPE_ID) {
+                	psCheckWriter.setLong(1, user_id);
+                	psCheckWriter.setLong(2, problem_id);
+                	rs2 = psCheckWriter.executeQuery();
+                	if (rs2.next()) {
+                		log.info("writer_id=" + user_id + ", problem_id=" + problem_id + " already loaded in DW");
+                	} else {
+                		psInsWriter.setLong(1, user_id);
+                		psInsWriter.setLong(2, problem_id);
+                    	retVal = psInsWriter.executeUpdate();
+                        if (retVal != 1) {
+                            throw new SQLException("loadProblemAuthors updated " + retVal +
+                                    " rows, not just one.");
+                        }                		
+                    	count++;
+                    	printLoadProgress(count, "problem writer/tester");
+                	}                	
+                } else { // Problem Tester
+                	psCheckTester.setLong(1, user_id);
+                	psCheckTester.setLong(2, problem_id);
+                	rs2 = psCheckTester.executeQuery();
+                	if (rs2.next()) {
+                		log.info("tester_id=" + user_id + ", problem_id=" + problem_id + " already loaded in DW");
+                	} else {
+                		psInsTester.setLong(1, user_id);
+                		psInsTester.setLong(2, problem_id);
+                    	retVal = psInsTester.executeUpdate();
+                        if (retVal != 1) {
+                            throw new SQLException("loadProblemAuthors updated " + retVal +
+                                    " rows, not just one.");
+                        }                		
+                    	count++;
+                    	printLoadProgress(count, "problem writer/tester");
+                	}                	                	
+                }
+                
+            }
+
+            log.info("problem writer/tester records copied = " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'problem writer/tester' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(rs2);
+            close(psSel);
+            close(psInsWriter);
+            close(psInsTester);
+            close(psCheckWriter);
+            close(psCheckTester);
+        }
+    }
+
 
     /**
      * This method places the start time of the load into the update_log table
