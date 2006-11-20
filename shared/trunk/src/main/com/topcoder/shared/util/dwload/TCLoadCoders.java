@@ -24,18 +24,18 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.distCache.CacheClient;
 import com.topcoder.shared.distCache.CacheClientFactory;
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.ArrayList;
 
 public class TCLoadCoders extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadCoders.class);
@@ -358,14 +358,9 @@ public class TCLoadCoders extends TCLoad {
             query.append("   AND (c.modify_date > ? OR a.modify_date > ? OR e.modify_date > ? OR u.modify_date > ?)");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = c.coder_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = c.coder_id ");
-            query.append("           AND gu.group_id = 14)");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= c.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             // Our insert statement
@@ -786,14 +781,9 @@ public class TCLoadCoders extends TCLoad {
             query.append("  AND cs.modify_date > ?");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = cs.coder_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = cs.coder_id ");
-            query.append("           AND gu.group_id = 14)");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= cs.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -882,14 +872,9 @@ public class TCLoadCoders extends TCLoad {
             query.append(" WHERE r.modify_date > ? ");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = r.coder_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = r.coder_id ");
-            query.append("           AND gu.group_id = 14)");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= r.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
