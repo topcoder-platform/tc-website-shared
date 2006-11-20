@@ -213,9 +213,9 @@ public class TCLoadLong extends TCLoad {
             query.append("   and cs.long_component_state_id = s.long_component_state_id");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = cs.coder_id ");
-            query.append("           AND gu.group_id in (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= cs.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -437,10 +437,9 @@ public class TCLoadLong extends TCLoad {
             query.append("WHERE str.round_id = ? ");
             query.append("AND comp.component_id = str.component_id ");
             query.append("AND str.coder_id NOT IN ");
-            query.append("(SELECT gu.user_id ");
-            query.append("FROM group_user gu ");
-            query.append("WHERE gu.group_id IN (13,14)) ");
-
+            query.append("       (SELECT ugx.login_id ");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -1031,9 +1030,9 @@ public class TCLoadLong extends TCLoad {
             query.append("   and cs.coder_id = rr.coder_id ");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = rr.coder_id ");
-            query.append("           AND gu.group_id IN (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id=rr.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 

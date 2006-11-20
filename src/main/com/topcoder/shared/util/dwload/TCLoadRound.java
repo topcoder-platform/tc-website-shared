@@ -347,9 +347,9 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND rr.attended = 'Y' ");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = rr.coder_id ");
-            query.append("           AND gu.group_id IN (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= rr.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
             query.append("           AND rr.rated_flag = 1");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
@@ -546,9 +546,9 @@ public class TCLoadRound extends TCLoad {
             query.append(" WHERE cs.round_id = ?");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = cs.coder_id ");
-            query.append("           AND gu.group_id in (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= cs.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -760,9 +760,9 @@ public class TCLoadRound extends TCLoad {
             query.append(" WHERE str.round_id = ?");
             query.append(" AND comp.component_id = str.component_id");
             query.append(" AND str.coder_id NOT IN  ");
-            query.append("       (SELECT gu.user_id ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.group_id IN (13,14))");
+            query.append("       (SELECT ugx.login_id ");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -1653,9 +1653,9 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND rr.attended = 'Y'");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = rr.coder_id ");
-            query.append("           AND gu.group_id IN (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= rr.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -1949,9 +1949,9 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND rr.attended = 'Y'");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = cs.coder_id ");
-            query.append("           AND gu.group_id IN (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= cs.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -2168,9 +2168,9 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND chal.status_id <> " + CHALLENGE_NULLIFIED);
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = chal.defendant_id ");
-            query.append("           AND gu.group_id IN (13,14))");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= chal.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
@@ -2467,14 +2467,9 @@ public class TCLoadRound extends TCLoad {
             query.append("  WHERE r.modify_date > ? ");
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = r.coder_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = r.coder_id ");
-            query.append("           AND gu.group_id = 14)");
+            query.append("          FROM user_group_xref ugx ");
+            query.append("         WHERE ugx.login_id= r.coder_id ");
+            query.append("           AND ugx.group_id = 2000115)");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
