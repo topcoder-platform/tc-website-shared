@@ -70,9 +70,10 @@ public class TCLoadProblemAuthorsHistory extends TCLoad {
         
         try {
             query = new StringBuffer(100);
-            query.append(" SELECT component_id, user_id, user_type_id ");
-            query.append(" FROM component_user_xref ");
-            query.append(" WHERE user_type_id in (" + PROBLEM_WRITER_USER_TYPE_ID +", " + PROBLEM_TESTER_USER_TYPE_ID + ") ");
+            query.append(" SELECT x.user_id, x.user_type_id, c.problem_id ");
+            query.append(" FROM component_user_xref x, component c ");
+            query.append(" WHERE c.component_id = x.component_id ");
+            query.append(" AND user_type_id in (" + PROBLEM_WRITER_USER_TYPE_ID +", " + PROBLEM_TESTER_USER_TYPE_ID + ") ");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -97,7 +98,7 @@ public class TCLoadProblemAuthorsHistory extends TCLoad {
 
             rs = psSel.executeQuery();
             while (rs.next()) {
-                problem_id = rs.getLong("component_id");
+                problem_id = rs.getLong("problem_id");
                 user_id = rs.getLong("user_id");
                 int type = rs.getInt("user_type_id");
                 
