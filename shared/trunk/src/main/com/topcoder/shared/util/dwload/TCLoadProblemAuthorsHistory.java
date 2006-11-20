@@ -65,7 +65,9 @@ public class TCLoadProblemAuthorsHistory extends TCLoad {
         ResultSet rs = null;
         ResultSet rs2 = null;
         StringBuffer query = null;
-
+        long problem_id = 0;
+        long user_id = 0;
+        
         try {
             query = new StringBuffer(100);
             query.append(" SELECT component_id, user_id, user_type_id ");
@@ -95,8 +97,8 @@ public class TCLoadProblemAuthorsHistory extends TCLoad {
 
             rs = psSel.executeQuery();
             while (rs.next()) {
-                long problem_id = rs.getLong("component_id");
-                long user_id = rs.getLong("user_id");
+                problem_id = rs.getLong("component_id");
+                user_id = rs.getLong("user_id");
                 int type = rs.getInt("user_type_id");
                 
                 if (type == PROBLEM_WRITER_USER_TYPE_ID) {
@@ -139,6 +141,7 @@ public class TCLoadProblemAuthorsHistory extends TCLoad {
 
             log.info("problem writer/tester records copied = " + count);
         } catch (SQLException sqle) {
+        	log.info("Error when trying to insert problem " + problem_id + " for user " + user_id);
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'problem writer/tester' table failed.\n" +
                     sqle.getMessage());
