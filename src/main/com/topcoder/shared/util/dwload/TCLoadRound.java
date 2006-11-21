@@ -2169,7 +2169,7 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM user_group_xref ugx ");
-            query.append("         WHERE ugx.login_id= chal.coder_id ");
+            query.append("         WHERE ugx.login_id= chal.defendant_id ");
             query.append("           AND ugx.group_id = 2000115)");
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
