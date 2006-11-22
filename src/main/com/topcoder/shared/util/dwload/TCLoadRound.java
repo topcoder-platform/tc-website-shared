@@ -205,7 +205,7 @@ public class TCLoadRound extends TCLoad {
             loadChallenge();
 
             loadProblemAuthors();
-            
+
             setLastUpdateTime();
 
             log.info("SUCCESS: Round " + fRoundId +
@@ -333,12 +333,12 @@ public class TCLoadRound extends TCLoad {
             query.append(" AND rated_ind = 1");
             psRatedRound = prepareStatement(query.toString(), SOURCE_DB);
             rs = psRatedRound.executeQuery();
-            
+
             if (!rs.next()) {
             	log.info("Not loading rating, since the round is not rated");
             	return;
             }
-            
+
             // Get all the coders that participated in this round
             query = new StringBuffer(100);
             query.append("SELECT rr.coder_id ");    // 1
@@ -2667,7 +2667,7 @@ public class TCLoadRound extends TCLoad {
         }
     }
 
-    
+
 
     /**
      * This loads the 'problem_tester' and problem_writer tables
@@ -2695,13 +2695,13 @@ public class TCLoadRound extends TCLoad {
             query = new StringBuffer(100);
             query.append(" INSERT INTO problem_writer ");
             query.append(" (writer_id, problem_id) ");
-            query.append(" VALUES (?,?)");            
+            query.append(" VALUES (?,?)");
             psInsWriter = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
             query.append(" INSERT INTO problem_tester ");
             query.append(" (tester_id, problem_id) ");
-            query.append(" VALUES (?,?)");            
+            query.append(" VALUES (?,?)");
             psInsTester = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -2715,7 +2715,7 @@ public class TCLoadRound extends TCLoad {
             psSel.setInt(1, fRoundId);
             rs = psSel.executeQuery();
             while (rs.next()) {
-                long problem_id = rs.getLong("problem_id");
+                long problem_id = rs.getLong("component_id");
                 long user_id = rs.getLong("user_id");
                 int type = rs.getInt("user_type_id");
                 
