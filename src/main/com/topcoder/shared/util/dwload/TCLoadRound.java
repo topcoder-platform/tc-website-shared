@@ -2715,7 +2715,7 @@ public class TCLoadRound extends TCLoad {
             psSel.setInt(1, fRoundId);
             rs = psSel.executeQuery();
             while (rs.next()) {
-                long problem_id = rs.getLong("component_id");
+                long problem_id = rs.getLong("problem_id");
                 long user_id = rs.getLong("user_id");
                 int type = rs.getInt("user_type_id");
                 
