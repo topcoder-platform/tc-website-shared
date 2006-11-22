@@ -2686,10 +2686,12 @@ public class TCLoadRound extends TCLoad {
 
         try {
             query = new StringBuffer(100);
-            query.append(" SELECT component_id, user_id, user_type_id ");
-            query.append(" FROM component_user_xref ");
-            query.append(" WHERE component_id in (SELECT component_id FROM round_component WHERE round_id = ?) ");
-            query.append(" AND user_type_id in (" + PROBLEM_WRITER_USER_TYPE_ID +", " + PROBLEM_TESTER_USER_TYPE_ID + ") ");
+            query.append(" SELECT x.user_id, x.user_type_id, c.problem_id  ");
+            query.append(" FROM component_user_xref x, component c ");
+            query.append(" WHERE c.component_id = x.component_id ");
+            query.append(" AND c.component_id in (SELECT component_id FROM round_component WHERE round_id = ?) ");
+            query.append(" AND x.user_type_id in (" + PROBLEM_WRITER_USER_TYPE_ID +", " + PROBLEM_TESTER_USER_TYPE_ID + ") ");
+            
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
@@ -2715,7 +2717,7 @@ public class TCLoadRound extends TCLoad {
             psSel.setInt(1, fRoundId);
             rs = psSel.executeQuery();
             while (rs.next()) {
-                long problem_id = rs.getLong("component_id");
+                long problem_id = rs.getLong("problem_id");
                 long user_id = rs.getLong("user_id");
                 int type = rs.getInt("user_type_id");
                 
