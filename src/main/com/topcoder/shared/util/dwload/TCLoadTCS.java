@@ -19,11 +19,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <strong>Purpose</strong>:
@@ -1850,6 +1852,7 @@ public class TCLoadTCS extends TCLoad {
 
             projects = projectSelect.executeQuery();
 
+            Map reviewerResps = new HashMap();
             while (projects.next()) {
                 submissionSelect.clearParameters();
                 submissionSelect.setLong(1, projects.getLong("project_id"));
@@ -1924,33 +1927,44 @@ public class TCLoadTCS extends TCLoad {
                     	long projectId = submissionInfo.getLong("project_id");
                     	long userId = submissionInfo.getLong("user_id");
                     	long reviewerId = submissionInfo.getLong("reviewer_id");
+                    	String key = String.valueOf(projectId) + "-" + String.valueOf(reviewerId);                    	
+                    	Integer value = (Integer) reviewerResps.get(key);
+                    	if (value == null) {
+	                    	// check current count which review_resp_id is 4 with project_id, user_id
+	                    	reviewRespSelect.clearParameters();
+	                    	reviewRespSelect.setLong(1, projectId);
+	                    	reviewRespSelect.setLong(2, userId);
+	                    	ResultSet rs = reviewRespSelect.executeQuery();
+	                    	rs.next();
+	                    	
+	                    	int countResp = rs.getInt(1);
+	                    	if (countResp > 1) {
+	                    		// the count of review_resp_id is 4 is large than 1
+	                    		maxReviewRespSelect.clearParameters();
+	                    		maxReviewRespSelect.setLong(1, projectId);
+	                    		maxReviewRespSelect.setLong(2, userId);
+	                        	rs = maxReviewRespSelect.executeQuery();
+	                        	rs.next();
+	                    		int maxRespId = rs.getInt(1);
+	                			maxRespId++;
+	                    		if (maxRespId > 6) {
+	                    			maxRespId = 5;
+	                    		}
+	                    		reviewRespId = maxRespId;
+	                    	}
+                    	} else {
+                    		reviewRespId = value.intValue();
+                    	}
 
-                    	// check current count which review_resp_id is 4 with project_id, user_id
-                    	reviewRespSelect.clearParameters();
-                    	reviewRespSelect.setLong(1, projectId);
-                    	reviewRespSelect.setLong(2, userId);
-                    	ResultSet rs = reviewRespSelect.executeQuery();
-                    	rs.next();
-                    	int countResp = rs.getInt(1);
-                    	if (countResp > 1) {
-                    		// the count of review_resp_id is 4 is large than 1
-                    		maxReviewRespSelect.clearParameters();
-                    		maxReviewRespSelect.setLong(1, projectId);
-                    		maxReviewRespSelect.setLong(2, userId);
-                        	rs = maxReviewRespSelect.executeQuery();
-                        	rs.next();
-                    		int maxRespId = rs.getInt(1);
-                			maxRespId++;
-                    		if (maxRespId > 6) {
-                    			maxRespId = 5;
-                    		}
+                    	if (reviewRespId != 4) {
                     		reviewRespUpdate.clearParameters();
-                    		reviewRespUpdate.setLong(1, maxRespId);
+                    		reviewRespUpdate.setLong(1, reviewRespId);
                     		reviewRespUpdate.setLong(2, projectId);
                     		reviewRespUpdate.setLong(3, userId);
                     		reviewRespUpdate.setLong(4, reviewerId);
-                    		reviewRespUpdate.executeUpdate();
+                    		reviewRespUpdate.executeUpdate();    
                     	}
+                		reviewerResps.put(key, new Integer(reviewRespId));
                     }
                     count++;
                     printLoadProgress(count, "submission review");
