@@ -2,15 +2,25 @@ package com.topcoder.shared.util;
 
 //import com.topcoder.web.common.BaseProcessor;
 
-import com.topcoder.shared.util.logging.Logger;
-import com.topcoder.shared.util.sql.InformixSimpleDataSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
-import java.io.*;
-import java.sql.*;
+
+import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 
 /**
  * A class to hold constants related to the database, and some convenience methods.
@@ -212,11 +222,8 @@ public class DBMS {
             e.printStackTrace();
             throw new SQLException(e.getMessage());
         }
-        Connection conn = ds.getConnection();
-        PreparedStatement ps = conn.prepareStatement("set lock mode to wait 5");
-        ps.execute();
-        ps.close();
-        return conn;
+        //FIXME using mode in URL..
+        return  ds.getConnection();
     }
 
     /**
@@ -672,8 +679,11 @@ public class DBMS {
     public static void printException(Exception e) {
         try {
             if (e instanceof SQLException) {
-                String sqlErrorDetails = DBMS.getSqlExceptionString((SQLException) e);
-                log.error("EJB: SQLException caught\n" + sqlErrorDetails, e);
+                //Avoiding Jboss bug
+                if (e.getMessage() == null || e.getMessage().indexOf("Already closed") == -1) {
+                    String sqlErrorDetails = DBMS.getSqlExceptionString((SQLException) e);
+                    log.error("EJB: SQLException caught\n" + sqlErrorDetails, e);
+                }
             } else {
                 log.error("EJB: Exception caught", e);
             }

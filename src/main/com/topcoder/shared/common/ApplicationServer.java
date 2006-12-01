@@ -9,7 +9,7 @@ import com.topcoder.shared.util.SimpleResourceBundle;
 
 //import javax.naming.*;
 
-public final class ApplicationServer {
+public final class ApplicationServer implements ServicesNames {
 
     private ApplicationServer() {
     }
@@ -42,13 +42,6 @@ public final class ApplicationServer {
     final static String JMS_JNDI_FACTORY = getProperty("JMS_JNDI_FACTORY");
     final static String JBOSS_EJB_JNDI_FACTORY = getProperty("JBOSS_EJB_JNDI_FACTORY");
     public final static String JMS_FACTORY = getProperty("JMS_FACTORY");
-    public final static String EMAIL_QUEUE = "eMailQueue";
-    public final static String TEST_SERVICES = "jma.TestServicesHome";
-    public final static String DB_SERVICES = "jma.DBServicesHome";
-    public final static String TRACKING_SERVICES = "jma.TrackingServicesHome";
-    public final static String MPSQAS_SERVICES = "jma.MPSQASServicesHome";
-    public final static String PROBLEM_SERVICES = "jma.ProblemServicesHome";
-    public final static String LOGIN_SERVICES = "security/Login";
 
     /**
      * The String representing JNDI lookup name for Admin Services EJB. The
@@ -63,5 +56,5 @@ public final class ApplicationServer {
         return bundle.getString(key);
     }
 
-    public final static int WEB_SERVER_ID = 1;
+    
 }

@@ -8,7 +8,7 @@ import com.topcoder.shared.messaging.TopicMessagePublisher;
 import com.topcoder.shared.util.logging.Logger;
 
 /**
- * @autor Diego Belfer (Mural)
+ * @author Diego Belfer (Mural)
  * @version $Id$
  */
 public class ServiceEventNotificator {

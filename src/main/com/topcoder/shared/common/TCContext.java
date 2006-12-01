@@ -7,7 +7,6 @@ import javax.naming.NamingException;
 
 
 public final class TCContext {
-
     private TCContext() {
     }
 

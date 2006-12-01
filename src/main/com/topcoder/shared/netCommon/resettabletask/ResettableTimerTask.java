@@ -10,7 +10,7 @@ package com.topcoder.shared.netCommon.resettabletask;
  * Abstract Timer task that executes its abstract method doAction every <code>waitTime</code> 
  * milliseconds. The countdown timer can be reset invoking the method <code>reset</code>
 
- * @autor Diego Belfer (Mural)
+ * @author Diego Belfer (Mural)
  * @version $Id$
  */
 public abstract class ResettableTimerTask implements Runnable {

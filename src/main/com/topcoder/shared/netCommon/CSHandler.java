@@ -3,6 +3,7 @@ package com.topcoder.shared.netCommon;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.io.StreamCorruptedException;
 import java.io.UTFDataFormatException;
 import java.lang.reflect.Array;
@@ -10,7 +11,12 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import com.topcoder.shared.netCommon.customserializer.CustomSerializer;
+import com.topcoder.shared.netCommon.customserializer.CustomSerializerProvider;
+import com.topcoder.shared.netCommon.customserializer.NullCustomSerializerProvider;
 
 /**
  * The default <code>CSReader</code> and <code>CSWriter</code> implementation.
@@ -38,12 +44,16 @@ public abstract class CSHandler implements CSReader, CSWriter {
     private static final byte OBJECT_ARRAY_ARRAY = 14;
     private static final byte LONG_STRING = 15;
     private static final byte DOUBLE_ARRAY = 16;
-
+    private static final byte CLASS = 17;
+    
     // collections
     private static final byte ARRAY_LIST = 33;
     private static final byte HASH_MAP = 34;
+    private static final byte LIST = 35;
+    private static final byte MAP = 36;
 
     private static final byte CUSTOM_SERIALIZABLE = 65;
+    private static final byte CUSTOM_SERIALIZER = 64;
 
     // 66-96 reserved for NetCommonCSHandler and its subclasses
 
@@ -51,13 +61,19 @@ public abstract class CSHandler implements CSReader, CSWriter {
 
     private DataOutput output;
     private DataInput input;
+    private CustomSerializerProvider customSerializer;
 
     /**
      * Constructs a new custom serialization handler.
      */
     public CSHandler() {
+        this.customSerializer = new NullCustomSerializerProvider();
     }
 
+    public CSHandler(CustomSerializerProvider customSerializer) {
+        this.customSerializer = customSerializer;
+    }
+    
     public final void setDataInput(DataInput input) {
         this.input = input;
     }
@@ -81,6 +97,17 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         if (b != expected) {
             throw new RuntimeException("unexpected, b=" + b + ", expected=" + expected);
+        }
+        return false;
+    }
+    
+    private boolean isNull(byte expected1, byte expected2) throws IOException {
+        byte b = readByte();
+        if (b == NULL) {
+            return true;
+        }
+        if (b != expected1 && b != expected2) {
+            throw new RuntimeException("unexpected, b=" + b + ", expected=" + LIST + " or "+ARRAY_LIST);
         }
         return false;
     }
@@ -122,10 +149,17 @@ public abstract class CSHandler implements CSReader, CSWriter {
     }
 
     public final ArrayList readArrayList() throws IOException {
-        if (isNull(ARRAY_LIST)) {
+        if (isNull(ARRAY_LIST, LIST)) {
             return null;
         }
         return readJustArrayList();
+    }
+    
+    public final List readList(List list) throws IOException {
+        if (isNull(ARRAY_LIST, LIST)) {
+            return null;
+        }
+        return readJustList(list);
     }
 
     private ArrayList readJustArrayList() throws IOException {
@@ -136,8 +170,25 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return list;
     }
+    
+    private List readJustList(List list) throws IOException {
+        int size = readShort();
+        for (int i = 0; i < size; i++) {
+            list.add(readObject());
+        }
+        return list;
+    }
+
 
     public final void writeArrayList(ArrayList list) throws IOException {
+        writeList(list, ARRAY_LIST);
+    }
+
+    public void writeList(List list) throws IOException {
+        writeList(list, LIST);
+    }
+    
+    public void writeList(List list, byte type) throws IOException {
         if (list == null) {
             writeNull();
             return;
@@ -146,7 +197,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         if (size > Short.MAX_VALUE) {
             throw new RuntimeException("list big size: " + size);
         }
-        writeByte(ARRAY_LIST);
+        writeByte(type);
         writeShort((short) size);
         try {
             for (Iterator it = list.iterator(); it.hasNext();) {
@@ -333,10 +384,17 @@ public abstract class CSHandler implements CSReader, CSWriter {
     }
 
     public final HashMap readHashMap() throws IOException {
-        if (isNull(HASH_MAP)) {
+        if (isNull(HASH_MAP, MAP)) {
             return null;
         }
         return readJustHashMap();
+    }
+
+    public final Map readMap(Map map) throws IOException {
+        if (isNull(HASH_MAP, MAP)) {
+            return null;
+        }
+        return readJustMap(map);
     }
 
     private HashMap readJustHashMap() throws IOException {
@@ -349,8 +407,26 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return map;
     }
+    
+    private Map readJustMap(Map map) throws IOException {
+        int size = readShort();
+        for (int i = 0; i < size; i++) {
+            Object key = readObject();
+            Object value = readObject();
+            map.put(key, value);
+        }
+        return map;
+    }
 
     public final void writeHashMap(HashMap map) throws IOException {
+        doWriteMap(map, HASH_MAP);
+    }
+
+    public final void writeMap(Map map) throws IOException {
+        doWriteMap(map, MAP);
+    }
+    
+    private void doWriteMap(Map map, byte type) throws IOException {
         if (map == null) {
             writeNull();
             return;
@@ -359,7 +435,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         if (size > Short.MAX_VALUE) {
             throw new RuntimeException("map big size: " + size);
         }
-        writeByte(HASH_MAP);
+        writeByte(type);
         writeShort((short) size);
         try {
             for (Iterator it = map.entrySet().iterator(); it.hasNext();) {
@@ -376,11 +452,11 @@ public abstract class CSHandler implements CSReader, CSWriter {
         throw new ConcurrentModificationException(e + ", object=" + obj);
     }
 
-    private String readUTF() throws IOException {
+    public String readUTF() throws IOException {
         return input.readUTF();
     }
 
-    private void writeUTF(String s) throws IOException {
+    public void writeUTF(String s) throws IOException {
         output.writeUTF(s);
     }
 
@@ -582,6 +658,27 @@ public abstract class CSHandler implements CSReader, CSWriter {
     public final void writeDouble(double v) throws IOException {
         writeUTF("" + v);
     }
+    
+    public void writeClass(Class clazz) throws IOException {
+        if (clazz == null) {
+            writeNull();
+            return;
+        }
+        writeByte(CLASS);
+        writeUTF(clazz.getName());
+    }
+    
+    public Class readClass() throws IOException {
+        if (isNull(CLASS)) {
+            return null;
+        }
+        String className = readUTF();
+        try {
+            return ClassCache.findClass(className);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
 
     /**
      * A convenience method for writing <code>CustomSerializable</code> instances.
@@ -608,6 +705,15 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeNull();
             return;
         }
+        
+        CustomSerializer serializer = customSerializer.getSerializer(object.getClass());
+        if (serializer != null) {
+            writeByte(CUSTOM_SERIALIZER);
+            writeUTF(object.getClass().getName());
+            serializer.writeObject(this, object);
+            return;
+        }
+        
         if (writeObjectOverride(object)) {
             return;
         }
@@ -649,9 +755,27 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeByte(CUSTOM_SERIALIZABLE);
             writeUTF(object.getClass().getName());
             customWriteObject(object);
+        } else if (object instanceof Object[]) {
+            writeObjectArray((Object[]) object);
+        } else if (object instanceof Class) { 
+            writeClass((Class) object);
+        } else if (object instanceof List) { 
+            writeList((List) object);            
+        } else if (object instanceof Map) { 
+            writeMap((Map) object);
         } else {
-            throw new RuntimeException("writeBaseObject, not implemented: " + object.getClass());
+            writeUnhandledObject(object);
         }
+    }
+
+    /**
+     * This method gets called when an object could not be written. <p>
+     * Default implementation throws a RuntimeException 
+     * 
+     * @param object The object to write
+     */
+    protected void writeUnhandledObject(Object object) throws IOException {
+        throw new RuntimeException("writeBaseObject, not implemented: " + object.getClass());
     }
 
     /**
@@ -666,6 +790,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     }
 
     public final Object readObject() throws IOException {
+        Class clazz = null;
         byte type = readByte();
         switch (type) {
         case NULL:
@@ -687,6 +812,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             //return new Character((char)readShort());
         case ARRAY_LIST:
             return readJustArrayList();
+        case BYTE_ARRAY:
+            return readBytes(readInt());
         case CHAR_ARRAY:
             return readJustCharArray();
         case INT_ARRAY:
@@ -698,15 +825,52 @@ public abstract class CSHandler implements CSReader, CSWriter {
         case LONG_STRING:
             return readLongString();
         case CUSTOM_SERIALIZABLE:
-            String name = readUTF();
-            CustomSerializable cs = (CustomSerializable) ReflectUtils.newInstance(name);
-            cs.customReadObject(this);
-            return cs;
+            clazz = findClassGuarded(readUTF());
+            return readCustomSerializable(clazz);
         case HASH_MAP:
             return readJustHashMap();
+        case OBJECT_ARRAY:
+            return readJustObjectArray();            
+        case CLASS:
+            return readClass();
+        case LIST:
+            return readArrayList();
+        case MAP:
+            return readHashMap();      
+        case CUSTOM_SERIALIZER:
+            clazz = findClassGuarded(readUTF());
+            CustomSerializer serializer = customSerializer.getSerializer(clazz);
+            if (serializer != null) {
+                return serializer.readObject(this);
+            }
+            throw new StreamCorruptedException("Custom serializer can't handle class="+clazz.getName());
         default:
             return readObjectOverride(type);
         }
+    }
+
+    /**
+     * Follows same behaviour than previous implementation, on error null
+     * 
+     * @param name Full name of the class
+     * @return The class or <code>null</code> on any error
+     */
+    private Class findClassGuarded(String name) {
+        try {
+            return ClassCache.findClass(name);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Object readCustomSerializable(Class clazz) throws IOException, ObjectStreamException {
+        CustomSerializable cs = (CustomSerializable) ReflectUtils.newInstance(clazz);
+        cs.customReadObject(this);
+        if (cs instanceof ResolvedCustomSerializable) {
+            return ((ResolvedCustomSerializable) cs).readResolve();
+        }
+        return cs;
     }
 
     /**

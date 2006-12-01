@@ -277,9 +277,9 @@ public class TopicMessagePublisher {
      */
     private synchronized boolean initJMS(int topicType) {
         if (topicType == PRIMARY) {
-            log.info("Initializing primary JMS topic.");
+            log.info("Initializing primary JMS topic. "+topicName);
         } else {
-            log.info("Initializing backup JMS topic.");
+            log.info("Initializing backup JMS topic.  "+topicName);
         }
 
         String factoryName = "";

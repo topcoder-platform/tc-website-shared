@@ -4,6 +4,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This interface is used for converting from Java primitive types, selected Java Collections types 
@@ -96,6 +98,16 @@ public interface CSWriter {
     void writeString(String string) throws IOException;
     
     /**
+     * Writes a <code>String</code> as UTF to the output stream.
+     * The bytes written by this method may be read by the <code>readUTF</code> method of
+     * interface <code>CSReader</code>. 
+     * 
+     * @param   string                  the <code>String</code> to be written. 
+     * @throws  java.io.IOException     if an I/O error has occurred.
+     */
+    public void writeUTF(String s) throws IOException;
+    
+    /**
      * Writes a <code>byte</code> array to the output stream.
      * The bytes written by this method may be read by the <code>readByteArray</code> method of
      * interface <code>CSReader</code>. 
@@ -137,8 +149,8 @@ public interface CSWriter {
     
     /**
      * Writes a <code>java.util.ArrayList</code> instance to the output stream.
-     * The bytes written by this method may be read by the <code>readArrayList</code> method of
-     * interface <code>CSReader</code>. 
+     * The bytes written by this method may be read by the <code>readArrayList</code> method or 
+     * by the <code>readList</code> method of interface <code>CSReader</code>. 
      * 
      * @param   list                    the <code>ArrayList</code> instance to be written. 
      * @throws  java.io.IOException     if an I/O error has occurred.
@@ -146,14 +158,34 @@ public interface CSWriter {
     void writeArrayList(ArrayList list) throws IOException;
     
     /**
+     * Writes a <code>java.util.List</code> instance to the output stream.
+     * The bytes written by this method may be read by the <code>readList</code> method or 
+     * by the <code>readArrayList</code> method of interface <code>CSReader</code>. 
+     * 
+     * @param   list                    the <code>List</code> instance to be written. 
+     * @throws  java.io.IOException     if an I/O error has occurred.
+     */ 
+    void writeList(List list) throws IOException;
+    
+    /**
      * Writes a <code>java.util.HashMap</code> instance to the output stream.
-     * The bytes written by this method may be read by the <code>readHashMap</code> method of
-     * interface <code>CSReader</code>. 
+     * The bytes written by this method may be read by the <code>readHashMap</code> method or
+     * by the <code>readMap</code> method  of interface <code>CSReader</code>. 
      * 
      * @param   map                     the <code>HashMap</code> instance to be written. 
      * @throws  java.io.IOException     if an I/O error has occurred.
      */ 
     void writeHashMap(HashMap map) throws IOException;
+    
+    /**
+     * Writes a <code>java.util.Map</code> instance to the output stream.
+     * The bytes written by this method may be read by the <code>readMap</code> method or 
+     * by the <code>readHashMap</code> method of interface <code>CSReader</code>. 
+     * 
+     * @param   map                     the <code>Map</code> instance to be written. 
+     * @throws  java.io.IOException     if an I/O error has occurred.
+     */ 
+    void writeMap(Map map) throws IOException;
     
     /**
      * Writes a an object to the output stream.
@@ -165,4 +197,13 @@ public interface CSWriter {
      */ 
     void writeObject(Object object) throws IOException;
 
+    /**
+     * Writes a class to the output stream.
+     * The bytes written by this method may be read by the <code>readClass</code> method of
+     * interface <code>CSReader</code>. 
+     * 
+     * @param   clazz                   the clazz to be written. 
+     * @throws  java.io.IOException     if an I/O error has occurred.
+     */ 
+    void writeClass(Class clazz) throws IOException;
 }

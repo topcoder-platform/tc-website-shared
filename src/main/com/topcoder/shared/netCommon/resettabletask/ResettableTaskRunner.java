@@ -53,7 +53,9 @@ public class ResettableTaskRunner {
             };
             for (Iterator it = tasks.entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = (Map.Entry) it.next();
-                new Thread((Runnable) entry.getValue(), (String) entry.getKey()).start();
+                Thread thread = new Thread((Runnable) entry.getValue(), (String) entry.getKey());
+                thread.setDaemon(true);
+                thread.start();
             }
             started = true;
         }
@@ -102,6 +104,26 @@ public class ResettableTaskRunner {
                 throw new IllegalStateException("ResettableTaskRunner already started");
             }
             tasks.put(name, task);
+        }
+    }
+    
+    /**
+     * Resets the tasks registered with the given name.<p>
+     * 
+     * If the tasks is not registered, returns
+     * 
+     * @param name The name of the task
+     */
+    public void resetTask(String name) {
+        ResettableTimerTask task = null;
+        synchronized (taskMutex) {
+            if (started) {
+                throw new IllegalStateException("ResettableTaskRunner already started");
+            }
+            task = (ResettableTimerTask) tasks.get(name);
+        }
+        if (task != null) {
+            task.reset();
         }
     }
 }
