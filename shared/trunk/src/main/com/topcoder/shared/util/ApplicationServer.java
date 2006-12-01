@@ -21,8 +21,6 @@ public class ApplicationServer {
     public static final int PROD = bundle.getIntProperty("PROD", 1);
     public static final int QA = bundle.getIntProperty("QA", 2);
     public static final int DEV = bundle.getIntProperty("DEV", 3);
-    public final static int WEB_SERVER_ID = 1;
-
 
     public static int ENVIRONMENT = bundle.getIntProperty("ENVIRONMENT", DEV);
     public static String SERVER_NAME = bundle.getProperty("SERVER_NAME", "172.16.20.20");
@@ -49,6 +47,8 @@ public class ApplicationServer {
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
 
+    public final static int WEB_SERVER_ID = bundle.getIntProperty("WEB_SERVER_ID", 1);
+    
     public static void close(ResultSet rs) {
         if (rs != null) {
             try {

@@ -14,7 +14,10 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+
 import com.topcoder.shared.netCommon.CSReader;
 import com.topcoder.shared.netCommon.CSWriter;
 import com.topcoder.shared.netCommon.messages.spectator.RequestComponentRoundInfo;
@@ -315,6 +318,22 @@ public class MessageUtil {
 		public void writeObject(Object object) throws IOException {
 			throw new UnsupportedOperationException();
 		}
+
+        public void writeClass(Class clazz) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        public void writeList(List list) throws IOException {
+            throw new UnsupportedOperationException();            
+        }
+
+        public void writeMap(Map map) throws IOException {
+            throw new UnsupportedOperationException();            
+        }
+
+        public void writeUTF(String s) throws IOException {
+            throw new UnsupportedOperationException();
+        }
 	}
 	
 	private static class QueryReader implements CSReader
@@ -410,5 +429,20 @@ public class MessageUtil {
 		public Object readObject() throws IOException {
 			throw new UnsupportedOperationException();
 		}
+
+        public Class readClass() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        public List readList(List listInstance) throws IOException {
+            throw new UnsupportedOperationException();        }
+
+        public Map readMap(Map mapInstance) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        public String readUTF() throws IOException {
+            throw new UnsupportedOperationException();
+        }
 	}
 }

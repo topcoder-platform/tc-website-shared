@@ -74,6 +74,7 @@ public class ProblemComponent extends BaseElement
     private String defaultSolution = "";
     private WebService[] webServices = new WebService[0];
     private int memLimitMB = DEFAULT_MEM_LIMIT; 
+    //FIXME should contain max threading allowed
     private int roundType = -1;
     private ArrayList categories = new ArrayList();
 

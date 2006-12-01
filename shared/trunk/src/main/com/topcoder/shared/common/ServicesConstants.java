@@ -78,6 +78,8 @@ public final class ServicesConstants {
     
     public static final String SANDBOX2_LONG_CONFIG = BASE + "/cpp/sandbox2/config_files/long.config";
     
+    public static final String SANDBOX2_THREADED_LONG_CONFIG = BASE + "/cpp/sandbox2/config_files/tlong.config";
+    
     public static final String SANDBOX2_LONG_PYTON_CONFIG = BASE + "/cpp/sandbox2/config_files/long_python.config";
     
     public static final String SANDBOX2_PYTHON_CONFIG = BASE + "/cpp/sandbox2/config_files/python.config";
@@ -114,8 +116,6 @@ public final class ServicesConstants {
 
     public static final int MAX_LONG_SUBMISSIONS = bundle.getInt("MAX_LONG_SUBMISSIONS");
     public static final int LONG_SUBMISSION_INTERVAL = bundle.getInt("LONG_SUBMISSION_INTERVAL");
-    
-    public static final boolean ALLOW_THREADING = System.getProperty("ALLOW_THREADING") == null ? false : System.getProperty("ALLOW_THREADING").equals("true");
     
     public static final int MARATHON_PORT_NUMBER = System.getProperty("MARATHON_PORT_NUMBER") == null ? 8000 : Integer.parseInt(System.getProperty("MARATHON_PORT_NUMBER"));
 

@@ -8,6 +8,7 @@ import java.util.Date;
 
 public final class DateUtil {
 
+    //FIXME SimpleDateFormat is not thread safe
     private static final DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     private DateUtil() {

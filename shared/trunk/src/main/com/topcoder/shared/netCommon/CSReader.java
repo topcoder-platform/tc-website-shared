@@ -4,6 +4,8 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This interface is used for reading bytes from a binary stream and reconstructing from them
@@ -96,6 +98,16 @@ public interface CSReader {
     String readString() throws IOException;
     
     /**
+     * Reads in and returns an UTF <code>String</code>.
+     * This method is suitable for reading the bytes written by the <code>writeUTF</code> method
+     * of interface <code>CSWriter</code>.
+     * 
+     * @return  a Unicode string.
+     * @throws  java.io.IOException             if an I/O error has occurred.
+     */
+    public String readUTF() throws IOException;
+    
+    /**
      * Reads in and returns a <code>byte</code> array.
      * This method is suitable for reading the bytes written by the <code>writeByteArray</code> method
      * of interface <code>CSWriter</code>.
@@ -162,7 +174,7 @@ public interface CSReader {
     /**
      * Reads in a <code>java.util.ArrayList</code> instance. 
      * This method is suitable for reading the bytes written by the <code>writeArrayList</code> method
-     * of interface <code>CSWriter</code>.
+     * or by the <code>writeList</code> method of interface <code>CSWriter</code>.
      * 
      * @return  the <code>java.util.ArrayList</code> instance read. 
      * @throws  java.io.IOException             if an I/O error has occurred.
@@ -170,14 +182,36 @@ public interface CSReader {
     ArrayList readArrayList() throws IOException;
     
     /**
+     * Reads in the contents of a list into the given <code>java.util.List</code> instance. 
+     * This method is suitable for reading the bytes written by the <code>writeList</code> method
+     * or by the <code>writeArrayList</code> method of interface <code>CSWriter</code>.
+     * 
+     * @param listInstance the List instance to fill with contents
+     * @return  the <code>listInstance</code> filled in. 
+     * @throws  java.io.IOException             if an I/O error has occurred.
+     */ 
+    List readList(List listInstance) throws IOException;
+    
+    /**
      * Reads in a <code>java.util.HashMap</code> instance. 
      * This method is suitable for reading the bytes written by the <code>writeHashMap</code> method
-     * of interface <code>CSWriter</code>.
+     * or by the <code>writeMap</code> method of interface <code>CSWriter</code>.
      * 
      * @return  the <code>java.util.HashMap</code> instance read. 
      * @throws  java.io.IOException             if an I/O error has occurred.
      */ 
     HashMap readHashMap() throws IOException;
+    
+    /**
+     * Reads in the contents of a map into the given <code>java.util.Map</code> instance. 
+     * This method is suitable for reading the bytes written by the <code>writeMap</code> method
+     * or <code>writeHashMap</code> method of interface <code>CSWriter</code>.
+     * 
+     * @param mapInstance the map instance to fill with contents
+     * @return  the <code>mapInstance</code> filled in. 
+     * @throws  java.io.IOException             if an I/O error has occurred.
+     */ 
+    Map readMap(Map mapInstance) throws IOException;
     
     /**
      * Reads in and returns an object. 
@@ -188,5 +222,14 @@ public interface CSReader {
      * @throws  java.io.IOException             if an I/O error has occurred.
      */ 
     Object readObject() throws IOException;
-
+    
+    /**
+     * Reads in and returns an class. 
+     * This method is suitable for reading the bytes written by the <code>writeClass</code> method
+     * of interface <code>CSWriter</code>.
+     * 
+     * @return  the class read.
+     * @throws  java.io.IOException             if an I/O error has occurred.
+     */
+    Class readClass() throws IOException;
 }
