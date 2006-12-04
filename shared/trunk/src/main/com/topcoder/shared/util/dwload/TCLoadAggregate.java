@@ -22,16 +22,17 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
-import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 public class TCLoadAggregate extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadAggregate.class);
@@ -48,6 +49,7 @@ public class TCLoadAggregate extends TCLoad {
     private int RATING_INCREASE = 4;
     private int RATING_DECREASE_SRM_ONLY = 5;
     private int RATING_DECREASE = 6;
+    private int RATING_SRM_APPEARANCES = 7;
     private int CONSEC_WINS_DIV1 = 1;    // conswinsdiv1
     private int CONSEC_WINS_DIV2 = 2;    // conswinsdiv2
     private int STATUS_OPENED = 120;  // opened
@@ -192,6 +194,8 @@ public class TCLoadAggregate extends TCLoad {
                 loadRatingDecreaseStreak(true);
 
                 loadRatingDecreaseStreak(false);
+                
+                loadConsecutiveSRMAppearances();
             }
 
             loadRoundProblem();
@@ -1579,6 +1583,140 @@ public class TCLoadAggregate extends TCLoad {
                 }
             }
             log.info("Records loaded for rating decrease " + (srmOnly ? "(srm only)" : "") + " streak: " + count);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'streak' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+            close(psSel2);
+            close(psIns);
+        }
+    }
+
+    /**
+     * This method loads the 'streak' table for consecutive appeareance in srms
+     * Unrated rounds are not considered.  
+     */
+    private void loadConsecutiveSRMAppearances() throws Exception {
+        int retVal = 0;
+        int count = 0;
+        PreparedStatement psSel = null;
+        PreparedStatement psSel2 = null;
+        PreparedStatement psDel = null;
+        PreparedStatement psIns = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            query = new StringBuffer(100);
+            query.append("SELECT rr.coder_id ");      // 1
+            query.append("       ,rr.round_id ");     // 2
+            query.append("       ,r.calendar_id");    // 3
+            query.append("  FROM room_result rr ");
+            query.append("       ,round r ");
+            query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
+            query.append("   AND r.round_id = rr.round_id ");
+            query.append("   AND rr.rated_flag = 1 ");
+            query.append("   AND rr.attended = 'Y' ");
+            query.append("   AND r.rated_ind = 1 ");              
+            query.append(" ORDER BY rr.coder_id ");
+            query.append("          ,r.calendar_id asc");
+            query.append("          ,r.round_id asc");
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+
+            query = new StringBuffer(100);
+            query.append("INSERT INTO streak ");
+            query.append("      (coder_id ");         // 1
+            query.append("       ,streak_type_id ");  // 2
+            query.append("       ,start_round_id ");  // 3
+            query.append("       ,end_round_id ");    // 4
+            query.append("       ,length ");          // 5
+            query.append("       ,is_current) ");     // 6
+            query.append("VALUES (?,?,?,?,?,?)");  // 6 total values
+            psIns = prepareStatement(query.toString(), TARGET_DB);
+
+
+            query = new StringBuffer(100);
+            query.append(" SELECT calendar_id, round_id FROM round r where round_type_id = " + SINGLE_ROUND_MATCH); 
+            query.append("  and exists (select 1 from room_result rr where rr.round_id=r.round_id) ");
+            query.append("  ORDER BY calendar_id ");
+            psSel2 = prepareStatement(query.toString(), SOURCE_DB);
+            	
+            long latest_round_id = -1;
+            ArrayList rounds = new ArrayList();
+            rs = psSel2.executeQuery();
+            while(rs.next()) {
+            	rounds.add(new Integer(rs.getInt("calendar_id")));
+            	latest_round_id = rs.getInt("round_id"); //  the last round will be stored...nasty trick ;)
+            }
+            
+            query = new StringBuffer(100);
+            query.append("DELETE FROM streak WHERE streak_type_id in (" + RATING_SRM_APPEARANCES + ")");
+
+            psDel = prepareStatement(query.toString(), TARGET_DB);
+            psDel.executeUpdate();
+
+            rs = psSel.executeQuery();
+
+            int cur_coder_id = -1;
+            int start_round_id = -1, end_round_id = -1;
+            int numConsecutive = 0;
+            int roundIdx = -1;
+            boolean hasNext = true;
+            
+            while (hasNext) {
+            	hasNext = rs.next();
+                int coder_id = -2;
+                int round_id = -2;
+                int calendar_id = -2;
+            	
+            	if (hasNext) { 
+	                coder_id = rs.getInt("coder_id");
+	                round_id = rs.getInt("round_id");
+	                calendar_id = rs.getInt("calendar_id");
+            	}
+                
+                // if it's the same coder and he participated in the next round he is expected to, it's consecutive
+                if (coder_id == cur_coder_id && roundIdx >= 0 && ((Integer) rounds.get(roundIdx)).intValue() == calendar_id) {
+                	numConsecutive++;
+                	roundIdx++;
+                	end_round_id = round_id;
+                } else {
+                    // it was not consecutive, so save the streak if needed and start a new one
+                	if (numConsecutive > 1) {
+	                    psIns.clearParameters();
+	                    psIns.setInt(1, cur_coder_id);
+	                    psIns.setInt(2, RATING_SRM_APPEARANCES);
+	                    psIns.setInt(3, start_round_id);
+	                    psIns.setInt(4, end_round_id);
+	                    psIns.setInt(5, numConsecutive);
+	                    psIns.setInt(6, end_round_id == latest_round_id ? 1 : 0);
+	
+	                    retVal = psIns.executeUpdate();
+	                    count += retVal;
+	                    if (retVal != 1) {
+	                        throw new SQLException("TCLoadAggregate: Insert for coder_id " + coder_id +  ", streak_type_id " + RATING_SRM_APPEARANCES +
+	                                " modified " + retVal + " rows, not one.");
+	                    }
+	                    printLoadProgress(count, "Consecutive SRM appeareance streak");
+                	}
+                	
+                	if (hasNext) {
+	                	roundIdx = Collections.binarySearch(rounds, new Integer(calendar_id));
+	                	if (roundIdx < 0) {
+	                		throw new Exception("Round with calendar_id=" + calendar_id + " not found!");
+	                	}
+	                	roundIdx++;
+	                    cur_coder_id = coder_id;
+	                    start_round_id = round_id;
+	                    end_round_id = round_id;
+	                    numConsecutive = 1;
+                	}
+                }                
+            }
+            log.info("Records loaded for Consecutive SRM appeareance streak: " + count);
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
             throw new Exception("Load of 'streak' table failed.\n" +
