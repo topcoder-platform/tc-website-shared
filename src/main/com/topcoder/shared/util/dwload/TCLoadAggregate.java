@@ -2214,23 +2214,27 @@ public class TCLoadAggregate extends TCLoad {
 
 
     private static final String POINT_QUERY =
-            " select coder_id, round_id, division_id, problem_id, time_elapsed" +
-                    " from coder_problem" +
-                    " where round_id = ?" +
-                    " and problem_id = ?" +
-                    " and division_id = ?" +
-                    " and end_status_id = 150 " +
-                    " order by time_elapsed asc";
+            " select cp.coder_id, cp.round_id, cp.division_id, cp.problem_id, cp.time_elapsed" +
+                    " from coder_problem cp, coder c" +
+                    " where cp.round_id = ?" +
+                    " and cp.problem_id = ?" +
+                    " and cp.division_id = ?" +
+                    " and cp.end_status_id = 150 " +
+                    " and cp.coder_id = c.coder_id " +
+                    " and c.status = 'A' " +
+                    " order by cp.time_elapsed asc";
 
     private static final String LANGUAGE_POINT_QUERY =
-            " select coder_id, round_id, division_id, problem_id, time_elapsed" +
-                    " from coder_problem" +
-                    " where round_id = ?" +
-                    " and problem_id = ?" +
-                    " and division_id = ?" +
-                    " and language_id = ?" +
-                    " and end_status_id = 150 " +
-                    " order by time_elapsed asc";
+            " select cp.coder_id, cp.round_id, cp.division_id, cp.problem_id, cp.time_elapsed" +
+                    " from coder_problem cp, coder c " +
+                    " where cp.round_id = ?" +
+                    " and cp.problem_id = ?" +
+                    " and cp.division_id = ?" +
+                    " and cp.language_id = ?" +
+                    " and cp.coder_id = c.coder_id " +
+                    " and c.status = 'A' " +
+                    " and cp.end_status_id = 150 " +
+                    " order by cp.time_elapsed asc";
 
     private static final String LANGUAGE_QUERY = "select distinct language_id " +
             "from coder_problem " +
