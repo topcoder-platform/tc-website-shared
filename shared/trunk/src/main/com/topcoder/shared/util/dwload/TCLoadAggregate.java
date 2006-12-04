@@ -2251,6 +2251,8 @@ public class TCLoadAggregate extends TCLoad {
             "where r.round_type_id = rt.round_type_id " +
             "and rt.algo_rating_type_id in ( " + TC_RATING_TYPE_ID + ", " + HS_RATING_TYPE_ID + ")";
 
+    private static final String DELETE = "update coder_problem set placed = null, language_placed = null where round_id = ? ";
+
     /**
      * This populates the 'coder_problem' table
      */
@@ -2262,6 +2264,7 @@ public class TCLoadAggregate extends TCLoad {
         PreparedStatement psUpd = null;
         PreparedStatement psSelLang = null;
         PreparedStatement psSelLangPoint = null;
+        PreparedStatement delete = null;
         ResultSet rs = null;
         ResultSet rsLang = null;
         ResultSet rsLangPoint = null;
@@ -2293,10 +2296,15 @@ public class TCLoadAggregate extends TCLoad {
             psSelLang = prepareStatement(LANGUAGE_QUERY, TARGET_DB);
             psSelLangPoint = prepareStatement(LANGUAGE_POINT_QUERY, TARGET_DB);
             psUpdLang = prepareStatement(LANGUAGE_PROBLEM_RANK_UPDATE, TARGET_DB);
+            delete = prepareStatement(DELETE, TARGET_DB);
 
 
             for (Iterator roundIterator = rounds.iterator(); roundIterator.hasNext();) {
                 roundId = ((Long) roundIterator.next()).longValue();
+
+                delete.clearParameters();
+                delete.setLong(1, roundId);
+                delete.executeUpdate();
 
                 psSelProblem.clearParameters();
                 psSelProblem.setLong(1, roundId);
