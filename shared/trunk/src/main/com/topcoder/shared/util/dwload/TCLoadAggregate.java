@@ -206,7 +206,6 @@ public class TCLoadAggregate extends TCLoad {
             }
 
             //if running for an old round, the rating history load can not be run
-            //don't forget to remove it from the clear round method as well.
             loadRatingHistory();
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
