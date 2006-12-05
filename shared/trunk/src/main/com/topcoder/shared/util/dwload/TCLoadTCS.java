@@ -143,7 +143,7 @@ public class TCLoadTCS extends TCLoad {
     	return this.fLastLogTime == null ? true : this.fLastLogTime.before(java.sql.Date.valueOf("2006-11-11"));
     	//return false;
     }
-    
+
     /**
      * This method is passed any parameters passed to this load
      */
@@ -886,7 +886,7 @@ public class TCLoadTCS extends TCLoad {
             "	,substr(pi3.value,1,40) as version_text " +
             "	,pivi.value as rating_date " +
             "	,case when pivt.value is not null then substr(pivt.value,1,20) else null end as winner_id" +
-            "	,case when pict.value is not null then substr(pict.value,1,4) else '1' end as digital_run_ind   " + 
+            "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " + 
             "   from project p ," +
             "	project_info pir," +
             "	outer project_info pivi," +
@@ -923,14 +923,6 @@ public class TCLoadTCS extends TCLoad {
             "	and ppd.phase_type_id = 1 " +
             " 	and (p.modify_date > ? " +
             "	OR pir.modify_date > ? " +
-            "	OR pivi.modify_date > ? " +
-            "	OR pivt.modify_date > ? " +
-            "	OR pict.modify_date > ? " +
-            " 	OR psd.modify_date > ? " +
-            " 	OR pi1.modify_date > ? " +
-            " 	OR pi2.modify_date > ? " +
-            " 	OR pi3.modify_date > ? " +
-            "	OR ppd.modify_date > ? " +
             (needLoadMovedProject() ? " OR p.modify_user <> 'Converter' " +
             					  " OR pir.modify_user <> 'Converter' " +
             					  " OR pivt.modify_user <> 'Converter' " +
@@ -966,14 +958,6 @@ public class TCLoadTCS extends TCLoad {
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
             select.setTimestamp(2, fLastLogTime);
-            select.setTimestamp(3, fLastLogTime);
-            select.setTimestamp(4, fLastLogTime);
-            select.setTimestamp(5, fLastLogTime);
-            select.setTimestamp(6, fLastLogTime);
-            select.setTimestamp(7, fLastLogTime);
-            select.setTimestamp(8, fLastLogTime);
-            select.setTimestamp(9, fLastLogTime);
-            select.setTimestamp(10, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
@@ -1803,17 +1787,15 @@ public class TCLoadTCS extends TCLoad {
      		 "	or u.modify_date > ?" +
              "	OR ri1.modify_date > ? " +
              "	OR ri2.modify_date > ? " +
-             "	OR ri3.modify_date > ? " +
      		 "	or res.modify_date > ? " +
      		 "  or (select max(ric.modify_date) " +
-     		 "		from review_item_comment ric,review_item ri" +
+     		 "		from review_item_comment ric, review_item ri" +
      		 "		where ric.review_item_id = ri.review_item_id and ri.review_id = r.review_id and ric.comment_type_id = 4) > ? " +
                 (needLoadMovedProject() ? " OR r.modify_user <> 'Converter' " +
 	      				  			  " OR s.modify_user <> 'Converter' " +
 				      				  " OR u.modify_user <> 'Converter' " +
 				      				  " OR ri1.modify_user <> 'Converter' " +
 				      				  " OR ri2.modify_user <> 'Converter' " +
-				      				  " OR ri3.modify_user <> 'Converter' " +
 				      				  " OR res.modify_user <> 'Converter' " +
 				      	          		")"
 				      	          		: ")");
@@ -1863,7 +1845,6 @@ public class TCLoadTCS extends TCLoad {
                 submissionSelect.setTimestamp(6, fLastLogTime);
                 submissionSelect.setTimestamp(7, fLastLogTime);
                 submissionSelect.setTimestamp(8, fLastLogTime);
-                submissionSelect.setTimestamp(9, fLastLogTime);
                 //log.debug("before submission select");
                 submissionInfo = submissionSelect.executeQuery();
                 //log.debug("after submission select");
@@ -3838,8 +3819,8 @@ public class TCLoadTCS extends TCLoad {
         "	u.modify_date > ? OR " +
         "	res.modify_date > ? OR " +
         "	res1.modify_date > ? OR " +
-        "	res2.modify_date > ? OR " +
-        "	ric_resp.modify_date > ?" +
+        "	res2.modify_date > ? " +
+  //      "	OR ric_resp.modify_date > ?" +
         (needLoadMovedProject() ? " OR ric.modify_user <> 'Converter' " +
         					  " OR ri.modify_user <> 'Converter' " +
         					  " OR r.modify_user <> 'Converter' " +
@@ -3886,7 +3867,7 @@ public class TCLoadTCS extends TCLoad {
                 select.setTimestamp(7, fLastLogTime);
                 select.setTimestamp(8, fLastLogTime);
                 select.setTimestamp(9, fLastLogTime);
-                select.setTimestamp(10, fLastLogTime);
+       //         select.setTimestamp(10, fLastLogTime);
 
                 rs = select.executeQuery();
 
