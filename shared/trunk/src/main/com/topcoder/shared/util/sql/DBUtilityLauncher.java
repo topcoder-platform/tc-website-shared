@@ -34,10 +34,8 @@ public class DBUtilityLauncher {
         try {
             loadme = Class.forName(dbUtilityClass);
         } catch (Exception ex) {
-            log.info("Unable to load class for utility: ");
-            log.info(dbUtilityClass);
-            log.info(". Cannot continue.\n");
-            log.info(ex.getMessage());
+            log.error("Unable to load class for utility: "+dbUtilityClass+". Cannot continue.\n", ex);
+            System.exit(1);
         }
 
         Object ob = null;
@@ -46,15 +44,13 @@ public class DBUtilityLauncher {
             if (ob == null)
                 throw new Exception("Object is null after newInstance call.");
         } catch (Exception ex) {
-            log.info("Unable to create new instance of class for utility: ");
-            log.info(dbUtilityClass);
-            log.info(". Cannot continue.\n");
-            log.info(ex.getMessage());
+            log.error("Unable to create new instance of class for utility: "+dbUtilityClass+". Cannot continue.\n",ex);
+            System.exit(1);
         }
 
         if (!(ob instanceof DBUtility)) {
-            log.info(dbUtilityClass + " is not an instance of DBUtility. You must ");
-            log.info("extend DBUtility to create a Database Utility.");
+            log.error(dbUtilityClass + " is not an instance of DBUtility. You must extend DBUtility to create a Database Utility.");
+            System.exit(1);
         }
 
         log.info("Launching " + dbUtilityClass + "...");
