@@ -72,7 +72,8 @@ public class TCLauncher implements Launcher {
             queueConnections.put(me.getKey(), ((DataSource)me.getValue()).getConnection());
         }
 
-        new ProcessingThread(queueConnections).start();
+        ProcessingThread pt = new ProcessingThread(queueConnections);
+        pt.start();
         StatusThread t = new StatusThread((Queue)processingQueues.get(Launcher.DW));
         log.debug("is my thread a daemon: " + t.isDaemon());
         t.start();
@@ -87,10 +88,14 @@ public class TCLauncher implements Launcher {
             }
             callRetriever(className, (Properties) configurations.get(i), retrieverConnections);
         }
+
+        pt.printStatus();
         synchronized (lock) {
             lastRetrieverFinished = true;
         }
+        pt.printStatus();
         log.debug("last retriever is now finished");
+        pt.printStatus();
 
     }
 
@@ -119,6 +124,7 @@ public class TCLauncher implements Launcher {
     private class ProcessingThread extends Thread {
         private int queriesExecuted = 0;
         private int rowsAffected = 0;
+        private boolean foundItem;
 
         private Map connections;
         public ProcessingThread(Map connections) {
@@ -130,7 +136,7 @@ public class TCLauncher implements Launcher {
             boolean goOn = true;
             while (goOn) {
                 Queue curr;
-                boolean foundItem = false;
+                foundItem = false;
                 Map.Entry me;
                 for (Iterator it = processingQueues.entrySet().iterator(); it.hasNext();) {
                     me = (Map.Entry) it.next();
@@ -150,7 +156,6 @@ public class TCLauncher implements Launcher {
                 synchronized (lock) {
                     goOn = !lastRetrieverFinished || foundItem;
                 }
-                log.debug("sleeeeep lasttretrieverfinished " + lastRetrieverFinished + " foundItem: " + foundItem);
 
                 try {
                     Thread.sleep(500);
@@ -158,6 +163,10 @@ public class TCLauncher implements Launcher {
 
                 }
             }
+        }
+
+        void printStatus() {
+            log.debug("lasttretrieverfinished " + lastRetrieverFinished + " foundItem: " + foundItem);
         }
 
         private void processQueue(Queue q, Connection conn) throws SQLException {
