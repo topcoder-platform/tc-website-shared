@@ -74,6 +74,7 @@ public class TCLauncher implements Launcher {
 
         new ProcessingThread(queueConnections).start();
         StatusThread t = new StatusThread((Queue)processingQueues.get(Launcher.DW));
+        log.debug("is my thread a daemon: " + t.isDaemon());
         t.start();
 
         //go through and execute all the retrievers
