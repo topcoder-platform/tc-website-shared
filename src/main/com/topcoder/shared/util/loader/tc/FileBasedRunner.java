@@ -21,6 +21,8 @@ public class FileBasedRunner {
         ConfigManager conf = ConfigManager.getInstance();
         String namespace = Launcher.class.getName();
         try {
+            conf.add(args[0], ConfigManager.EXCEPTIONS_ALL);
+            
             Property p = conf.getPropertyObject(namespace, "global_parameters");
             List l = p.list();
 
