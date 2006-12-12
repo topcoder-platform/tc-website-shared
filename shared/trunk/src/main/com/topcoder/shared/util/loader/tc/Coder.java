@@ -157,9 +157,6 @@ public class Coder extends BaseDataRetriever {
             while (rs.next()) {
                 long coderId = rs.getLong("coder_id");
 
-                psSel2.clearParameters();
-                psSel2.setLong(1, coderId);
-
                 if (coderSet.contains(new Long(coderId))) {
                     q = new BasicQuery(update);
                     q.addArg(rs.getString("state_code"));
