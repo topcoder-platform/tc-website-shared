@@ -149,10 +149,10 @@ public class TCLauncher implements Launcher {
                 synchronized (lock) {
                     goOn = !lastRetrieverFinished || foundItem;
                 }
+                log.debug("sleeeeep lasttretrieverfinished " + lastRetrieverFinished + " foundItem: " + foundItem);
 
                 try {
                     Thread.sleep(3 * 1000);
-                    log.debug("sleeeeep lasttretrieverfinished " + lastRetrieverFinished + " foundItem: " + foundItem);
                 } catch (InterruptedException e) {
 
                 }
