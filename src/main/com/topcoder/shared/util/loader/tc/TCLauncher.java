@@ -74,12 +74,14 @@ public class TCLauncher implements Launcher {
 
         ProcessingThread pt = new ProcessingThread(queueConnections);
         pt.start();
+        pt.join();
+/*
         StatusThread t = new StatusThread((Queue)processingQueues.get(Launcher.DW));
         log.debug("is my thread a daemon: " + t.isDaemon());
         t.start();
 
-        pt.join();
         t.join();
+*/
 
 
         //go through and execute all the retrievers
@@ -105,7 +107,7 @@ public class TCLauncher implements Launcher {
 
 
 
-    private class StatusThread extends Thread {
+    /*private class StatusThread extends Thread {
 
         private Queue q;
         public StatusThread(Queue q) {
@@ -123,7 +125,7 @@ public class TCLauncher implements Launcher {
             }
         }
     }
-
+*/
 
     private class ProcessingThread extends Thread {
         private int queriesExecuted = 0;
