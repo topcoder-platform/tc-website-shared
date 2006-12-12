@@ -129,13 +129,13 @@ public class TCLauncher implements Launcher {
             boolean goOn = true;
             while (goOn) {
                 Queue curr;
-                boolean foundItem = true;
+                boolean foundItem = false;
                 Map.Entry me;
                 for (Iterator it = processingQueues.entrySet().iterator(); it.hasNext();) {
                     me = (Map.Entry) it.next();
                     curr = (Queue) me.getValue();
-                    foundItem &= !curr.isEmpty();
-                    if (foundItem) {
+                    foundItem |= !curr.isEmpty();
+                    if (!curr.isEmpty()) {
                         try {
                             processQueue(curr, (Connection) connections.get(me.getKey()));
                         } catch (SQLException e) {
