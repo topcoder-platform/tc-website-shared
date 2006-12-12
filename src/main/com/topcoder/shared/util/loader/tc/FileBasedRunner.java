@@ -30,6 +30,9 @@ public class FileBasedRunner {
             Property curr;
             for (Iterator it = l.iterator(); it.hasNext();) {
                 curr = (Property)it.next();
+                if (log.isDebugEnabled()) {
+                    log.debug("name: " + curr.getName() + " val: " + curr.getValue());
+                }
                 globalProps.put(curr.getName(), curr.getValue());
             }
 
