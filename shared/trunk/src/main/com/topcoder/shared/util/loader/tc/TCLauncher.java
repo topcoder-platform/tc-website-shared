@@ -78,6 +78,10 @@ public class TCLauncher implements Launcher {
         log.debug("is my thread a daemon: " + t.isDaemon());
         t.start();
 
+        pt.join();
+        t.join();
+
+
         //go through and execute all the retrievers
         int i = 0;
         String className;
