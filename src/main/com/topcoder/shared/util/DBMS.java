@@ -2,25 +2,15 @@ package com.topcoder.shared.util;
 
 //import com.topcoder.web.common.BaseProcessor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
-
-import com.topcoder.shared.util.logging.Logger;
-import com.topcoder.shared.util.sql.InformixSimpleDataSource;
+import java.io.*;
+import java.sql.*;
 
 /**
  * A class to hold constants related to the database, and some convenience methods.
@@ -662,6 +652,15 @@ public class DBMS {
         if (ps == null) return;
         try {
             ps.close();
+        } catch (Exception e) {
+            printException(e);
+        }
+    }
+
+    public static void close(Statement s) {
+        if (s == null) return;
+        try {
+            s.close();
         } catch (Exception e) {
             printException(e);
         }
