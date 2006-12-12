@@ -190,7 +190,9 @@ public class TCLauncher implements Launcher {
                 curr = (Query) it.next();
                 if (last == null || !curr.getQuery().equals(last.getQuery())) {
                     if (ps != null) {
+                        log.debug("before execute");
                         results = ps.executeBatch();
+                        log.debug("after execute");
                         queriesExecuted += results.length;
                         for (int i = 0; i < results.length; i++) {
                             rowsAffected += results[i];
@@ -213,6 +215,17 @@ public class TCLauncher implements Launcher {
                 }
                 last = curr;
             }
+            if (ps!=null) {
+                log.debug("before execute");
+                results = ps.executeBatch();
+                log.debug("after execute");
+                queriesExecuted += results.length;
+                for (int i = 0; i < results.length; i++) {
+                    rowsAffected += results[i];
+                }
+                ps.clearParameters();
+            }
+
             log.info("processed " + queriesExecuted + " queries affecting " + rowsAffected + " rows.");
         }
 
