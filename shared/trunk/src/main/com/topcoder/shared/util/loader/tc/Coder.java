@@ -205,6 +205,9 @@ public class Coder extends BaseDataRetriever {
                 }
                 DBMS.close(rs2);
                 count++;
+                if (log.isDebugEnabled() && count%25==0) {
+                    log.debug(count + " rows selected for coder load");
+                }
             }
 
             processingQueue.addAll(inserts);

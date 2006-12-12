@@ -161,7 +161,7 @@ public class TCLauncher implements Launcher {
                 }
                 synchronized (lock) {
                     goOn = !lastRetrieverFinished || foundItem;
-                    log.debug("goOn = " + goOn);
+                    //log.debug("goOn = " + goOn);
                 }
 
                 try {
