@@ -5,11 +5,9 @@ import com.topcoder.shared.util.loader.Launcher;
 import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 import junit.framework.TestCase;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Properties;
 
 /**
@@ -47,11 +45,7 @@ public class CoderTestCase extends TestCase {
             DBMS.printSqlException(true, e);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            for (Iterator it = connMap.values().iterator();it.hasNext();) {
-                DBMS.close((Connection)it.next());
-            }
-        }
+        } 
 
 
 
