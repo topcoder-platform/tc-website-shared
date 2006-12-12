@@ -152,13 +152,11 @@ public class TCLauncher implements Launcher {
                 }
                 log.debug("sleeeeep lasttretrieverfinished " + lastRetrieverFinished + " foundItem: " + foundItem);
 
-/*
                 try {
-                    Thread.sleep(3 * 1000);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
 
                 }
-*/
             }
         }
 
