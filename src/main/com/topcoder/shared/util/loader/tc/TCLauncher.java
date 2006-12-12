@@ -74,7 +74,7 @@ public class TCLauncher implements Launcher {
 
         ProcessingThread pt = new ProcessingThread(queueConnections);
         pt.start();
-        pt.join();
+        //pt.join();
 /*
         StatusThread t = new StatusThread((Queue)processingQueues.get(Launcher.DW));
         log.debug("is my thread a daemon: " + t.isDaemon());
