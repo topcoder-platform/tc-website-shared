@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @author dok
@@ -116,10 +117,9 @@ public class Coder extends BaseDataRetriever {
                     " WHERE gu.user_id = c.coder_id " +
                     " AND gu.group_id = 13)";
 
-    private static final String exists =
-            "SELECT 1 " +
-                    " FROM coder " +
-                    " WHERE coder_id = ?";
+    private static final String coders =
+            "SELECT coder_id " +
+                    " FROM coder ";
 
     public void run() throws Exception {
         log.debug("start coder load");
@@ -141,7 +141,13 @@ public class Coder extends BaseDataRetriever {
             psSel.setTimestamp(4, lastLoad);
             rs = psSel.executeQuery();
 
-            psSel2 = targetConn.prepareStatement(exists);
+            psSel2 = targetConn.prepareStatement(coders);
+
+            rs2 = psSel2.executeQuery();
+            HashSet coderSet = new HashSet(100000);
+            while (rs2.next()) {
+                coderSet.add(new Long(rs2.getLong(1)));
+            }
 
             ArrayList updates = new ArrayList(1000);
             ArrayList inserts = new ArrayList(1000);
@@ -154,9 +160,7 @@ public class Coder extends BaseDataRetriever {
                 psSel2.clearParameters();
                 psSel2.setLong(1, coderId);
 
-                rs2 = psSel2.executeQuery();
-
-                if (rs2.next()) {
+                if (coderSet.contains(new Long(coderId))) {
                     q = new BasicQuery(update);
                     q.addArg(rs.getString("state_code"));
                     q.addArg(rs.getString("country_code"));
@@ -203,7 +207,6 @@ public class Coder extends BaseDataRetriever {
                     q.addArg(rs.getTimestamp("last_site_hit_date"));
                     inserts.add(q);
                 }
-                DBMS.close(rs2);
                 count++;
 /*
                 if (log.isDebugEnabled() && count%25==0) {
