@@ -2,6 +2,7 @@ package com.topcoder.shared.util.loader.tc;
 
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.loader.BaseDataRetriever;
+import com.topcoder.shared.util.loader.BasicQuery;
 import com.topcoder.shared.util.loader.Query;
 
 import java.sql.PreparedStatement;
@@ -148,10 +149,12 @@ public class Coder extends BaseDataRetriever {
             psSel2 = targetConn.prepareStatement(coders);
 
             rs2 = psSel2.executeQuery();
-            HashSet coderSet = new HashSet(100000);
+            HashSet coderSet = new HashSet(psSel2.getMaxRows());
+            log.debug("before coder set load");
             while (rs2.next()) {
                 coderSet.add(new Long(rs2.getLong(1)));
             }
+            log.debug("aftercoder set load");
 
             ArrayList updates = new ArrayList(1000);
             ArrayList inserts = new ArrayList(1000);
@@ -161,7 +164,6 @@ public class Coder extends BaseDataRetriever {
             while (rs.next()) {
                 long coderId = rs.getLong("coder_id");
 
-/*
                 if (coderSet.contains(new Long(coderId))) {
                     q = new BasicQuery(update);
                     q.addArg(rs.getString("state_code"));
@@ -209,7 +211,6 @@ public class Coder extends BaseDataRetriever {
                     q.addArg(rs.getTimestamp("last_site_hit_date"));
                     inserts.add(q);
                 }
-*/
                 count++;
 /*
                 if (log.isDebugEnabled() && count%25==0) {
