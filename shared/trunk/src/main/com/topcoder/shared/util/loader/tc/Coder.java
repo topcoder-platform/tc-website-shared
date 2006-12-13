@@ -205,11 +205,9 @@ public class Coder extends BaseDataRetriever {
                     inserts.add(q);
                 }
                 count++;
-/*
                 if (log.isDebugEnabled() && count%25==0) {
                     log.debug(count + " rows selected for coder load");
                 }
-*/
             }
 
             processingQueue.addAll(inserts);
