@@ -140,8 +140,9 @@ public class Coder extends BaseDataRetriever {
             psSel.setTimestamp(3, lastLoad);
             psSel.setTimestamp(4, lastLoad);
             rs = psSel.executeQuery();
-            log.debug("fetch size: " + rs.getFetchSize());
-            rs.setFetchSize(1000);
+            log.debug("before set");
+            rs.setFetchSize(psSel.getMaxRows());
+            log.debug("after set");
 
             psSel2 = targetConn.prepareStatement(coders);
 
