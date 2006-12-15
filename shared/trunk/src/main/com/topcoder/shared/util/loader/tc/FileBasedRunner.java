@@ -1,12 +1,8 @@
 package com.topcoder.shared.util.loader.tc;
 
-import com.topcoder.shared.util.loader.Launcher;
 import com.topcoder.shared.util.logging.Logger;
-import com.topcoder.shared.util.sql.InformixSimpleDataSource;
-import com.topcoder.util.config.ConfigManager;
-import com.topcoder.util.config.Property;
 
-import java.util.*;
+import java.util.Properties;
 
 /**
  * @author dok
@@ -18,6 +14,7 @@ public class FileBasedRunner {
     private static final Logger log = Logger.getLogger(FileBasedRunner.class);
     public static void main(String[] args) {
 
+/*
         ConfigManager conf = ConfigManager.getInstance();
         String namespace = Launcher.class.getName();
         try {
@@ -101,6 +98,7 @@ public class FileBasedRunner {
         } catch (Exception e) {
             e.printStackTrace();
         }
+*/
     }
 
     private final static class Load implements Comparable {
