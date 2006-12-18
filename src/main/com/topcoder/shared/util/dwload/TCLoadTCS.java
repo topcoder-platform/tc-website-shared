@@ -3,27 +3,15 @@
  */
 package com.topcoder.shared.util.dwload;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import com.topcoder.shared.distCache.CacheClient;
 import com.topcoder.shared.distCache.CacheClientFactory;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
+
+import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * <strong>Purpose</strong>:
@@ -246,6 +234,7 @@ public class TCLoadTCS extends TCLoad {
             //fix problems with submission date
 
             //todo what the hell is this?  do we need it?
+/*
             final String sSQL = "update project_result " +
                     "         set submit_timestamp = (select max(u.submission_date) " +
                     "         from project p, " +
@@ -276,6 +265,7 @@ public class TCLoadTCS extends TCLoad {
             } finally {
                 close(ps);
             }
+*/
 
             doClearCache();
 
@@ -1214,10 +1204,9 @@ public class TCLoadTCS extends TCLoad {
                         "comp_catalog cc " +
                         "where p.project_id = pr.project_id " +
                         "and p.project_id = pi.project_id " +
-                        "and pi.project_info_type_id = 2 " +
-                        "and cv.component_id = pi.value " +
+                        "and pi.project_info_type_id = 1 " +
+                        "and cv.comp_vers_id= pi.value " +
                         "and cc.component_id = cv.component_id " +
-                        "and cv.phase_id in (112, 113) " +
                         "and (p.modify_date > ? " +
                         "	OR cv.modify_date > ? " +
                         "	OR pi.modify_date > ? " +
@@ -1247,9 +1236,7 @@ public class TCLoadTCS extends TCLoad {
         	"    else pr.valid_submission_ind end as valid_submission_ind " +
         	"    ,pr.raw_score " +
         	"    ,pr.final_score " +
-        	"    ,case when exists (select create_time from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  " +
-        	"    then (select min(create_time) from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  " +
-        	"    else (select min(create_time) from component_inquiry where component_id = cc.component_id and user_id = pr.user_id) end as inquire_timestamp " +
+        	"    ,(select create_time from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  as inquire_timestamp " +
         	"	 ,r2.value registrationd_date" +
         	"    ,(select max(u.create_date) from submission s,upload u,resource r,resource_info ri " +
         	"    		where ri.resource_id = r.resource_id and ri.resource_info_type_id = 1 and r.resource_id = u.resource_id " +
