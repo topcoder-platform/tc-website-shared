@@ -1236,7 +1236,7 @@ public class TCLoadTCS extends TCLoad {
         	"    else pr.valid_submission_ind end as valid_submission_ind " +
         	"    ,pr.raw_score " +
         	"    ,pr.final_score " +
-        	"    ,(select create_time from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  as inquire_timestamp " +
+        	"    ,(select max(create_time) from component_inquiry where project_id = p.project_id and user_id = pr.user_id)  as inquire_timestamp " +
         	"	 ,r2.value registrationd_date" +
         	"    ,(select max(u.create_date) from submission s,upload u,resource r,resource_info ri " +
         	"    		where ri.resource_id = r.resource_id and ri.resource_info_type_id = 1 and r.resource_id = u.resource_id " +
