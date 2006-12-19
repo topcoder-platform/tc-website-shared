@@ -99,7 +99,7 @@ public class DBMS {
 
     // Sequence Ids
     public static final int JMA_SEQ = getIntProperty("MAIN_SEQ", 200);
-//    public static final int JMA_SEQ = getIntProperty("JMA_SEQ", 1);
+    //    public static final int JMA_SEQ = getIntProperty("JMA_SEQ", 1);
     public static final int SCHOOL_SEQ = getIntProperty("SCHOOL_SEQ", 3);
     public static final int PROBLEM_SEQ = getIntProperty("PROBLEM_SEQ", 4);
     public static final int CHALLENGE_SEQ = getIntProperty("CHALLENGE_SEQ", 5);
@@ -147,16 +147,16 @@ public class DBMS {
     public final static String MPSQAS_SVC_EVENT_TOPIC = getProperty("MPSQAS_SVC_EVENT_TOPIC", "servicesEventTopic");
 
     private static final String getProperty(String key, String defaultValue) {
-    	if (bundle == null) {
-    		return defaultValue;
-    	}
+        if (bundle == null) {
+            return defaultValue;
+        }
         return bundle.getProperty(key, defaultValue);
     }
 
     private static final int getIntProperty(String key, int defaultValue) {
-    	if (bundle == null) {
-    		return defaultValue;
-    	}
+        if (bundle == null) {
+            return defaultValue;
+        }
         return bundle.getIntProperty(key, defaultValue);
     }
 
@@ -213,7 +213,7 @@ public class DBMS {
             throw new SQLException(e.getMessage());
         }
         //FIXME using mode in URL..
-        return  ds.getConnection();
+        return ds.getConnection();
     }
 
     /**
@@ -557,7 +557,7 @@ public class DBMS {
             do {
                 System.out.println("  Error #" + i + ":");
                 System.out.println("    SQLState = " + sqle.getSQLState());
-                System.out.println("    Message = " + sqle.getMessage());
+                //System.out.println("    Message = " + sqle.getMessage());
                 System.out.println("    SQLCODE = " + sqle.getErrorCode());
                 sqle.printStackTrace();
                 sqle = sqle.getNextException();
@@ -713,12 +713,12 @@ public class DBMS {
     private static void error(Object message) {
         log.error(message);
     }
-    
+
     // Returns the database name associated with the given datasource.
     public static String getDbName(String datasourceName) throws SQLException {
-    	 String jiveUrl = getConnection(datasourceName).getMetaData().getURL();
-         String jiveDbStr = jiveUrl.substring(jiveUrl.indexOf("informix-sqli://"), jiveUrl.indexOf(":INFORMIXSERVER="));
-         return jiveDbStr.substring(jiveDbStr.lastIndexOf('/')+1);
+        String jiveUrl = getConnection(datasourceName).getMetaData().getURL();
+        String jiveDbStr = jiveUrl.substring(jiveUrl.indexOf("informix-sqli://"), jiveUrl.indexOf(":INFORMIXSERVER="));
+        return jiveDbStr.substring(jiveDbStr.lastIndexOf('/') + 1);
     }
 /*
     public static void loadJdbcDriver() {
