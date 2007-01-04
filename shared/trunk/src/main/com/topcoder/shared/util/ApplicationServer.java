@@ -32,6 +32,7 @@ public class ApplicationServer {
     public static String FORUMS_HOST_URL = bundle.getProperty("FORUMS_HOST_URL", "63.118.154.182:1099");
     public static String JMS_HOST_URL = bundle.getProperty("JMS_HOST_URL", "jnp://172.16.210.55:1100,jnp://172.16.210.56:1100");
     public static String CONTEST_HOST_URL = bundle.getProperty("CONTEST_HOST_URL", "t3://172.16.20.40:9003");
+    public static String PACTS_HOST_URL = bundle.getProperty("PACTS_HOST_URL", "t3://172.16.20.40:9003");
     public static String BASE_DIR = bundle.getProperty("BASE_DIR", "/usr/web/build/classes");
     public static String SECURITY_PROVIDER_URL = bundle.getProperty("SECURITY_PROVIDER_URL", "172.16.20.40:1099");
     public static String FILE_CONVERSION_PROVIDER_URL = bundle.getProperty("FILE_CONVERSION_PROVIDER_URL", "172.16.210.53:1099");
