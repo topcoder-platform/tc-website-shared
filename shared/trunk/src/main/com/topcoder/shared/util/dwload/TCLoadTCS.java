@@ -81,12 +81,6 @@ public class TCLoadTCS extends TCLoad {
      */
     private static final int POTENTIAL = 0;
 
-    /**
-     * ID for completed status.
-     *
-     * @since 1.1.0
-     */
-    private static final int STATUS_COMPLETED = 4;
 
     /**
      * Max place reworded for placement points.
@@ -817,24 +811,6 @@ public class TCLoadTCS extends TCLoad {
         }
     }
 
-    private int converProjectStatus(int newStatusId) {
-        switch (newStatusId) {
-            case 1: // In Progress
-                return 3;
-            case 3: // Terminated
-                return 2;
-            case 7: // Completed
-                return 4;
-            case 5: // All submissions failed screening
-                return 5; // 'Cancelled - Failed Screening'
-            case 4: // All submissions didn't reach minimum review score
-                return 6; // 'Cancelled - Failed Review'
-            case 6: // Remove for Reposting
-                return 7; // 'Cancelled - Zero Submissions'
-        }
-        return 3;
-    }
-
     /**
      * <p/>
      * Load projects to the DW.
@@ -980,7 +956,7 @@ public class TCLoadTCS extends TCLoad {
                 update.setLong(14, rs.getLong("component_id"));
                 update.setLong(15, rs.getLong("review_phase_id"));
                 update.setString(16, rs.getString("review_phase_name"));
-                update.setLong(17, converProjectStatus(rs.getInt("project_stat_id")));
+                update.setLong(17, rs.getInt("project_stat_id"));
                 update.setString(18, rs.getString("project_stat_name"));
                 update.setLong(19, rs.getLong("level_id"));
                 update.setInt(20, rs.getInt("viewable"));
@@ -1038,7 +1014,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setLong(15, rs.getLong("component_id"));
                     insert.setLong(16, rs.getLong("review_phase_id"));
                     insert.setString(17, rs.getString("review_phase_name"));
-                    insert.setLong(18, converProjectStatus(rs.getInt("project_stat_id")));
+                    insert.setLong(18, rs.getInt("project_stat_id"));
                     insert.setString(19, rs.getString("project_stat_name"));
                     insert.setLong(20, rs.getLong("level_id"));
                     insert.setInt(21, rs.getInt("viewable"));
@@ -1397,7 +1373,7 @@ public class TCLoadTCS extends TCLoad {
                     count++;
 
                     long pointsAwarded = 0;
-                    if (converProjectStatus(projectResults.getInt("project_stat_id")) == STATUS_COMPLETED &&
+                    if (projectResults.getInt("project_stat_id") == 7 &&  // COMPLETED
                             dRProjects.contains(new Long(project_id)) &&
                             projectResults.getInt("rating_ind") == 1) {
                         pointsAwarded = calculatePointsAwarded(passedReview, placed, numSubmissionsPassedReview);
@@ -1432,7 +1408,7 @@ public class TCLoadTCS extends TCLoad {
                     resultInsert.setObject(17, projectResults.getObject("reliability_ind"));
                     resultInsert.setObject(18, projectResults.getObject("passed_review_ind"));
 
-                    if (converProjectStatus(projectResults.getInt("project_stat_id")) == STATUS_COMPLETED &&
+                    if (projectResults.getInt("project_stat_id") == 7 &&
                             dRProjects.contains(new Long(project_id)) &&
                             projectResults.getInt("rating_ind") == 1) {
                         resultInsert.setLong(19, pointsAwarded);
