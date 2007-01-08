@@ -25,6 +25,7 @@ public class ApplicationServer {
     public static int ENVIRONMENT = bundle.getIntProperty("ENVIRONMENT", DEV);
     public static String SERVER_NAME = bundle.getProperty("SERVER_NAME", "172.16.20.20");
     public static String STUDIO_SERVER_NAME = bundle.getProperty("STUDIO_SERVER_NAME", "studio.dev.topcoder.com");
+    public static String CSF_SERVER_NAME = bundle.getProperty("CSF_SERVER_NAME", "csf.dev.topcoder.com");
     public static String CORP_SERVER_NAME = bundle.getProperty("CORP_SERVER_NAME", "172.16.20.20/corp");
     public static String SOFTWARE_SERVER_NAME = bundle.getProperty("SOFTWARE_SERVER_NAME", "172.16.20.222");
     public static String FORUMS_SERVER_NAME = bundle.getProperty("FORUMS_SERVER_NAME", "forums.topcoder.com");
