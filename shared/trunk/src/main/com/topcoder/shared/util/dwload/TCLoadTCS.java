@@ -4182,7 +4182,7 @@ public class TCLoadTCS extends TCLoad {
                 " and pr.valid_submission_ind = 1  " +
                 " and pr.passed_review_ind = 1  " +
                 " and pr.rating_ind = 1  " +
-                " and p.status_id in (4,5,6)  " +
+                " and p.status_id = 7  " +
                 " order by pr.user_id, p.rating_date, p.project_id";
 
         final String INSERT = "INSERT INTO streak (coder_id, streak_type_id, phase_id, start_project_id, end_project_id, length, is_current) " +
