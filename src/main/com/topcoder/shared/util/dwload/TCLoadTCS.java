@@ -4285,7 +4285,7 @@ public class TCLoadTCS extends TCLoad {
         private int phaseId;
         private String category;
 
-        private long coderId = -1;
+        protected long coderId = -1;
         private long startProjectId = -1;
         private long endProjectId = -1;
         private int length = 0;
@@ -4369,6 +4369,7 @@ public class TCLoadTCS extends TCLoad {
         }
 
         protected boolean addToStreak(int placed, int rating) {
+        	log.debug("ConsecutiveWinningsStreak.addToStreak coder=" + coderId + " placed="  +placed);
             return placed == 1 || placed == 2;
         }
     }
