@@ -160,7 +160,7 @@ public class TCLoadTCS extends TCLoad {
 
             fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
             getLastUpdateTime();
-
+/*
             doLoadReviewResp();
             doLoadEvent();
             doLoadUserEvent();
@@ -206,9 +206,9 @@ public class TCLoadTCS extends TCLoad {
             doLoadTestcaseAppeal();
 
             doLoadSubmission();
-
+*/
             doLoadStreak();
-
+/*
             List list = getCurrentRatings();
             doLoadRank(112, ACTIVE_RATING_RANK_TYPE_ID, list);
             doLoadRank(112, OVERALL_RATING_RANK_TYPE_ID, list);
@@ -224,7 +224,7 @@ public class TCLoadTCS extends TCLoad {
             loadCountryRatingRank(112, OVERALL_RATING_RANK_TYPE_ID, list);
             loadCountryRatingRank(113, ACTIVE_RATING_RANK_TYPE_ID, list);
             loadCountryRatingRank(113, OVERALL_RATING_RANK_TYPE_ID, list);
-
+*/
             //fix problems with submission date
 
             //todo what the hell is this?  do we need it?
@@ -4302,9 +4302,11 @@ public class TCLoadTCS extends TCLoad {
         }
 
         public StreakRow add(long coderId, long projectId, int placed, int rating, int phaseId, String category) {
+        	log.debug("Streak.add coder=" + coderId + " pj=" + projectId + " placed=" + placed + " rating=" + rating + " phase=" + phaseId + " category="+category);
             StreakRow sr = null;
 
             if (this.coderId != coderId) {
+            	log.debug("different coder!");
                 if (length > 1) {
                     sr = new StreakRow(this.coderId, typeId, this.phaseId, this.category, this.startProjectId, this.endProjectId, length, true);
                 }
@@ -4316,16 +4318,19 @@ public class TCLoadTCS extends TCLoad {
             // check if the project belongs to the specified phase and category
             if (this.phaseId != phaseId ||
                     (!OVERALL.equals(this.category) && !this.category.equals(category))) {
+            	log.debug("distinta fase o categoria");
                 return null;
             }
 
             if (addToStreak(placed, rating)) {
+            	log.debug("addToStreak=true");
                 if (length == 0) {
                     startProjectId = projectId;
                 }
                 endProjectId = projectId;
                 length++;
             } else {
+            	log.debug("addToStreak=false");
                 if (length > 1) {
                     sr = new StreakRow(this.coderId, typeId, this.phaseId, this.category, startProjectId, endProjectId, length, false);
                 }
