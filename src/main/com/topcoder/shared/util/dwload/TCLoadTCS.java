@@ -4237,6 +4237,7 @@ public class TCLoadTCS extends TCLoad {
                         StreakRow sr = hasNext ? streaks[k][i].add(userId, projectId, placed, rating, phaseId, category) : streaks[k][i].flush();
 
                         if (sr != null) {
+                        	log.debug("Save sr!");
                             insert.setLong(1, sr.getCoderId());
                             insert.setInt(2, sr.getTypeId());
                             insert.setInt(3, sr.getPhaseId());
@@ -4302,11 +4303,11 @@ public class TCLoadTCS extends TCLoad {
         }
 
         public StreakRow add(long coderId, long projectId, int placed, int rating, int phaseId, String category) {
-        	log.debug("Streak.add coder=" + coderId + " pj=" + projectId + " placed=" + placed + " rating=" + rating + " phase=" + phaseId + " category="+category);
+        	if(typeId==1) log.debug("Streak.add coder=" + coderId + " pj=" + projectId + " placed=" + placed + " rating=" + rating + " phase=" + phaseId + " category="+category);
             StreakRow sr = null;
 
             if (this.coderId != coderId) {
-            	log.debug("different coder!");
+            	if(typeId==1)log.debug("different coder!");
                 if (length > 1) {
                     sr = new StreakRow(this.coderId, typeId, this.phaseId, this.category, this.startProjectId, this.endProjectId, length, true);
                 }
@@ -4318,20 +4319,21 @@ public class TCLoadTCS extends TCLoad {
             // check if the project belongs to the specified phase and category
             if (this.phaseId != phaseId ||
                     (!OVERALL.equals(this.category) && !this.category.equals(category))) {
-            	log.debug("distinta fase o categoria");
+            	if(typeId==1)log.debug("distinta fase o categoria");
                 return null;
             }
 
             if (addToStreak(placed, rating)) {
-            	log.debug("addToStreak=true");
+            	if(typeId==1)log.debug("addToStreak=true");
                 if (length == 0) {
                     startProjectId = projectId;
                 }
                 endProjectId = projectId;
                 length++;
             } else {
-            	log.debug("addToStreak=false");
+            	if(typeId==1) log.debug("addToStreak=false");
                 if (length > 1) {
+                	if(typeId==1) log.debug("length>1");
                     sr = new StreakRow(this.coderId, typeId, this.phaseId, this.category, startProjectId, endProjectId, length, false);
                 }
                 length = 0;
