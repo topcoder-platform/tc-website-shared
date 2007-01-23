@@ -4180,9 +4180,8 @@ public class TCLoadTCS extends TCLoad {
                 "    , project p  " +
                 " where p.project_id = pr.project_id  " +
                 " and pr.valid_submission_ind = 1  " +
-                " and pr.passed_review_ind = 1  " +
                 " and pr.rating_ind = 1  " +
-                " and p.status_id = 7  " +
+                " and p.status_id in (4,5,7)  " +
                 " order by pr.user_id, p.rating_date, p.project_id";
 
         final String INSERT = "INSERT INTO streak (coder_id, streak_type_id, phase_id, start_project_id, end_project_id, length, is_current) " +
@@ -4237,7 +4236,7 @@ public class TCLoadTCS extends TCLoad {
                         StreakRow sr = hasNext ? streaks[k][i].add(userId, projectId, placed, rating, phaseId, category) : streaks[k][i].flush();
 
                         if (sr != null) {
-                        	log.debug("Save sr!");
+//                        	log.debug("Save coder=" + sr.getCoderId() + " type= " + sr.getTypeId() + " length=" + sr.getLength());
                             insert.setLong(1, sr.getCoderId());
                             insert.setInt(2, sr.getTypeId());
                             insert.setInt(3, sr.getPhaseId());
@@ -4317,7 +4316,7 @@ public class TCLoadTCS extends TCLoad {
             // check if the project belongs to the specified phase and category
             if (this.phaseId != phaseId ||
                     (!OVERALL.equals(this.category) && !this.category.equals(category))) {
-                return null;
+                return sr;
             }
 
             if (addToStreak(placed, rating)) {
