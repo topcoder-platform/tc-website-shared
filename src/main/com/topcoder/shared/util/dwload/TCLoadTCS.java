@@ -160,7 +160,7 @@ public class TCLoadTCS extends TCLoad {
 
             fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
             getLastUpdateTime();
-/*
+
             doLoadReviewResp();
             doLoadEvent();
             doLoadUserEvent();
@@ -206,9 +206,9 @@ public class TCLoadTCS extends TCLoad {
             doLoadTestcaseAppeal();
 
             doLoadSubmission();
-*/
+
             doLoadStreak();
-/*
+
             List list = getCurrentRatings();
             doLoadRank(112, ACTIVE_RATING_RANK_TYPE_ID, list);
             doLoadRank(112, OVERALL_RATING_RANK_TYPE_ID, list);
@@ -224,7 +224,7 @@ public class TCLoadTCS extends TCLoad {
             loadCountryRatingRank(112, OVERALL_RATING_RANK_TYPE_ID, list);
             loadCountryRatingRank(113, ACTIVE_RATING_RANK_TYPE_ID, list);
             loadCountryRatingRank(113, OVERALL_RATING_RANK_TYPE_ID, list);
-*/
+
             //fix problems with submission date
 
             //todo what the hell is this?  do we need it?
