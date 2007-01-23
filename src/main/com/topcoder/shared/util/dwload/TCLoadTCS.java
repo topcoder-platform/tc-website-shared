@@ -4368,7 +4368,6 @@ public class TCLoadTCS extends TCLoad {
         }
 
         protected boolean addToStreak(int placed, int rating) {
-        	log.debug("ConsecutiveWinningsStreak.addToStreak coder=" + coderId + " placed="  +placed);
             return placed == 1 || placed == 2;
         }
     }
