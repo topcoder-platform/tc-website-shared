@@ -4303,11 +4303,9 @@ public class TCLoadTCS extends TCLoad {
         }
 
         public StreakRow add(long coderId, long projectId, int placed, int rating, int phaseId, String category) {
-        	if(typeId==1) log.debug("Streak.add coder=" + coderId + " pj=" + projectId + " placed=" + placed + " rating=" + rating + " phase=" + phaseId + " category="+category);
             StreakRow sr = null;
 
             if (this.coderId != coderId) {
-            	if(typeId==1)log.debug("different coder!");
                 if (length > 1) {
                     sr = new StreakRow(this.coderId, typeId, this.phaseId, this.category, this.startProjectId, this.endProjectId, length, true);
                 }
@@ -4319,21 +4317,17 @@ public class TCLoadTCS extends TCLoad {
             // check if the project belongs to the specified phase and category
             if (this.phaseId != phaseId ||
                     (!OVERALL.equals(this.category) && !this.category.equals(category))) {
-            	if(typeId==1)log.debug("distinta fase o categoria");
                 return null;
             }
 
             if (addToStreak(placed, rating)) {
-            	if(typeId==1)log.debug("addToStreak=true");
                 if (length == 0) {
                     startProjectId = projectId;
                 }
                 endProjectId = projectId;
                 length++;
             } else {
-            	if(typeId==1) log.debug("addToStreak=false");
                 if (length > 1) {
-                	if(typeId==1) log.debug("length>1");
                     sr = new StreakRow(this.coderId, typeId, this.phaseId, this.category, startProjectId, endProjectId, length, false);
                 }
                 length = 0;
