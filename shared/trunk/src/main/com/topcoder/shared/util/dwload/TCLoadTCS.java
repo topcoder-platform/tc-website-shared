@@ -289,7 +289,7 @@ public class TCLoadTCS extends TCLoad {
                 "dd_design", "dd_development", "dd_component", "comp_list", "find_projects", "get_review_scorecard",
                 "get_screening_scorecard", "project_info", "reviewers_for_project", "scorecard_details", "submissions",
                 "comp_contest_details", "dr_leader_board", "dr_rookie_board", "competition_history", "algo_competition_history",
-                "dr_current_period", "dr_stages", "dr_seasons"
+                "dr_current_period", "dr_stages", "dr_seasons", "component_color_change"
         };
 
         ArrayList list = cc.getKeys();
