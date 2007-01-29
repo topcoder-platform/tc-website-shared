@@ -46,10 +46,12 @@ public final class ServicesConstants {
     public static final String LONG_SUBMISSIONS = BASE + "/submissions/long/";
 
     public static final String APPS_CLASSES = BASE + "/build/classes.jar";
+    public static final String RESOURCES_FOLDER = BASE + "/resources";
+    public static final String TESTER_POLICY = BASE + "/scripts/services/tester.policy";
     public static final String DOTNET_BIN = BASE + "/build/dotNet";
     public static final String LONG_DOTNET_IO = BASE + "/src/csharp/LongTesterIO.cs";
-    public static final String DOTNET_SECURITY = DOTNET_BIN + "/CSSecurityCheck.exe";
     public static final String DOTNET_SANDBOX = DOTNET_BIN + "/LongWrapper.exe";
+    public static final String DOTNET_TESTER = DOTNET_BIN + "/TestProcess.exe";
      
     /** Long contest wrappers */
     public static final String LONG_CONTEST_MPSQAS_WRAPPER = BASE + "/wrapper/lcontest/LongContestMPSQASWrapper.java";

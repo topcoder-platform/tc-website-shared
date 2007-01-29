@@ -168,7 +168,7 @@ public class DBMS {
     public static final java.sql.Connection getConnection() throws SQLException {
         return getConnection(OLTP_DATASOURCE_NAME);
     }
-
+    
     /**
      * @return
      * @throws SQLException
@@ -213,8 +213,7 @@ public class DBMS {
             e.printStackTrace();
             throw new SQLException(e.getMessage());
         }
-        //FIXME using mode in URL..
-        return ds.getConnection();
+        return  ds.getConnection();
     }
 
     /**
