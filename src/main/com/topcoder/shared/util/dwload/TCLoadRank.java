@@ -31,6 +31,7 @@ import java.util.*;
 public class TCLoadRank extends TCLoad {
     private int roundId = 0;
     private boolean FULL_LOAD = false;
+    private boolean TEAMS_RANK_FULL_LOAD = false;
 
     private static Logger log = Logger.getLogger(TCLoadRank.class);
     private static final int OVERALL_RATING_RANK_TYPE_ID = 1;
@@ -52,7 +53,8 @@ public class TCLoadRank extends TCLoad {
         USAGE_MESSAGE = new String(
                 "TCLoadRank parameters - defaults in ():\n" +
                         "  -roundid number       : Round ID to load\n" +
-                        "  [-fullload boolean] : true-clean rank load, false-selective  (false)\n");
+                        "  [-fullload boolean] : true-clean rank load, false-selective  (false)\n" +
+                        "  [-teamsrankfullload boolean] : true-does a full load for teams rank (false)\n");
     }
 
 
@@ -71,6 +73,12 @@ public class TCLoadRank extends TCLoad {
                 log.info("New fullload flag is " + FULL_LOAD);
             }
 
+            tmpBool = retrieveBooleanParam("teamsrankfullload", params, true);
+            if (tmpBool != null) {
+                TEAMS_RANK_FULL_LOAD = tmpBool.booleanValue();
+                log.info("New teamsrankfullload flag is " + TEAMS_RANK_FULL_LOAD);
+            }
+
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
             return false;
@@ -87,6 +95,13 @@ public class TCLoadRank extends TCLoad {
         try {
 
             long start = System.currentTimeMillis();
+
+            if (TEAMS_RANK_FULL_LOAD) {
+                teamsRankFullLoad();
+                log.info("SUCCESS: teams rank fully loaded.");
+
+                return;
+            }
 
             // determine if the round is regular or HS.
             int algoType = getRoundType(roundId);
@@ -137,8 +152,8 @@ public class TCLoadRank extends TCLoad {
                 loadSeasonRatingRank(seasonId, ratings);
                 loadSeasonRatingRankHistory(seasonId, ratings);
 
-                // the list is already sorted
                 List teamPoints = getTeamPoints(seasonId);
+                Collections.sort(teamPoints);
 
                 loadSeasonTeamRank(seasonId, teamPoints);
                 loadSeasonTeamRankHistory(seasonId, teamPoints);
@@ -158,6 +173,47 @@ public class TCLoadRank extends TCLoad {
         }
     }
 
+    private void teamsRankFullLoad() throws Exception{
+        log.debug("teamsRankFullLoad called...");
+
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+
+        try {
+
+            StringBuffer query = new StringBuffer(100);
+            query.append(" select r.round_id, c.season_id ");
+            query.append(" from round r, contest c ");
+            query.append(" where r.contest_id = c.contest_id ");
+            query.append(" and r.round_type_id in (17,18) ");
+            query.append(" and not c.season_id is null ");
+            query.append(" order by c.start_date ");
+
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            rs = psSel.executeQuery();
+
+            Set seasons = new HashSet();
+            while (rs.next()) {
+                int rId = rs.getInt("round_id");
+                int sId = rs.getInt("season_id");
+                log.info("Loading team rank history for round " + rId);
+                seasons.add(new Integer(sId));
+                List tp = getTeamPoints(sId, rId);
+                loadSeasonTeamRankHistory(sId, tp);
+            }
+
+            for (Iterator it = seasons.iterator(); it.hasNext(); ) {
+                int sId = ((Integer) it.next()).intValue();
+                log.info("Loading season team rank for season " + sId);
+                List tp = getTeamPoints(sId);
+                loadSeasonTeamRank(sId, tp);
+            }
+
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+    }
 
     /**
      * Loads the coder_rank table with information about
@@ -785,7 +841,7 @@ public class TCLoadRank extends TCLoad {
             coderCount = ratings.size();
             Collections.sort(ratings);
 
-            // delete all the records for the rating rank type
+            // delete all the recordsfor the rating rank type
             psDel.executeUpdate();
 
             int i = 0;
@@ -1251,31 +1307,83 @@ public class TCLoadRank extends TCLoad {
     }
 
     private List getTeamPoints(int seasonId) throws Exception {
+        return getTeamPoints(seasonId, -1);
+    }
+
+    private List getTeamPoints(int seasonId, long lastRoundId) throws Exception {
         StringBuffer query = null;
         PreparedStatement psSel = null;
         ResultSet rs = null;
+        PreparedStatement psPoints = null;
+        ResultSet rsPoints = null;
         List ret = null;
 
         try {
+            java.sql.Date maxDate = null;
+            if (lastRoundId >= 0) {
+                query = new StringBuffer(200);
+                query.append(" select c.start_date ");
+                query.append(" from round r, contest c ");
+                query.append(" where r.contest_id = c.contest_id ");
+                query.append(" and r.round_id = ? ");
+                psSel = prepareStatement(query.toString(), TARGET_DB);
+
+                psSel.setLong(1, lastRoundId);
+                rs = psSel.executeQuery();
+                if (!rs.next()) {
+                    throw new IllegalArgumentException("round " + lastRoundId + " not found (to be used as last round");
+                }
+                maxDate = rs.getDate(1);
+            }
 
             query = new StringBuffer(200);
-            query.append(" SELECT team_id, avg(team_points) ");
+            query.append(" SELECT team_id");
             query.append(" FROM team_round tp, round r, contest c ");
             query.append(" WHERE tp.round_id = r.round_id ");
             query.append(" AND r.contest_id = c.contest_id ");
             query.append(" AND c.season_id = ?");
+            if (maxDate != null) {
+                query.append(" AND c.start_date <= ?");
+            }
             query.append(" GROUP BY tp.team_id ");
             query.append(" HAVING count(team_points) >= 4 ");
-            query.append(" ORDER BY 2");
 
 
             psSel = prepareStatement(query.toString(), TARGET_DB);
 
             psSel.setInt(1, seasonId);
+            if (maxDate != null) {
+                psSel.setDate(2, maxDate);
+            }
             rs = psSel.executeQuery();
+
+            query = new StringBuffer(200);
+            query.append(" SELECT team_points ");
+            query.append(" FROM team_round tp, round r, contest c ");
+            query.append(" WHERE tp.round_id = r.round_id  ");
+            query.append(" AND r.contest_id = c.contest_id  ");
+            query.append(" AND c.season_id = ? ");
+            query.append(" AND tp.team_id = ? ");
+            query.append(" AND not team_points is null ");
+            query.append(" ORDER BY team_points ");
+
+            psPoints = prepareStatement(query.toString(), TARGET_DB);
+
             ret = new ArrayList();
             while (rs.next()) {
-                ret.add(new TeamPoints(rs.getInt(1), rs.getDouble(2)));
+                int teamId = rs.getInt(1);
+                psPoints.clearParameters();
+                psPoints.setInt(1, seasonId);
+                psPoints.setInt(2, teamId);
+                rsPoints = psPoints.executeQuery();
+
+                int points = 0;
+                for (int i = 0; i < 4; i++) {
+                    rsPoints.next();
+                    points += rsPoints.getInt(1);
+                }
+
+                ret.add(new TeamPoints(teamId, points));
             }
 
 
@@ -1286,6 +1394,7 @@ public class TCLoadRank extends TCLoad {
         } finally {
             close(rs);
             close(psSel);
+            close(psPoints);
         }
         return ret;
 
@@ -1437,7 +1546,7 @@ public class TCLoadRank extends TCLoad {
 
     }
 
-    private class TeamPoints {
+    private class TeamPoints implements Comparable {
         private long teamId = 0;
         private double points = 0;
 
@@ -1461,6 +1570,15 @@ public class TCLoadRank extends TCLoad {
 
         public void setTeamId(long teamId) {
             this.teamId = teamId;
+        }
+
+        public int compareTo(Object other) {
+            if (((TeamPoints) other).getPoints() < getPoints())
+                return 1;
+            else if (((TeamPoints) other).getPoints() > getPoints())
+                return -1;
+            else
+                return 0;
         }
 
     }
