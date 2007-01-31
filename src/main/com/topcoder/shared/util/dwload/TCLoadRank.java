@@ -194,11 +194,11 @@ public class TCLoadRank extends TCLoad {
 
             Set seasons = new HashSet();
             while (rs.next()) {
-                int rId = rs.getInt("round_id");
+                roundId = rs.getInt("round_id");
                 int sId = rs.getInt("season_id");
-                log.info("Loading team rank history for round " + rId);
+                log.info("Loading team rank history for round " + roundId);
                 seasons.add(new Integer(sId));
-                List tp = getTeamPoints(sId, rId);
+                List tp = getTeamPoints(sId, roundId);
                 loadSeasonTeamRankHistory(sId, tp);
             }
 
