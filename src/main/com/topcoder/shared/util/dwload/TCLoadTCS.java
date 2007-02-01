@@ -1410,7 +1410,7 @@ public class TCLoadTCS extends TCLoad {
 
                     if (projectResults.getInt("project_stat_id") == 7 &&
                             dRProjects.contains(new Long(project_id)) &&
-                            projectResults.getInt("rating_ind") == 1) {
+                            projectResults.getInt("digital_run_ind") == 1) {
                         resultInsert.setLong(19, pointsAwarded);
                         resultInsert.setLong(20, pointsAwarded + projectResults.getInt("point_adjustment"));
                     } else {
