@@ -732,28 +732,22 @@ public class TCLoadTCS extends TCLoad {
                 update.setObject(9, rs.getObject("phase_id"));
 
 
-                try {
-                    int retVal = update.executeUpdate();
+                int retVal = update.executeUpdate();
 
-                    if (retVal == 0) {
-                        //need to insert
-                        insert.clearParameters();
-                        insert.setLong(1, rs.getLong("user_id"));
-                        insert.setObject(2, rs.getObject("rating"));
-                        insert.setObject(3, rs.getObject("phase_id"));
-                        insert.setObject(4, rs.getObject("vol"));
-                        insert.setObject(5, rs.getObject("rating_no_vol"));
-                        insert.setObject(6, rs.getObject("num_ratings"));
-                        insert.setObject(7, rs.getObject("last_rated_project_id"));
-                        insert.setInt(8, rs.getInt("highest_rating"));
-                        insert.setInt(9, rs.getInt("lowest_rating"));
+                if (retVal == 0) {
+                    //need to insert
+                    insert.clearParameters();
+                    insert.setLong(1, rs.getLong("user_id"));
+                    insert.setObject(2, rs.getObject("rating"));
+                    insert.setObject(3, rs.getObject("phase_id"));
+                    insert.setObject(4, rs.getObject("vol"));
+                    insert.setObject(5, rs.getObject("rating_no_vol"));
+                    insert.setObject(6, rs.getObject("num_ratings"));
+                    insert.setObject(7, rs.getObject("last_rated_project_id"));
+                    insert.setInt(8, rs.getInt("highest_rating"));
+                    insert.setInt(9, rs.getInt("lowest_rating"));
 
-                        insert.executeUpdate();
-                    }
-                } catch (SQLException e) {
-                    log.info(e.getMessage());
-                    log.debug("the project_id: " + rs.getObject("last_rated_project_id"));
-                    continue;
+                    insert.executeUpdate();
                 }
 
             }
@@ -1877,12 +1871,7 @@ public class TCLoadTCS extends TCLoad {
                         submissionInsert.setObject(10, submissionInfo.getObject("scorecard_template_id"));
 
                         //log.debug("before submission insert");
-                        try {
-                            submissionInsert.executeUpdate();
-                        } catch (Exception e) {
-                            log.info(e.getMessage());
-                            log.debug("the scorecard_template_id is " + submissionInfo.getObject("scorecard_template_id") + " scorecard: " + submissionInfo.getObject("scorecard_id"));
-                        }
+                        submissionInsert.executeUpdate();
                         //log.debug("after submission insert");
                     }
 
@@ -2059,11 +2048,7 @@ public class TCLoadTCS extends TCLoad {
                     screeningInsert.setObject(5, screenings.getObject("scorecard_id"));
                     screeningInsert.setObject(6, screenings.getObject("scorecard_template_id"));
 
-                    try {
-                        screeningInsert.executeUpdate();
-                    } catch (Exception e) {
-                        log.debug("the scorecard_template_id is " + screenings.getObject("scorecard_template_id") + " scorecard: " + screenings.getObject("scorecard_id"));
-                    }
+                    screeningInsert.executeUpdate();
                 }
             }
             log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
@@ -3415,28 +3400,23 @@ public class TCLoadTCS extends TCLoad {
                     update.setLong(5, questionId);
                     update.setLong(6, rs.getLong("scorecard_id"));
 
-                    try {
-                        int retVal = update.executeUpdate();
+                    int retVal = update.executeUpdate();
 
-                        if (retVal == 0) {
-                            insert.clearParameters();
+                    if (retVal == 0) {
+                        insert.clearParameters();
 
-                            insert.setObject(1, rs.getObject("user_id"));
-                            insert.setObject(2, rs.getObject("reviewer_id"));
-                            insert.setObject(3, rs.getObject("project_id"));
-                            if (evaluationId != 0) {
-                                insert.setInt(4, evaluationId);
-                            } else {
-                                insert.setNull(4, Types.INTEGER);
-                            }
-                            insert.setLong(5, questionId);
-                            insert.setLong(6, rs.getLong("scorecard_id"));
-
-                            insert.executeUpdate();
+                        insert.setObject(1, rs.getObject("user_id"));
+                        insert.setObject(2, rs.getObject("reviewer_id"));
+                        insert.setObject(3, rs.getObject("project_id"));
+                        if (evaluationId != 0) {
+                            insert.setInt(4, evaluationId);
+                        } else {
+                            insert.setNull(4, Types.INTEGER);
                         }
-                    } catch (SQLException e) {
-                        log.info(e.getMessage());
-                        log.debug("answer:" + answer + "the evaluationId is " + evaluationId + " questionId: " + questionId + " scorecard_id:" + rs.getLong("scorecard_id") + " projectt_id:" + rs.getObject("project_id"));
+                        insert.setLong(5, questionId);
+                        insert.setLong(6, rs.getLong("scorecard_id"));
+
+                        insert.executeUpdate();
                     }
 
                     count++;
@@ -3572,25 +3552,20 @@ public class TCLoadTCS extends TCLoad {
                 update.setLong(6, rs.getLong("scorecard_question_id"));
                 update.setLong(7, rs.getLong("scorecard_id"));
 
-                try {
-                    int retVal = update.executeUpdate();
+                int retVal = update.executeUpdate();
 
-                    if (retVal == 0) {
-                        insert.clearParameters();
+                if (retVal == 0) {
+                    insert.clearParameters();
 
-                        insert.setObject(1, rs.getObject("user_id"));
-                        insert.setObject(2, rs.getObject("reviewer_id"));
-                        insert.setObject(3, rs.getObject("project_id"));
-                        insert.setObject(4, numTests);
-                        insert.setObject(5, numTests);
-                        insert.setLong(6, rs.getLong("scorecard_question_id"));
-                        insert.setLong(7, rs.getLong("scorecard_id"));
+                    insert.setObject(1, rs.getObject("user_id"));
+                    insert.setObject(2, rs.getObject("reviewer_id"));
+                    insert.setObject(3, rs.getObject("project_id"));
+                    insert.setObject(4, numTests);
+                    insert.setObject(5, numTests);
+                    insert.setLong(6, rs.getLong("scorecard_question_id"));
+                    insert.setLong(7, rs.getLong("scorecard_id"));
 
-                        insert.executeUpdate();
-                    }
-                } catch (SQLException e) {
-                    log.info(e.getMessage());
-                    log.debug("answer:" + answer + "project_id " + rs.getObject("project_id"));
+                    insert.executeUpdate();
                 }
                 count++;
 
@@ -3749,12 +3724,7 @@ public class TCLoadTCS extends TCLoad {
                     insert.setLong(8, rs.getLong("scorecard_question_id"));
                     insert.setLong(9, rs.getLong("scorecard_id"));
 
-                    try {
-                        insert.executeUpdate();
-                    } catch (SQLException e) {
-                        log.info(e.getMessage());
-                        log.debug("project_id " + rs.getObject("project_id") + " scorecard_question_id" + rs.getLong("scorecard_question_id"));
-                    }
+                    insert.executeUpdate();
                     count++;
                 }
             }
@@ -3927,45 +3897,40 @@ public class TCLoadTCS extends TCLoad {
                     }
                     update.setLong(11, rs.getLong("appeal_id"));
 
-                    try {
-                        int retVal = update.executeUpdate();
+                    int retVal = update.executeUpdate();
 
-                        if (retVal == 0) {
-                            insert.clearParameters();
+                    if (retVal == 0) {
+                        insert.clearParameters();
 
-                            insert.setLong(1, rs.getLong("scorecard_question_id"));
-                            insert.setLong(2, rs.getLong("scorecard_id"));
-                            insert.setObject(3, rs.getObject("user_id"));
-                            insert.setObject(4, rs.getObject("reviewer_id"));
-                            insert.setObject(5, rs.getObject("project_id"));
-                            if (evaluationId != 0) {
-                                insert.setInt(6, evaluationId);
-                            } else {
-                                insert.setNull(6, Types.INTEGER);
-                            }
-                            if (finalEvaluationId != 0) {
-                                insert.setInt(7, finalEvaluationId);
-                            } else {
-                                insert.setNull(7, Types.INTEGER);
-                            }
-                            insert.setObject(8, rs.getObject("appeal_text"));
-                            insert.setObject(9, rs.getObject("appeal_response"));
-                            insert.setLong(10, rs.getLong("appeal_id"));
-                            if (successfulInd == null) {
-                                insert.setNull(11, Types.INTEGER);
-                            } else {
-                                if ("Succeeded".equals(successfulInd)) {
-                                    insert.setInt(11, 1);
-                                } else {
-                                    insert.setInt(11, 0);
-                                }
-                            }
-
-                            insert.executeUpdate();
+                        insert.setLong(1, rs.getLong("scorecard_question_id"));
+                        insert.setLong(2, rs.getLong("scorecard_id"));
+                        insert.setObject(3, rs.getObject("user_id"));
+                        insert.setObject(4, rs.getObject("reviewer_id"));
+                        insert.setObject(5, rs.getObject("project_id"));
+                        if (evaluationId != 0) {
+                            insert.setInt(6, evaluationId);
+                        } else {
+                            insert.setNull(6, Types.INTEGER);
                         }
-                    } catch (SQLException e) {
-                        log.info(e.getMessage());
-                        log.debug("answer:" + answer + "project_id " + rs.getObject("project_id"));
+                        if (finalEvaluationId != 0) {
+                            insert.setInt(7, finalEvaluationId);
+                        } else {
+                            insert.setNull(7, Types.INTEGER);
+                        }
+                        insert.setObject(8, rs.getObject("appeal_text"));
+                        insert.setObject(9, rs.getObject("appeal_response"));
+                        insert.setLong(10, rs.getLong("appeal_id"));
+                        if (successfulInd == null) {
+                            insert.setNull(11, Types.INTEGER);
+                        } else {
+                            if ("Succeeded".equals(successfulInd)) {
+                                insert.setInt(11, 1);
+                            } else {
+                                insert.setInt(11, 0);
+                            }
+                        }
+
+                        insert.executeUpdate();
                     }
                     count++;
 
@@ -4150,39 +4115,34 @@ public class TCLoadTCS extends TCLoad {
 
                     update.setLong(13, rs.getLong("appeal_id"));
 
-                    try {
-                        int retVal = update.executeUpdate();
+                    int retVal = update.executeUpdate();
 
-                        if (retVal == 0) {
-                            insert.clearParameters();
+                    if (retVal == 0) {
+                        insert.clearParameters();
 
-                            insert.setLong(1, rs.getLong("scorecard_question_id"));
-                            insert.setLong(2, rs.getLong("scorecard_id"));
-                            insert.setObject(3, rs.getObject("user_id"));
-                            insert.setObject(4, rs.getObject("reviewer_id"));
-                            insert.setObject(5, rs.getObject("project_id"));
-                            insert.setObject(6, rawNumPassed);
-                            insert.setObject(7, rawNumTests);
-                            insert.setObject(8, finalNumPassed);
-                            insert.setObject(9, finalNumTests);
-                            insert.setObject(10, rs.getObject("appeal_text"));
-                            insert.setObject(11, rs.getObject("appeal_response"));
-                            insert.setLong(12, rs.getLong("appeal_id"));
-                            if (successfulInd == null) {
-                                insert.setNull(13, Types.INTEGER);
+                        insert.setLong(1, rs.getLong("scorecard_question_id"));
+                        insert.setLong(2, rs.getLong("scorecard_id"));
+                        insert.setObject(3, rs.getObject("user_id"));
+                        insert.setObject(4, rs.getObject("reviewer_id"));
+                        insert.setObject(5, rs.getObject("project_id"));
+                        insert.setObject(6, rawNumPassed);
+                        insert.setObject(7, rawNumTests);
+                        insert.setObject(8, finalNumPassed);
+                        insert.setObject(9, finalNumTests);
+                        insert.setObject(10, rs.getObject("appeal_text"));
+                        insert.setObject(11, rs.getObject("appeal_response"));
+                        insert.setLong(12, rs.getLong("appeal_id"));
+                        if (successfulInd == null) {
+                            insert.setNull(13, Types.INTEGER);
+                        } else {
+                            if ("Succeeded".equals(successfulInd)) {
+                                insert.setInt(13, 1);
                             } else {
-                                if ("Succeeded".equals(successfulInd)) {
-                                    insert.setInt(13, 1);
-                                } else {
-                                    insert.setInt(13, 0);
-                                }
+                                insert.setInt(13, 0);
                             }
-
-                            insert.executeUpdate();
                         }
-                    } catch (SQLException e) {
-                        log.info(e.getMessage());
-                        log.debug("answer:" + answer + "project_id " + rs.getObject("project_id"));
+
+                        insert.executeUpdate();
                     }
                     count++;
 
