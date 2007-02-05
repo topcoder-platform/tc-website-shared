@@ -523,6 +523,7 @@ public class TCLoadTCS extends TCLoad {
                             "   ,project p " +
                             "	,resource r" +
                             "	,resource_info ri " +
+                            "   ,project_info piel " + 
                             "where s.upload_id = u.upload_id " +
                             "	and u.project_id = p.project_id " +
                             "	and p.project_status_id <> 3 " +
@@ -532,6 +533,9 @@ public class TCLoadTCS extends TCLoad {
                             "	and ri.resource_info_type_id = 1 " +
                             "	and u.upload_type_id = 1 " +
                             "	and s.submission_status_id <> 5 " +
+                            "   and piel.project_info_type_id = 14 " +
+                            "   and piel.value = 'Open' " +
+                            "   and piel.project_id = p.project_id " +
                             (firstRun ? "" :
                                     "and (s.modify_date > ? " +
                                             "OR u.modify_date > ? " +
@@ -681,16 +685,18 @@ public class TCLoadTCS extends TCLoad {
                     "  , ur.user_id " +
                     "  , ur.phase_id " +
                     "  , (select max(pr.new_rating) " +
-                    " from project_result pr, project p " +
+                    " from project_result pr, project p, project_info piel " +
                     " where pr.user_id = ur.user_id " +
                     " and pr.project_id = p.project_id " +
                     " and pr.rating_ind = 1 " +
+                    " and piel.project_info_type_id = 14 and piel.value = 'Open' and piel.project_id = p.project_id " +
                     " and p.project_category_id+111 = ur.phase_id) as highest_rating " +
                     " , (select min(pr.new_rating) " +
-                    " from project_result pr, project p " +
+                    " from project_result pr, project p, project_info piel " +
                     " where pr.user_id = ur.user_id " +
                     " and pr.project_id = p.project_id " +
                     " and pr.rating_ind = 1 " +
+                    " and piel.project_info_type_id = 14 and piel.value = 'Open' and piel.project_id = p.project_id " +
                     " and p.project_category_id+111 = ur.phase_id) as lowest_rating " +
                     " from user_rating ur " +
                     " where ur.mod_date_time > ?";
@@ -858,6 +864,7 @@ public class TCLoadTCS extends TCLoad {
                             "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " +
                             "   from project p , " +
                             "	project_info pir, " +
+                            "   project_info piel, " +
                             "	outer project_info pivi," +
                             "	outer project_info pivt," +
                             "	outer project_info pict," +
@@ -883,6 +890,9 @@ public class TCLoadTCS extends TCLoad {
                             "	and pi2.project_info_type_id = 3 " +
                             "	and pi3.project_id = p.project_id " +
                             "	and pi3.project_info_type_id = 7 " +
+                            "   and piel.project_info_type_id = 14 " + 
+                            "   and piel.value = 'Open' " +
+                            "   and p.project_id = piel.project_id " +                                                        
                             "	and cc.component_id = pir.value " +
                             "	and cc.root_category_id = cat.category_id " +
                             "	and psl.project_status_id = p.project_status_id " +
@@ -891,7 +901,7 @@ public class TCLoadTCS extends TCLoad {
                             "	and ppd.project_id = p.project_id " +
                             "	and ppd.phase_type_id = 1 " +
                             "	and p.project_status_id <> 3 " +
-                            "	and p.project_category_id in (1, 2) " +
+                            "	and p.project_category_id in (1, 2) " +                            
                             " 	and (p.modify_date > ? " +
                             "	OR pir.modify_date > ? " +
                             (needLoadMovedProject() ? " OR p.modify_user <> 'Converter' " +
@@ -1173,6 +1183,7 @@ public class TCLoadTCS extends TCLoad {
                         "from project_result pr, " +
                         "project p, " +
                         "project_info pi, " +
+                        "project_info piel, " +
                         "comp_versions cv, " +
                         "comp_catalog cc " +
                         "where p.project_id = pr.project_id " +
@@ -1182,6 +1193,9 @@ public class TCLoadTCS extends TCLoad {
                         "and pi.project_info_type_id = 1 " +
                         "and cv.comp_vers_id= pi.value " +
                         "and cc.component_id = cv.component_id " +
+                        "and piel.project_info_type_id = 14 " +
+                        "and piel.value = 'Open' " +
+                        "and p.project_id = piel.project_id " +
                         "and (p.modify_date > ? " +
                         "	OR cv.modify_date > ? " +
                         "	OR pi.modify_date > ? " +
@@ -1729,6 +1743,7 @@ public class TCLoadTCS extends TCLoad {
                         "	,submission s " +
                         "	,upload u " +
                         "  ,project p " +
+                        "  ,project_info piel " +
                         "  ,resource_info ri1" +
                         "  ,resource_info ri2" +
                         "  ,outer resource_info ri3" +
@@ -1746,6 +1761,9 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri3.resource_info_type_id = 10 " +
                         "	and ri2.resource_id = r.resource_id " +
                         "	and ri2.resource_info_type_id = 1 " +
+                        "   and piel.project_info_type_id = 14 " +
+                        "   and piel.value = 'Open' " +
+                        "   and p.project_id = piel.project_id " +                        
                         "	and u.project_id = ?" +
                         " 	and (r.modify_date > ? " +
                         "	or s.modify_date > ? " +
@@ -1957,6 +1975,7 @@ public class TCLoadTCS extends TCLoad {
                         "	submission s," +
                         "   upload u," +
                         "   project p, " +
+                        "   project_info piel, " +
                         "   resource_info ri1," +
                         "   resource_info ri2," +
                         "   resource res " +
@@ -1971,6 +1990,9 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri1.resource_info_type_id = 1 " +
                         "	and ri2.resource_id = r.resource_id " +
                         "	and ri2.resource_info_type_id = 1 " +
+                        "   and piel.project_info_type_id = 14 " +
+                        "   and piel.value = 'Open' " +
+                        "   and p.project_id = piel.project_id " +                        
                         "	and (r.modify_date > ? " +
                         "	OR s.modify_date > ? " +
                         "	or u.modify_date > ? " +
@@ -2066,8 +2088,9 @@ public class TCLoadTCS extends TCLoad {
         long start = System.currentTimeMillis();
 
         final String SELECT = "select x.contest_id, x.project_id  " +
-                "from contest_project_xref x, project p " +
+                "from contest_project_xref x, project p, project_info piel " +
                 "where x.project_id = ? and p.project_id = x.project_id " +
+                "and piel.project_info_type_id = 14 and piel.value = 'Open' and p.project_id = piel.project_id " +  
                 " and (p.modify_date > ? or x.create_date > ?)";
 
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
@@ -3304,6 +3327,7 @@ public class TCLoadTCS extends TCLoad {
                         "    	submission s," +
                         "    	upload u," +
                         "    	project p, " +
+                        "       project_info piel, " +
                         "		scorecard_question sq" +
                         "    where  ri.scorecard_question_id = sq.scorecard_question_id " +
                         "	and ri.review_id = r.review_id " +
@@ -3320,6 +3344,9 @@ public class TCLoadTCS extends TCLoad {
                         "	and p.project_category_id in (1, 2) " +
                         "	and sq.scorecard_question_type_id in (1,2,4) " +
                         "	and answer <> '' " +
+                        "   and piel.project_info_type_id = 14 " +
+                        "   and piel.value = 'Open' " +
+                        "   and p.project_id = piel.project_id " +                        
                         "	and  u.project_id = ?  " +
                         "   and (ri.modify_date > ? " +
                         "	OR r.modify_date > ? " +
@@ -3454,6 +3481,7 @@ public class TCLoadTCS extends TCLoad {
                         "    submission s," +
                         "    upload u," +
                         "    project p, " +
+                        "    project_info piel, " +
                         "    resource_info ri1," +
                         "    resource_info ri2," +
                         "    scorecard_question sq " +
@@ -3471,6 +3499,9 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri1.resource_info_type_id = 1 " +
                         "	and ri2.resource_id = r.resource_id " +
                         "	and ri2.resource_info_type_id = 1 " +
+                        "   and piel.project_info_type_id = 14 " +
+                        "   and piel.value = 'Open' " +
+                        "   and p.project_id = piel.project_id " +                        
                         "	and (ri.modify_date > ? " +
                         "	OR r.modify_date > ? " +
                         "	OR res.modify_date > ? " +
@@ -3608,6 +3639,7 @@ public class TCLoadTCS extends TCLoad {
                         "    	submission s," +
                         "    	upload u," +
                         "    	project p, " +
+                        "       project_info piel, " +
                         "    	resource_info ri1," +
                         "    	resource_info ri2," +
                         "    	resource res " +
@@ -3626,6 +3658,9 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri1.resource_info_type_id = 1 " +
                         "	and ri2.resource_id = r.resource_id " +
                         "	and ri2.resource_info_type_id = 1 " +
+                        "   and piel.project_info_type_id = 14 " +
+                        "   and piel.value = 'Open' " +
+                        "   and p.project_id = piel.project_id " +                        
                         "	and u.project_id = ? " +
                         " 	and (ric.modify_date > ? " +
                         "	OR ri.modify_date > ? " +
@@ -3768,6 +3803,7 @@ public class TCLoadTCS extends TCLoad {
                         "    	submission s,  " +
                         "    	upload u, " +
                         "    	project p, " +
+                        "       project_info piel, " +
                         "    	resource res,  " +
                         "    	resource_info res1,  " +
                         "    	resource_info res2,  " +
@@ -3790,6 +3826,9 @@ public class TCLoadTCS extends TCLoad {
                         "	ric_resp.review_item_id = ri.review_item_id and " +
                         "	ric_resp.comment_type_id = 5 and " +
                         "	ric.comment_type_id = 4  and " +
+                        "   piel.project_info_type_id = 14 and " +
+                        "   piel.value = 'Open' and " +
+                        "   p.project_id = piel.project_id and " +                        
                         "	u.project_id = ? and " +
                         "   (ric.modify_date > ? OR " +
                         "	ri.modify_date > ? OR " +
@@ -3975,6 +4014,7 @@ public class TCLoadTCS extends TCLoad {
                         "	submission s, " +
                         "	upload u, " +
                         "   project p, " +
+                        "   project_info piel, " +
                         "	resource res, " +
                         "   resource_info ri1," +
                         "   resource_info ri2," +
@@ -3998,6 +4038,9 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri1.resource_info_type_id = 1 " +
                         "	and ri2.resource_id = r.resource_id " +
                         "	and ri2.resource_info_type_id = 1 " +
+                        "   and piel.project_info_type_id = 14 " +
+                        "   and piel.value = 'Open' " +
+                        "   and p.project_id = piel.project_id " +                        
                         "	and u.project_id = ? " +
                         " 	and (ric.modify_date > ? " +
                         "	OR ri.modify_date > ? " +
