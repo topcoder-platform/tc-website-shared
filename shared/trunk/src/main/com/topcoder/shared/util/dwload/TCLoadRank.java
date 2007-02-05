@@ -189,7 +189,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" and not c.season_id is null ");
             query.append(" order by c.start_date ");
 
-            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel = prepareStatement(query.toString(), TARGET_DB);
             rs = psSel.executeQuery();
 
             Set seasons = new HashSet();
