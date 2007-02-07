@@ -45,7 +45,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
     private static final byte LONG_STRING = 15;
     private static final byte DOUBLE_ARRAY = 16;
     private static final byte CLASS = 17;
-    
+    private static final byte DOUBLE_ARRAY_ARRAY = 18;
+
     // collections
     private static final byte ARRAY_LIST = 33;
     private static final byte HASH_MAP = 34;
@@ -73,7 +74,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     public CSHandler(CustomSerializerProvider customSerializer) {
         this.customSerializer = customSerializer;
     }
-    
+
     public final void setDataInput(DataInput input) {
         this.input = input;
     }
@@ -100,7 +101,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return false;
     }
-    
+
     private boolean isNull(byte expected1, byte expected2) throws IOException {
         byte b = readByte();
         if (b == NULL) {
@@ -154,7 +155,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return readJustArrayList();
     }
-    
+
     public final List readList(List list) throws IOException {
         if (isNull(ARRAY_LIST, LIST)) {
             return null;
@@ -170,7 +171,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return list;
     }
-    
+
     private List readJustList(List list) throws IOException {
         int size = readShort();
         for (int i = 0; i < size; i++) {
@@ -187,7 +188,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     public void writeList(List list) throws IOException {
         writeList(list, LIST);
     }
-    
+
     public void writeList(List list, byte type) throws IOException {
         if (list == null) {
             writeNull();
@@ -301,6 +302,39 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
     }
 
+
+    public final double[][] readDoubleArrayArray() throws IOException {
+        if (isNull(DOUBLE_ARRAY_ARRAY)) {
+            return null;
+        }
+        return readJustDoubleArrayArray();
+    }
+
+    private double[][] readJustDoubleArrayArray() throws IOException {
+        int size = readShort();
+        double[][] r = new double[size][];
+        for (int i = 0; i < size; i++) {
+            r[i] = readJustDoubleArray();
+        }
+        return r;
+    }
+
+    public final void writeDoubleArrayArray(double[][] doubleArrayArray) throws IOException {
+        if (doubleArrayArray == null) {
+            writeNull();
+            return;
+        }
+        int size = doubleArrayArray.length;
+        if (size > Short.MAX_VALUE) {
+            throw new RuntimeException("object array big size: " + size);
+        }
+        writeByte(DOUBLE_ARRAY_ARRAY);
+        writeShort((short) size);
+        for (int i = 0; i < size; i++) {
+            writeJustDoubleArray(doubleArrayArray[i]);
+        }
+    }
+
     private int[] readJustIntArray() throws IOException {
         int size = readShort();
         int[] intArray = new int[size];
@@ -350,6 +384,18 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeDouble(doubleArray[i]);
         }
     }
+
+    private void writeJustDoubleArray(double[] doubleArray) throws IOException {
+        int size = doubleArray.length;
+        if (size > Short.MAX_VALUE) {
+            throw new RuntimeException("object array big size: " + size);
+        }
+        writeShort((short) size);
+        for (int i = 0; i < size; i++) {
+            writeDouble(doubleArray[i]);
+        }
+    }
+
 
     private String[] readJustStringArray() throws IOException {
         int size = readShort();
@@ -407,7 +453,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return map;
     }
-    
+
     private Map readJustMap(Map map) throws IOException {
         int size = readShort();
         for (int i = 0; i < size; i++) {
@@ -425,7 +471,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     public final void writeMap(Map map) throws IOException {
         doWriteMap(map, MAP);
     }
-    
+
     private void doWriteMap(Map map, byte type) throws IOException {
         if (map == null) {
             writeNull();
@@ -658,7 +704,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     public final void writeDouble(double v) throws IOException {
         writeUTF("" + v);
     }
-    
+
     public void writeClass(Class clazz) throws IOException {
         if (clazz == null) {
             writeNull();
@@ -667,7 +713,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         writeByte(CLASS);
         writeUTF(clazz.getName());
     }
-    
+
     public Class readClass() throws IOException {
         if (isNull(CLASS)) {
             return null;
@@ -705,7 +751,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeNull();
             return;
         }
-        
+
         CustomSerializer serializer = customSerializer.getSerializer(object.getClass());
         if (serializer != null) {
             writeByte(CUSTOM_SERIALIZER);
@@ -713,7 +759,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
             serializer.writeObject(this, object);
             return;
         }
-        
+
         if (writeObjectOverride(object)) {
             return;
         }
@@ -747,6 +793,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeIntArray((int[]) object);
         } else if (object instanceof double[]) {
             writeDoubleArray((double[]) object);
+        } else if (object instanceof double[][]) {
+            writeDoubleArrayArray((double[][]) object);
         } else if (object instanceof String[]) {
             writeStringArray((String[]) object);
         } else if (object instanceof byte[]) {
@@ -757,11 +805,11 @@ public abstract class CSHandler implements CSReader, CSWriter {
             customWriteObject(object);
         } else if (object instanceof Object[]) {
             writeObjectArray((Object[]) object);
-        } else if (object instanceof Class) { 
+        } else if (object instanceof Class) {
             writeClass((Class) object);
-        } else if (object instanceof List) { 
-            writeList((List) object);            
-        } else if (object instanceof Map) { 
+        } else if (object instanceof List) {
+            writeList((List) object);
+        } else if (object instanceof Map) {
             writeMap((Map) object);
         } else {
             writeUnhandledObject(object);
@@ -770,8 +818,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
 
     /**
      * This method gets called when an object could not be written. <p>
-     * Default implementation throws a RuntimeException 
-     * 
+     * Default implementation throws a RuntimeException
+     *
      * @param object The object to write
      */
     protected void writeUnhandledObject(Object object) throws IOException {
@@ -820,6 +868,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             return readJustIntArray();
         case DOUBLE_ARRAY:
             return readJustDoubleArray();
+        case DOUBLE_ARRAY_ARRAY:
+            return readJustDoubleArrayArray();
         case STRING_ARRAY:
             return readJustStringArray();
         case LONG_STRING:
@@ -830,13 +880,13 @@ public abstract class CSHandler implements CSReader, CSWriter {
         case HASH_MAP:
             return readJustHashMap();
         case OBJECT_ARRAY:
-            return readJustObjectArray();            
+            return readJustObjectArray();
         case CLASS:
             return readClass();
         case LIST:
             return readArrayList();
         case MAP:
-            return readHashMap();      
+            return readHashMap();
         case CUSTOM_SERIALIZER:
             clazz = findClassGuarded(readUTF());
             CustomSerializer serializer = customSerializer.getSerializer(clazz);
@@ -851,7 +901,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
 
     /**
      * Follows same behaviour than previous implementation, on error null
-     * 
+     *
      * @param name Full name of the class
      * @return The class or <code>null</code> on any error
      */
