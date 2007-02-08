@@ -35,9 +35,9 @@ public final class ServicesConstants {
     /** base directory of java problem user submissions */
     public static final String JAVA_SUBMISSIONS = BASE + "/submissions/java/";
     public static final String PYTHON_SUBMISSIONS = BASE + "/submissions/python/";
-    
+
     public static final String PYTHON_COMPILER = BASE + "/src/python/compiler.py";
-    
+
     public static final String CSHARP_SUBMISSIONS = BASE + "/submissions/csharp/";
 
     /** base directory of c++ problem user submissions */
@@ -52,19 +52,19 @@ public final class ServicesConstants {
     public static final String LONG_DOTNET_IO = BASE + "/src/csharp/LongTesterIO.cs";
     public static final String DOTNET_SANDBOX = DOTNET_BIN + "/LongWrapper.exe";
     public static final String DOTNET_TESTER = DOTNET_BIN + "/TestProcess.exe";
-     
+
     /** Long contest wrappers */
     public static final String LONG_CONTEST_MPSQAS_WRAPPER = BASE + "/wrapper/lcontest/LongContestMPSQASWrapper.java";
     public static final String LONG_CONTEST_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.java";
     public static final String LONG_CONTEST_CPP_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.cpp";
     public static final String LONG_CONTEST_DOTNET_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.cs";
     public static final String LONG_CONTEST_PYTHON_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.py";
-    
+
     public static final String LONG_CONTEST_DOTNET_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.cs";
     public static final String LONG_CONTEST_EXOPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.java";
     public static final String LONG_CONTEST_CPP_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.cpp";
     public static final String LONG_CONTEST_PYTHON_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.py";
-    
+
     public static final String PYTHON_WRAPPER = BASE + "/wrapper/srm/PythonUserWrapper.py";
 
     /** argparser.h C++ header file */
@@ -75,24 +75,25 @@ public final class ServicesConstants {
     /** The directory path to the C++ sandbox application */
     public static final String SANDBOX = BASE + "/cpp/sandbox/sandbox";
     public static final String SANDBOX2 = BASE + "/cpp/sandbox2/GNU-i386-Linux/sandbox2";
-    
+
     public static final String SANDBOX2_SRM_CONFIG = BASE + "/cpp/sandbox2/config_files/sample.config";
-    
+
     public static final String SANDBOX2_LONG_CONFIG = BASE + "/cpp/sandbox2/config_files/long.config";
-    
+
     public static final String SANDBOX2_THREADED_LONG_CONFIG = BASE + "/cpp/sandbox2/config_files/tlong.config";
-    
+
     public static final String SANDBOX2_LONG_PYTON_CONFIG = BASE + "/cpp/sandbox2/config_files/long_python.config";
-    
+
     public static final String SANDBOX2_PYTHON_CONFIG = BASE + "/cpp/sandbox2/config_files/python.config";
-    
+
     public static final String LONG_SANDBOX = BASE + "/cpp/sandbox/long_sandbox";
 
     /** The directory path to the timeout application */
     public static final String ALARM = BASE + "/cpp/timeout/timeout";
-    
+
     public static final String RUN = BASE + "/cpp/run.sh";
     public static final String RUN_JAVA = BASE + "/cpp/runjava.sh";
+    public static final String PKILL = BASE + "/pkill.sh";
 
     /** The package name of the contest solutions directory */
     //public static String SOLUTIONS_PACKAGE = "cpp.solutions.";
@@ -112,13 +113,13 @@ public final class ServicesConstants {
     public static final int AUTO_TEST_ACTION = 9;
     public static final int LONG_TEST_ACTION = 10;
     public static final int LONG_SYSTEM_TEST_ACTION = 12;
-    
+
     public static final int FAILURE_INCORRECT_RESULT = 1;
     public static final int FAILURE_TIMEOUT = 2;
 
     public static final int MAX_LONG_SUBMISSIONS = bundle.getInt("MAX_LONG_SUBMISSIONS");
     public static final int LONG_SUBMISSION_INTERVAL = bundle.getInt("LONG_SUBMISSION_INTERVAL");
-    
+
     public static final int MARATHON_PORT_NUMBER = System.getProperty("MARATHON_PORT_NUMBER") == null ? 8000 : Integer.parseInt(System.getProperty("MARATHON_PORT_NUMBER"));
 
 }
