@@ -68,6 +68,8 @@ public class TCLoadUtilityAllRounds {
             runTCLoad(GetRounds.class.getName(), params);
             
             for (int i = 0; i < rounds.size(); i++) {
+                params.put("sourcedb", sourceDBURL);
+                params.put("targetdb", targetDBURL);
                 params.put("roundid", rounds.get(i));
                 log.debug("Loading round " + rounds.get(i));
 
