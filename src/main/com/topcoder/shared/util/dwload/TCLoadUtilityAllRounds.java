@@ -13,16 +13,25 @@ package com.topcoder.shared.util.dwload;
  *
  */
 
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
-import org.w3c.dom.*;
+import java.io.FileInputStream;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.FileInputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Hashtable;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 public class TCLoadUtilityAllRounds { 
     private static Logger log = Logger.getLogger(TCLoadUtilityAllRounds.class);
@@ -33,6 +42,7 @@ public class TCLoadUtilityAllRounds {
     private static StringBuffer sErrorMsg = new StringBuffer(128);
     private static String sourceDBURL = null;
     private static String targetDBURL = null;
+    private static List rounds;
 
     /**
      * This variable holds the name of the JDBC driver we are using to connect
@@ -53,15 +63,23 @@ public class TCLoadUtilityAllRounds {
 
             params.put("sourcedb", sourceDBURL);
             params.put("targetdb", targetDBURL);
-            params.put("roundid", "10021");
-
+            
+            
+            runTCLoad(GetRounds.class.getName(), params);
+            
+            for (int i = 0; i < rounds.size(); i++) {
+                params.put("roundid", rounds.get(i));
+                log.debug("Loading round " + rounds.get(i));
+                
+            }
+/*
             runTCLoad("com.topcoder.shared.util.dwload.TCLoadRound", params);
 
             params.put("sourcedb", targetDBURL);
 
             runTCLoad("com.topcoder.shared.util.dwload.TCLoadRank", params);
             runTCLoad("com.topcoder.shared.util.dwload.TCLoadAggregate", params);
-
+*/
             
         } else {
             setUsageError("Invalid Parameters");
@@ -378,5 +396,30 @@ public class TCLoadUtilityAllRounds {
             sErrorMsg.append(". Cannot continue.");
             fatal_error();
         }
+    }
+    
+    static class GetRounds extends TCLoad {
+
+        public void performLoad() throws Exception {
+                StringBuffer query = new StringBuffer();
+                query.append("select round_id from round r, contest c ");
+                query.append("where r.contest_id = c.contest_id ");
+                query.append("and round_type_id in (17,18) ");
+                query.append("order by start_date"); 
+                PreparedStatement ps = prepareStatement(query.toString(), SOURCE_DB);
+                
+                rounds = new ArrayList();
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    rounds.add(rs.getInt(1) + "");
+                }
+                close(rs);
+                close(ps);
+        }
+
+        public boolean setParameters(Hashtable params) {
+            return true;
+        }
+        
     }
 }
