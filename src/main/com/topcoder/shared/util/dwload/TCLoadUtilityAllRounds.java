@@ -70,16 +70,17 @@ public class TCLoadUtilityAllRounds {
             for (int i = 0; i < rounds.size(); i++) {
                 params.put("roundid", rounds.get(i));
                 log.debug("Loading round " + rounds.get(i));
+
+                runTCLoad("com.topcoder.shared.util.dwload.TCLoadRound", params);
+
+                params.put("sourcedb", targetDBURL);
+
+                runTCLoad("com.topcoder.shared.util.dwload.TCLoadRank", params);
+                runTCLoad("com.topcoder.shared.util.dwload.TCLoadAggregate", params);
                 
             }
-/*
-            runTCLoad("com.topcoder.shared.util.dwload.TCLoadRound", params);
 
-            params.put("sourcedb", targetDBURL);
 
-            runTCLoad("com.topcoder.shared.util.dwload.TCLoadRank", params);
-            runTCLoad("com.topcoder.shared.util.dwload.TCLoadAggregate", params);
-*/
             
         } else {
             setUsageError("Invalid Parameters");
