@@ -199,6 +199,7 @@ public class TCLoadRank extends TCLoad {
                 log.info("Loading team rank history for round " + roundId);
                 seasons.add(new Integer(sId));
                 List tp = getTeamPoints(sId, roundId);
+                Collections.sort(tp);
                 loadSeasonTeamRankHistory(sId, tp);
             }
 
@@ -206,6 +207,7 @@ public class TCLoadRank extends TCLoad {
                 int sId = ((Integer) it.next()).intValue();
                 log.info("Loading season team rank for season " + sId);
                 List tp = getTeamPoints(sId);
+                Collections.sort(tp);
                 loadSeasonTeamRank(sId, tp);
             }
 
