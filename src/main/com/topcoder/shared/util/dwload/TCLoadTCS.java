@@ -290,7 +290,7 @@ public class TCLoadTCS extends TCLoad {
                 "get_screening_scorecard", "project_info", "reviewers_for_project", "scorecard_details", "submissions",
                 "comp_contest_details", "dr_leader_board", "dr_rookie_board", "competition_history", "algo_competition_history",
                 "dr_current_period", "dr_stages", "dr_seasons", "component_color_change", "stage_outstanding_projects",
-                "season_outstanding_projects" 
+                "season_outstanding_projects"
         };
 
         ArrayList list = cc.getKeys();
@@ -524,7 +524,7 @@ public class TCLoadTCS extends TCLoad {
                             "   ,project p " +
                             "	,resource r" +
                             "	,resource_info ri " +
-                            "   ,project_info piel " + 
+                            "   ,project_info piel " +
                             "where s.upload_id = u.upload_id " +
                             "	and u.project_id = p.project_id " +
                             "	and p.project_status_id <> 3 " +
@@ -885,9 +885,9 @@ public class TCLoadTCS extends TCLoad {
                             "	and pi2.project_info_type_id = 3 " +
                             "	and pi3.project_id = p.project_id " +
                             "	and pi3.project_info_type_id = 7 " +
-                            "   and piel.project_info_type_id = 14 " + 
+                            "   and piel.project_info_type_id = 14 " +
                             "   and piel.value = 'Open' " +
-                            "   and p.project_id = piel.project_id " +                                                        
+                            "   and p.project_id = piel.project_id " +
                             "	and cc.component_id = pir.value " +
                             "	and cc.root_category_id = cat.category_id " +
                             "	and psl.project_status_id = p.project_status_id " +
@@ -896,7 +896,7 @@ public class TCLoadTCS extends TCLoad {
                             "	and ppd.project_id = p.project_id " +
                             "	and ppd.phase_type_id = 1 " +
                             "	and p.project_status_id <> 3 " +
-                            "	and p.project_category_id in (1, 2) " +                            
+                            "	and p.project_category_id in (1, 2) " +
                             " 	and (p.modify_date > ? " +
                             // add projects who have modified resources
                             "   or p.project_id in (select distinct r.project_id from resource r where (r.create_date > ? or r.modify_date > ?)) " +
@@ -1773,7 +1773,7 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri2.resource_info_type_id = 1 " +
                         "   and piel.project_info_type_id = 14 " +
                         "   and piel.value = 'Open' " +
-                        "   and p.project_id = piel.project_id " +                        
+                        "   and p.project_id = piel.project_id " +
                         "	and u.project_id = ?" +
                         " 	and (r.modify_date > ? " +
                         "	or s.modify_date > ? " +
@@ -1997,7 +1997,7 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri2.resource_info_type_id = 1 " +
                         "   and piel.project_info_type_id = 14 " +
                         "   and piel.value = 'Open' " +
-                        "   and p.project_id = piel.project_id " +                        
+                        "   and p.project_id = piel.project_id " +
                         "	and (r.modify_date > ? " +
                         "	OR s.modify_date > ? " +
                         "	or u.modify_date > ? " +
@@ -2091,7 +2091,7 @@ public class TCLoadTCS extends TCLoad {
         final String SELECT = "select x.contest_id, x.project_id  " +
                 "from contest_project_xref x, project p, project_info piel " +
                 "where x.project_id = ? and p.project_id = x.project_id " +
-                "and piel.project_info_type_id = 14 and piel.value = 'Open' and p.project_id = piel.project_id " +  
+                "and piel.project_info_type_id = 14 and piel.value = 'Open' and p.project_id = piel.project_id " +
                 " and (p.modify_date > ? or x.create_date > ?)";
 
         final String INSERT = "insert into contest_project_xref (contest_id, project_id) " +
@@ -3282,9 +3282,49 @@ public class TCLoadTCS extends TCLoad {
         }
         switch (questionType) {
             case 1: // scale 1-4
+                if (answer.equals("1") || answer.equals("1/4")) {
+                    return 1;
+                }
+                if (answer.equals("2") || answer.equals("2/4")) {
+                    return 2;
+                }
+                if (answer.equals("3") || answer.equals("3/4")) {
+                    return 3;
+                }
+                if (answer.equals("4") || answer.equals("4/4")) {
+                    return 4;
+                }
             case 2: // scale 1-10
-                answer = answer.substring(0, 1);
-                break;
+                if (answer.equals("1") || answer.equals("1/10")) {
+                    return 11;
+                }
+                if (answer.equals("2") || answer.equals("2/10")) {
+                    return 12;
+                }
+                if (answer.equals("3") || answer.equals("3/10")) {
+                    return 13;
+                }
+                if (answer.equals("4") || answer.equals("4/10")) {
+                    return 14;
+                }
+                if (answer.equals("5") || answer.equals("5/10")) {
+                    return 15;
+                }
+                if (answer.equals("6") || answer.equals("6/10")) {
+                    return 16;
+                }
+                if (answer.equals("7") || answer.equals("7/10")) {
+                    return 17;
+                }
+                if (answer.equals("8") || answer.equals("8/10")) {
+                    return 18;
+                }
+                if (answer.equals("9") || answer.equals("9/10")) {
+                    return 19;
+                }
+                if (answer.equals("10") || answer.equals("10/10")) {
+                    return 20;
+                }
             case 3: // test case
                 return 0;
             case 4: // Yes/No
@@ -3347,7 +3387,7 @@ public class TCLoadTCS extends TCLoad {
                         "	and answer <> '' " +
                         "   and piel.project_info_type_id = 14 " +
                         "   and piel.value = 'Open' " +
-                        "   and p.project_id = piel.project_id " +                        
+                        "   and p.project_id = piel.project_id " +
                         "	and  u.project_id = ?  " +
                         "   and (ri.modify_date > ? " +
                         "	OR r.modify_date > ? " +
@@ -3497,7 +3537,7 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri2.resource_info_type_id = 1 " +
                         "   and piel.project_info_type_id = 14 " +
                         "   and piel.value = 'Open' " +
-                        "   and p.project_id = piel.project_id " +                        
+                        "   and p.project_id = piel.project_id " +
                         "	and (ri.modify_date > ? " +
                         "	OR r.modify_date > ? " +
                         "	OR res.modify_date > ? " +
@@ -3651,7 +3691,7 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri2.resource_info_type_id = 1 " +
                         "   and piel.project_info_type_id = 14 " +
                         "   and piel.value = 'Open' " +
-                        "   and p.project_id = piel.project_id " +                        
+                        "   and p.project_id = piel.project_id " +
                         "	and u.project_id = ? " +
                         " 	and (ric.modify_date > ? " +
                         "	OR ri.modify_date > ? " +
@@ -3814,7 +3854,7 @@ public class TCLoadTCS extends TCLoad {
                         "	ric.comment_type_id = 4  and " +
                         "   piel.project_info_type_id = 14 and " +
                         "   piel.value = 'Open' and " +
-                        "   p.project_id = piel.project_id and " +                        
+                        "   p.project_id = piel.project_id and " +
                         "	u.project_id = ? and " +
                         "   (ric.modify_date > ? OR " +
                         "	ri.modify_date > ? OR " +
@@ -4021,7 +4061,7 @@ public class TCLoadTCS extends TCLoad {
                         "	and ri2.resource_info_type_id = 1 " +
                         "   and piel.project_info_type_id = 14 " +
                         "   and piel.value = 'Open' " +
-                        "   and p.project_id = piel.project_id " +                        
+                        "   and p.project_id = piel.project_id " +
                         "	and u.project_id = ? " +
                         " 	and (ric.modify_date > ? " +
                         "	OR ri.modify_date > ? " +
