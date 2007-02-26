@@ -897,6 +897,13 @@ public class TCLoadTCS extends TCLoad {
                             "	and p.project_status_id <> 3 " +
                             "	and p.project_category_id in (1, 2) " +                            
                             " 	and (p.modify_date > ? " +
+                            // add projects who have modified resources
+                            "   or p.project_id in (select distinct r.project_id from resource r where (r.create_date > ? or r.modify_date > ?)) " +
+                            // add projects who have modified upload and submissions
+                            "   or p.project_id in (select distinct u.project_id from upload u, submission s where u.upload_id = s.upload_id and " +
+                            "   (u.create_date > ? or u.modify_date > ? or s.create_date > ? or s.modify_date > ?)) " +
+                            // add projects who have modified results
+                            "   or p.project_id in (select distinct pr.project_id from project_result pr where (pr.create_date > ? or pr.modify_date > ?)) " +
                             "	OR pir.modify_date > ? " +
                             (needLoadMovedProject() ? " OR p.modify_user <> 'Converter' " +
                                     " OR pir.modify_user <> 'Converter' " +
