@@ -617,8 +617,8 @@ public class TCLoadRank extends TCLoad {
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO season_team_rank (team_id, season_id, rank, percentile, team_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, 1)");
+            query.append(" INTO season_team_rank (team_id, season_id, rank, percentile, team_rank_type_id, team_points)");
+            query.append(" VALUES (?, ?, ?, ?, 1, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // delete all the records for the overall rating rank type
@@ -642,6 +642,8 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(2, seasonId);
                 psIns.setInt(3, rank);
                 psIns.setFloat(4, (float) 100 * ((float) (size - rank) / size));
+                psIns.setInt(5, (int) tempPoints);
+                
                 count += psIns.executeUpdate();
                 printLoadProgress(count, "season team rank");
             }
@@ -684,8 +686,8 @@ public class TCLoadRank extends TCLoad {
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO season_team_rank_history (team_id, season_id, rank, percentile, round_id, team_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, ?, 1)");
+            query.append(" INTO season_team_rank_history (team_id, season_id, rank, percentile, round_id, team_rank_type_id, team_points)");
+            query.append(" VALUES (?, ?, ?, ?, ?, 1, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // delete all the records for the overall rating rank type
@@ -710,6 +712,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(3, rank);
                 psIns.setFloat(4, (float) 100 * ((float) (size - rank) / size));
                 psIns.setInt(5, roundId);
+                psIns.setInt(6, (int) tempPoints);
                 count += psIns.executeUpdate();
                 printLoadProgress(count, "season team rank history");
             }
