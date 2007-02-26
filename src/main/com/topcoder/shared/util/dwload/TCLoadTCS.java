@@ -932,6 +932,14 @@ public class TCLoadTCS extends TCLoad {
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
             select.setTimestamp(2, fLastLogTime);
+            select.setTimestamp(3, fLastLogTime);
+            select.setTimestamp(4, fLastLogTime);
+            select.setTimestamp(5, fLastLogTime);
+            select.setTimestamp(6, fLastLogTime);
+            select.setTimestamp(7, fLastLogTime);
+            select.setTimestamp(8, fLastLogTime);
+            select.setTimestamp(9, fLastLogTime);
+            select.setTimestamp(10, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
 
