@@ -716,9 +716,19 @@ public class DBMS {
 
     // Returns the database name associated with the given datasource.
     public static String getDbName(String datasourceName) throws SQLException {
-        String jiveUrl = getConnection(datasourceName).getMetaData().getURL();
-        String jiveDbStr = jiveUrl.substring(jiveUrl.indexOf("informix-sqli://"), jiveUrl.indexOf(":INFORMIXSERVER="));
-        return jiveDbStr.substring(jiveDbStr.lastIndexOf('/') + 1);
+        Connection conn = null;
+        String dbName = "";
+        try {
+            conn = getConnection(datasourceName);
+            String jiveUrl = conn.getMetaData().getURL();
+            String jiveDbStr = jiveUrl.substring(jiveUrl.indexOf("informix-sqli://"), jiveUrl.indexOf(":INFORMIXSERVER="));
+            dbName = jiveDbStr.substring(jiveDbStr.lastIndexOf('/') + 1);
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            close(conn);
+        }
+        return dbName;
     }
 /*
     public static void loadJdbcDriver() {
