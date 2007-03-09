@@ -856,8 +856,7 @@ public class TCLoadTCS extends TCLoad {
                             "   ,cv.version_text " + 
                             "	,pivi.value as rating_date " +
                             "	,case when pivt.value is not null then substr(pivt.value,1,20) else null end as winner_id" +
-//                            "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " +
-                            " , 'On' as digital_run_ind " +
+                            "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " +
                             "   ,cv.suspended_ind " + 
                             "   from project p , " +
                             "	project_info pir, " +
