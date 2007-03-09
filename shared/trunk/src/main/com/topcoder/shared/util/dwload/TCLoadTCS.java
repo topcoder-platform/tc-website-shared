@@ -853,21 +853,24 @@ public class TCLoadTCS extends TCLoad {
                             "	,psl.name as project_stat_name " +
                             "	,cat.viewable as viewable " +
                             "	,substr(pi2.value,1,40) as version_id " +
-                            "	,substr(pi3.value,1,80) as version_text " +
+                            "   ,cv.version_text " + 
                             "	,pivi.value as rating_date " +
                             "	,case when pivt.value is not null then substr(pivt.value,1,20) else null end as winner_id" +
-                            "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " +
+//                            "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " +
+                            " , 'On' as digital_run_ind " +
+                            "   ,cv.suspended_ind " + 
                             "   from project p , " +
                             "	project_info pir, " +
                             "   project_info piel, " +
+                            "   project_info pivers, " +
                             "	outer project_info pivi," +
                             "	outer project_info pivt," +
                             "	outer project_info pict," +
                             "	outer project_info pi1," +
                             "	outer project_info pi2," +
-                            "	outer project_info pi3," +
                             "	categories cat, " +
                             " 	comp_catalog cc, " +
+                            "   comp_versions cv, " +
                             "	project_status_lu psl, " +
                             "   OUTER project_phase psd, " +
                             "   OUTER project_phase ppd " +
@@ -875,6 +878,9 @@ public class TCLoadTCS extends TCLoad {
                             "	and pir.project_info_type_id = 2 " +
                             "	and pivi.project_id = p.project_id " +
                             "	and pivi.project_info_type_id = 22 " +
+                            "   and pivers.project_id = p.project_id " +
+                            "   and pivers.project_info_type_id = 1 " +
+                            "   and pivers.value = cv.comp_vers_id " + 
                             "	and pivt.project_id = p.project_id " +
                             "	and pivt.project_info_type_id = 23 " +
                             "	and pict.project_id = p.project_id " +
@@ -883,8 +889,6 @@ public class TCLoadTCS extends TCLoad {
                             "	and pi1.project_info_type_id = 21 " +
                             "	and pi2.project_id = p.project_id " +
                             "	and pi2.project_info_type_id = 3 " +
-                            "	and pi3.project_id = p.project_id " +
-                            "	and pi3.project_info_type_id = 7 " +
                             "   and piel.project_info_type_id = 14 " +
                             "   and piel.value = 'Open' " +
                             "   and p.project_id = piel.project_id " +
@@ -898,6 +902,8 @@ public class TCLoadTCS extends TCLoad {
                             "	and p.project_status_id <> 3 " +
                             "	and p.project_category_id in (1, 2) " +
                             " 	and (p.modify_date > ? " +
+                            // comp versions with modified date
+                            "   or cv.modify_date > ? " +
                             // add projects who have modified resources
                             "   or p.project_id in (select distinct r.project_id from resource r where (r.create_date > ? or r.modify_date > ?)) " +
                             // add projects who have modified upload and submissions
@@ -916,19 +922,19 @@ public class TCLoadTCS extends TCLoad {
                     "phase_id = ?, phase_desc = ?, category_id = ?, category_desc = ?, posting_date = ?, submitby_date " +
                     "= ?, complete_date = ?, component_id = ?, review_phase_id = ?, review_phase_name = ?, " +
                     "status_id = ?, status_desc = ?, level_id = ?, viewable_category_ind = ?, version_id = ?, version_text = ?, " +
-                    "rating_date = ?, num_submissions_passed_review=?, winner_id=?, stage_id = ?, digital_run_ind = ? where project_id = ? ";
+                    "rating_date = ?, num_submissions_passed_review=?, winner_id=?, stage_id = ?, digital_run_ind = ?, suspended_ind = ? where project_id = ? ";
 
             final String INSERT = "insert into project (project_id, component_name, num_registrations, num_submissions, " +
                     "num_valid_submissions, avg_raw_score, avg_final_score, phase_id, phase_desc, " +
                     "category_id, category_desc, posting_date, submitby_date, complete_date, component_id, " +
                     "review_phase_id, review_phase_name, status_id, status_desc, level_id, viewable_category_ind, version_id, " +
-                    "version_text, rating_date, num_submissions_passed_review, winner_id, stage_id, digital_run_ind) " +
+                    "version_text, rating_date, num_submissions_passed_review, winner_id, stage_id, digital_run_ind, suspended_ind) " +
                     "values (?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
                     "?, ?, ?, ?, ?, " +
-                    "?, ?, ?) ";
+                    "?, ?, ?, ?) ";
 
             select = prepareStatement(SELECT, SOURCE_DB);
             select.setTimestamp(1, fLastLogTime);
@@ -941,9 +947,9 @@ public class TCLoadTCS extends TCLoad {
             select.setTimestamp(8, fLastLogTime);
             select.setTimestamp(9, fLastLogTime);
             select.setTimestamp(10, fLastLogTime);
+            select.setTimestamp(11, fLastLogTime);
             update = prepareStatement(UPDATE, TARGET_DB);
             insert = prepareStatement(INSERT, TARGET_DB);
-
             rs = select.executeQuery();
             int count = 0;
             while (rs.next()) {
@@ -1007,7 +1013,9 @@ public class TCLoadTCS extends TCLoad {
                 }
                 String digitRun = rs.getString("digital_run_ind");
                 update.setInt(27, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
-                update.setLong(28, rs.getLong("project_id"));
+                update.setInt(28, rs.getInt("suspended_ind"));
+
+                update.setLong(29, rs.getLong("project_id"));
                 int retVal = update.executeUpdate();
 
                 if (retVal == 0) {
@@ -1063,6 +1071,8 @@ public class TCLoadTCS extends TCLoad {
                     }
                     digitRun = rs.getString("digital_run_ind");
                     insert.setInt(28, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
+                    insert.setInt(29, rs.getInt("suspended_ind"));
+
                     insert.executeUpdate();
                 }
                 count++;
