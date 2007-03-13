@@ -1652,7 +1652,7 @@ public class TCLoadAggregate extends TCLoad {
 
 
             query = new StringBuffer(100);
-            query.append(" SELECT calendar_id, round_id FROM round r where round_type_id = " + SINGLE_ROUND_MATCH);
+            query.append(" SELECT calendar_id, round_id FROM round r where round_type_id = " + SINGLE_ROUND_MATCH + " and rated_ind = 1");
             query.append("  and exists (select 1 from room_result rr where rr.round_id=r.round_id) ");
             query.append("  ORDER BY calendar_id ");
             psSel2 = prepareStatement(query.toString(), SOURCE_DB);
