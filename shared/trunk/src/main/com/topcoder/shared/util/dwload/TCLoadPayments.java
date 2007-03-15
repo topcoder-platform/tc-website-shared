@@ -9,7 +9,6 @@ package com.topcoder.shared.util.dwload;
  * @version 1.0.1
  */
 
-import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.*;
@@ -106,14 +105,14 @@ public class TCLoadPayments extends TCLoad {
             }
             log.info("payment types records copied = " + count);
         } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
+            printSqlException(true, sqle);
             throw new Exception("Load of 'payment_type' table failed.\n" +
                     sqle.getMessage());
         } finally {
-            DBMS.close(rs);            
-            DBMS.close(psSel);
-            DBMS.close(psIns);
-            DBMS.close(psUpd);
+            close(rs);            
+            close(psSel);
+            close(psIns);
+            close(psUpd);
         }
     }*/
 
@@ -141,7 +140,7 @@ public class TCLoadPayments extends TCLoad {
                         "update_log table.");
             }
         } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
+            printSqlException(true, sqle);
             throw new Exception("Failed to retrieve last log time.\n" +
                     sqle.getMessage());
         } finally {
@@ -320,19 +319,19 @@ public class TCLoadPayments extends TCLoad {
 
             log.info("total payment records copied = " + count);
         } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
+            printSqlException(true, sqle);
             throw new Exception("Load of 'payment' table failed.\n" + "payment_id = " + paymentId + "\n" +
                     sqle.getMessage());
         } finally {
-            DBMS.close(modifiedPayments);
-            DBMS.close(rs);            
-            DBMS.close(psSel);
-            DBMS.close(psInsPayment);
-            DBMS.close(psInsUsrPayment);
-            DBMS.close(psDelPayment);
-            DBMS.close(psDelUserPayment);
-            //DBMS.close(psUpd);
-            DBMS.close(psSelModified);
+            close(modifiedPayments);
+            close(rs);            
+            close(psSel);
+            close(psInsPayment);
+            close(psInsUsrPayment);
+            close(psDelPayment);
+            close(psDelUserPayment);
+            //close(psUpd);
+            close(psSelModified);
         }
     }
 
@@ -384,7 +383,7 @@ public class TCLoadPayments extends TCLoad {
                         " modified " + retVal + " rows, not one.");
             }
         } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
+            printSqlException(true, sqle);
             throw new Exception("Failed to set last log time.\n" +
                     sqle.getMessage());
         } finally {
