@@ -469,7 +469,7 @@ public abstract class TCLoad {
             return rs.getInt("algo_rating_type_id");
 
         } catch (SQLException sqle) {
-            printSqlException(true, sqle);
+            DBMS.printSqlException(true, sqle);
             throw new Exception("Get round type failed.\n" +
                     sqle.getMessage());
         } finally {
@@ -506,7 +506,7 @@ public abstract class TCLoad {
             return rs.getString(1) == null? -1 : rs.getInt(1);
 
         } catch (SQLException sqle) {
-            printSqlException(true, sqle);
+            DBMS.printSqlException(true, sqle);
             throw new Exception("getSeasonId failed.\n" +
                     sqle.getMessage());
         } finally {
@@ -527,30 +527,7 @@ public abstract class TCLoad {
         return true;
     }
 
-    
-    /**
-     * printSqlException()
-     * Iterate through and print out informix sql exception information.  Can be called
-     * on non-informix sql exceptions.
-     *
-     * @param verbose - whether or not it should print the stack trace
-     * @param sqle    - a SQL exception
-     */
-    public static void printSqlException(boolean verbose, SQLException sqle) {
-        int i = 1;
-        if (verbose) {
-            System.out.println("*******************************");
-            do {
-                System.out.println("  Error #" + i + ":");
-                System.out.println("    SQLState = " + sqle.getSQLState());
-                //System.out.println("    Message = " + sqle.getMessage());
-                System.out.println("    SQLCODE = " + sqle.getErrorCode());
-                sqle.printStackTrace();
-                sqle = sqle.getNextException();
-                i++;
-            } while (sqle != null);
-        }
-    }
+
 
 
 }
