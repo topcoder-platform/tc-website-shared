@@ -173,7 +173,7 @@ public class TCLoadRank extends TCLoad {
         }
     }
 
-    private void teamsRankFullLoad() throws Exception{
+    private void teamsRankFullLoad() throws Exception {
         log.debug("teamsRankFullLoad called...");
 
         PreparedStatement psSel = null;
@@ -203,7 +203,7 @@ public class TCLoadRank extends TCLoad {
                 loadSeasonTeamRankHistory(sId, tp);
             }
 
-            for (Iterator it = seasons.iterator(); it.hasNext(); ) {
+            for (Iterator it = seasons.iterator(); it.hasNext();) {
                 int sId = ((Integer) it.next()).intValue();
                 log.info("Loading season team rank for season " + sId);
                 List tp = getTeamPoints(sId);
@@ -643,7 +643,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(3, rank);
                 psIns.setFloat(4, (float) 100 * ((float) (size - rank) / size));
                 psIns.setInt(5, (int) tempPoints);
-                
+
                 count += psIns.executeUpdate();
                 printLoadProgress(count, "season team rank");
             }
@@ -1218,24 +1218,27 @@ public class TCLoadRank extends TCLoad {
             query.append(" , c.comp_country_code as country_code ");
             query.append(" , c.state_code ");
             query.append(" , case when exists (select '1'");
-            query.append(" from room_result rr,");
-            query.append(" round r1,");
-            query.append(" calendar cal");
-            query.append(" where rr.round_id = r1.round_id");
-            query.append(" and rr.attended = 'Y'");
-            query.append(" and rr.rated_flag = 1 ");
-            query.append(" and r1.calendar_id = cal.calendar_id");
-            query.append(" and rr.coder_id = r.coder_id");
-            query.append(" and r.algo_rating_type_id = " + algoType);
-            query.append(" and cal.calendar_id <= (select calendar_id from round where round_id = r.round_id)");
-            query.append("        and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2");
-            query.append("                                  where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id))");
+            query.append("                       from room_result rr");
+            query.append("                          , round r1");
+            query.append("                          , calendar cal");
+            query.append("                          , round_type_lu  rt");
+            query.append("                      where rr.round_id = r1.round_id");
+            query.append("                        and rr.attended = 'Y'");
+            query.append("                        and r1.round_type_id = rt.round_type_id");
+            query.append("                        and rt.algo_rating_type_id = r.algo_rating_type_id ");
+            query.append("                        and rr.rated_flag = 1 ");
+            query.append("                        and r1.calendar_id = cal.calendar_id");
+            query.append("                        and rr.coder_id = r.coder_id");
+            query.append("                        and cal.calendar_id <= (select calendar_id from round where round_id = r.round_id)");
+            query.append("                        and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2");
+            query.append("                                                  where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id))");
             query.append("                 then 1 else 0 end as active ");
             query.append("  from algo_rating_history r ");
             query.append(" , outer current_school cs ");
             query.append(" , coder c ");
             query.append(" where r.coder_id = cs.coder_id");
             query.append(" and r.coder_id = c.coder_id ");
+            query.append(" and r.algo_rating_type_id = " + algoType);
             query.append(" and r.num_ratings > 0 ");
             query.append(" and c.status = 'A' ");
             query.append(" and r.round_id = ?");
