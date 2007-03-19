@@ -1266,6 +1266,7 @@ public class TCLoadTCS extends TCLoad {
                         "    , pr.point_adjustment" +
                         "	 , pr.current_reliability_ind " +
                         "	 , pr.reliable_submission_ind " +
+                        "    , pr.rating_order " +
                         "    from project_result pr" +
                         "    	,project p" +
                         "		,project_info pi" +
@@ -1288,8 +1289,9 @@ public class TCLoadTCS extends TCLoad {
         final String RESULT_INSERT =
                 "insert into project_result (project_id, user_id, submit_ind, valid_submission_ind, raw_score, final_score, inquire_timestamp," +
                         " submit_timestamp, review_complete_timestamp, payment, old_rating, new_rating, old_reliability, new_reliability, placed, rating_ind, " +
-                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind, old_rating_id, new_rating_id, num_ratings) " +
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)";
+                        "reliability_ind, passed_review_ind, points_awarded, final_points,current_reliability_ind, reliable_submission_ind, old_rating_id, " +
+                        "new_rating_id, num_ratings, rating_order) " +
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)";
 
         final String DW_DATA_SELECT =
                 "select sum(num_appeals) as num_appeals" +
@@ -1461,6 +1463,7 @@ public class TCLoadTCS extends TCLoad {
                         currNumRatings = ((Integer) ratingsMap.get(tempUserId)).intValue();
                     }
                     resultInsert.setInt(25, projectResults.getInt("rating_ind") == 1 ? currNumRatings + 1 : currNumRatings);
+                    resultInsert.setObject(26, projectResults.getObject("rating_order"));
 
                     //log.debug("before result insert");
                     //try {
@@ -4250,7 +4253,7 @@ public class TCLoadTCS extends TCLoad {
                 " and pr.valid_submission_ind = 1  " +
                 " and pr.rating_ind = 1  " +
                 " and p.status_id in (4,5,7)  " +
-                " order by pr.user_id, p.rating_date, p.project_id";
+                " order by pr.user_id, pr.rating_order";
 
         final String INSERT = "INSERT INTO streak (coder_id, streak_type_id, phase_id, start_project_id, end_project_id, length, is_current) " +
                 " VALUES(?,?,?,?,?,?,?)";
