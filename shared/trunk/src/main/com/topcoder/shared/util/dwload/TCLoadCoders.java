@@ -1644,7 +1644,7 @@ public class TCLoadCoders extends TCLoad {
 
         try {
             long start = System.currentTimeMillis();
-            final String SELECT = "select e.event_id, e.event_type_id, et.event_type_desc, e.event_desc" +
+            final String SELECT = "select e.event_id, e.event_type_id, et.event_type_desc, e.event_desc " +
                     "from event e, event_type_lu et where e.modify_date > ? and e.event_type_id = et.event_type_id";
             final String UPDATE = "update event set event_type_id=?, event_type_desc=?, event_desc = ? " +
                     " where event_id = ? ";
