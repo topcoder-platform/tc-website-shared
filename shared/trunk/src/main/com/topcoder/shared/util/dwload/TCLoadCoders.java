@@ -1711,7 +1711,7 @@ public class TCLoadCoders extends TCLoad {
             long start = System.currentTimeMillis();
             final String SELECT = "select er.event_id, er.user_id, er.eligible_ind, er.notes, er.create_date, er.modify_date " +
                     "from event_registration er where er.modify_date > ?";
-            final String UPDATE = "update event_registration set er.eligible_ind = ?, er.notes = ?, er.create_date = ?, er.modify_date = ? " +
+            final String UPDATE = "update event_registration set eligible_ind = ?, notes = ?, create_date = ?, modify_date = ? " +
                     " where event_id = ? and user_id = ?";
 
             final String INSERT = "insert into event_registration (event_id, user_id, eligible_ind, notes, create_date, modify_date) " +
