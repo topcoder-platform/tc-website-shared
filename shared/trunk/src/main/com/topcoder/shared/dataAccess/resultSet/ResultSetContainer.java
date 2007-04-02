@@ -63,9 +63,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     private static Logger log = Logger.getLogger(ResultSetContainer.class);
 
     // Stores ArrayList of ResultSetRow
-    private ArrayList data;
+    private ArrayList<ResultSetRow> data;
     private ResultColumn columns[];
-    private HashMap columnNameMap;
+    private HashMap<String, Integer> columnNameMap;
     private int startRow;
     private int endRow;
 
@@ -86,8 +86,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * but it helps us fullfill the contract of a java bean.
      */
     public ResultSetContainer() {
-        data = new ArrayList();
-        columnNameMap = new HashMap();
+        data = new ArrayList<ResultSetRow>();
+        columnNameMap = new HashMap<String, Integer>();
         dataBefore = false;
         dataAfter = false;
         startRow = 1;
@@ -271,7 +271,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         ResultColumn tempColumns[] = new ResultColumn[columns.length + 1];
         System.arraycopy(columns, 0, tempColumns, 0, columns.length);
         tempColumns[columns.length] = new ResultColumn(Types.INTEGER, "rank", 9, 0, "");
-        columnNameMap.put("rank", new Integer(columns.length));
+        columnNameMap.put("rank", columns.length);
         columns = tempColumns;
 
         if (start > end)
@@ -338,7 +338,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         ResultColumn tempColumns[] = new ResultColumn[columns.length + 1];
         System.arraycopy(columns, 0, tempColumns, 0, columns.length);
         tempColumns[columns.length] = new ResultColumn(Types.INTEGER, "rank", 9, 0, "");
-        columnNameMap.put("rank", new Integer(columns.length));
+        columnNameMap.put("rank", columns.length);
         columns = tempColumns;
 
         if (start > end)
@@ -381,8 +381,9 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         initializeMetaData(rs);
 
         ResultSetRow rsr = null;
-        for (Iterator it = rs.iterator(); it.hasNext();) {
-            rsr = (ResultSetRow) it.next();
+        for (Object r1 : rs) {
+            Object r = (Object) r1;
+            rsr = (ResultSetRow) r;
             if (f.include(rsr)) {
                 addRow(rsr);
             }
@@ -722,7 +723,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
     }
 
     private void addRow(ResultSetRow rsr) {
-        data.add(rsr.clone());
+        data.add((ResultSetRow)rsr.clone());
     }
 
 
@@ -770,7 +771,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
 
             columns[i - 1] = new ResultColumn(colType, colName, precision, scale, colSourceType);
             // Unlike ResultSets, column indices are zero-based.
-            columnNameMap.put(colName, new Integer(i - 1));
+            columnNameMap.put(colName, i - 1);
         }
     }
 
@@ -778,7 +779,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         columns = new ResultColumn[rs.columns.length];
         System.arraycopy(rs.columns, 0, columns, 0, rs.columns.length);
         for (int i = 0; i < columns.length; i++) {
-            columnNameMap.put(rs.getColumnName(i), new Integer(i));
+            columnNameMap.put(rs.getColumnName(i), i);
         }
     }
 
@@ -1140,8 +1141,8 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          */
         public String toString(String colDelim) {
             StringBuffer sbReturn = new StringBuffer();
-            for (int i = 0; i < mtcItems.length; i++) {
-                sbReturn.append(mtcItems[i].toString()).append(colDelim);
+            for (TCResultItem mtcItem : mtcItems) {
+                sbReturn.append(mtcItem.toString()).append(colDelim);
             }
             sbReturn.setLength(sbReturn.length() - colDelim.length());
             return sbReturn.toString();
@@ -1406,7 +1407,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         rsc.columnNameMap = this.columnNameMap;
         rsc.dataBefore = fromIndex > 0;
         rsc.dataAfter = toIndex < data.size();
-        rsc.data = new ArrayList(this.data.subList(fromIndex, toIndex));
+        rsc.data = new ArrayList<ResultSetRow>(this.data.subList(fromIndex, toIndex));
         rsc.startRow = fromIndex + 1;
         rsc.endRow = toIndex + 1;
         return rsc;
@@ -1490,7 +1491,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         if (i == null)
             return -1;
         else
-            return i.intValue();
+            return i;
     }
 
     /**
@@ -1653,7 +1654,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         ResultSetRow rsr;
         while (it.hasNext()) {
             rsr = (ResultSetRow) it.next();
-            rsc.data.add(rsr.clone());
+            rsc.data.add((ResultSetRow)rsr.clone());
         }
         return rsc;
     }
