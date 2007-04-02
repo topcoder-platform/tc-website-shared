@@ -59,7 +59,7 @@ import java.util.*;
  * @author Tony Barrile
  * @version 1.01, 02/14/2002
  */
-public class ResultSetContainer implements Serializable, List, Cloneable {
+public class ResultSetContainer implements Serializable, List<ResultSetContainer.ResultSetRow>, Cloneable {
     private static Logger log = Logger.getLogger(ResultSetContainer.class);
 
     // Stores ArrayList of ResultSetRow
@@ -849,7 +849,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * A call to the <tt>ResultSetContainer.listIterator<tt> routine will
      * return an instance of this class.
      */
-    public class ReadOnlyListIterator implements ListIterator {
+    public class ReadOnlyListIterator implements ListIterator<ResultSetRow> {
         private int nextIndex;
 
         /**
@@ -879,7 +879,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * @param o
          */
-        public void add(Object o) {
+        public void add(ResultSetRow o) {
             throw new UnsupportedOperationException();
         }
 
@@ -911,7 +911,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * @return The next item in the list.
          * @throws NoSuchElementException If we are already at the end of the list.
          */
-        public Object next() {
+        public ResultSetRow next() {
             if (nextIndex >= data.size()) {
                 throw new NoSuchElementException();
             }
@@ -933,7 +933,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
          * @return The previous item in the list.
          * @throws NoSuchElementException If we are already at the beginning of the list.
          */
-        public Object previous() {
+        public ResultSetRow previous() {
             if (nextIndex <= 0) {
                 throw new NoSuchElementException();
             }
@@ -959,7 +959,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
         /**
          * @param o
          */
-        public void set(Object o) {
+        public void set(ResultSetRow o) {
             throw new UnsupportedOperationException();
         }
     }
@@ -1185,7 +1185,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param index
      * @param element
      */
-    public void add(int index, Object element) {
+    public void add(int index, ResultSetRow element) {
         throw new UnsupportedOperationException();
     }
 
@@ -1195,7 +1195,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param o
      * @return boolean
      */
-    public boolean add(Object o) {
+    public boolean add(ResultSetRow o) {
         throw new UnsupportedOperationException();
     }
 
@@ -1205,7 +1205,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param c
      * @return boolean
      */
-    public boolean addAll(Collection c) {
+    public boolean addAll(Collection<? extends ResultSetRow> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -1216,7 +1216,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param c
      * @return boolean
      */
-    public boolean addAll(int index, Collection c) {
+    public boolean addAll(int index, Collection<? extends ResultSetRow> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -1243,7 +1243,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param c Elements to be checked for containment in this collection.
      * @return true iff this collection contains all of the elements in the specified collection
      */
-    public boolean containsAll(Collection c) {
+    public boolean containsAll(Collection<?> c) {
         return data.containsAll(c);
     }
 
@@ -1255,7 +1255,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @throws IndexOutOfBoundsException if the specified index is out of
      *                                   range (<tt>index &lt; 0 || index &gt; size()</tt>).
      */
-    public Object get(int index) {
+    public ResultSetRow get(int index) {
         return data.get(index);
     }
 
@@ -1285,7 +1285,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      *
      * @return A data iterator starting at the first element in the list.
      */
-    public Iterator iterator() {
+    public Iterator<ResultSetRow> iterator() {
         return data.iterator();
     }
 
@@ -1306,7 +1306,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      *
      * @return A read-only iterator of the elements in this list (in proper sequence).
      */
-    public ListIterator listIterator() {
+    public ListIterator<ResultSetRow> listIterator() {
         return new ReadOnlyListIterator();
     }
 
@@ -1321,7 +1321,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @throws IndexOutOfBoundsException if the specified index is out of
      *                                   range (<tt>index &lt; 0 || index &gt; size()</tt>).
      */
-    public ListIterator listIterator(final int index) {
+    public ListIterator<ResultSetRow> listIterator(final int index) {
         return new ReadOnlyListIterator(index);
     }
 
@@ -1331,7 +1331,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param index
      * @return Object
      */
-    public Object remove(int index) {
+    public ResultSetRow remove(int index) {
         throw new UnsupportedOperationException();
     }
 
@@ -1351,7 +1351,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param c
      * @return boolean
      */
-    public boolean removeAll(Collection c) {
+    public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -1361,7 +1361,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param c
      * @return boolean
      */
-    public boolean retainAll(Collection c) {
+    public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -1372,7 +1372,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param element
      * @return Object
      */
-    public Object set(int index, Object element) {
+    public ResultSetRow set(int index, ResultSetRow element) {
         throw new UnsupportedOperationException();
     }
 
@@ -1395,7 +1395,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @return List    a view of the specified range within this list.
      * @throws IllegalArgumentException If fromIndex > toIndex
      */
-    public List subList(int fromIndex, int toIndex) {
+    public List<ResultSetRow> subList(int fromIndex, int toIndex) {
         if (fromIndex < 0) {
             fromIndex = 0;
         }
@@ -1418,6 +1418,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      *
      * @return Array of row data
      */
+
     public Object[] toArray() {
         return data.toArray();
     }
@@ -1428,7 +1429,7 @@ public class ResultSetContainer implements Serializable, List, Cloneable {
      * @param a Runtime type of the return array will be that of the specified array
      * @return Array of row data
      */
-    public Object[] toArray(Object[] a) {
+    public <ResultSetRow>ResultSetRow[] toArray(ResultSetRow[] a) {
         return data.toArray(a);
     }
 
