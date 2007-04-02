@@ -90,14 +90,14 @@ public class QueryRunner implements DataRetrieverInt {
      *                              the queries.
      * @return      The data requested by the input.
      */
-    public Map executeCommand(Map inputs) throws Exception {
+    public Map<String, ResultSetContainer> executeCommand(Map inputs) throws Exception {
         Iterator queryIterator = null;
         Map.Entry me = null;
         ResultSetContainer rsc = null;
         String queryText = null;
         String queryName = null;
         Map queryMap = null;
-        Map resultMap = null;
+        Map<String, ResultSetContainer> resultMap = null;
 
         if (!inputs.containsKey(DataAccessConstants.QUERY_KEY)) {
             throw new Exception("Missing query");
@@ -105,7 +105,7 @@ public class QueryRunner implements DataRetrieverInt {
 
         try {
 
-            resultMap = new HashMap();
+            resultMap = new HashMap<String, ResultSetContainer>();
             queryMap = (Map) inputs.get(DataAccessConstants.QUERY_KEY);
             queryIterator = queryMap.entrySet().iterator();
             log.debug("executing: " + queryMap.size() + " queries");

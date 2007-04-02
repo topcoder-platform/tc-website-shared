@@ -4,6 +4,7 @@ import com.topcoder.shared.distCache.CacheClient;
 import com.topcoder.shared.distCache.CacheClientFactory;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
 
 import java.sql.Connection;
 import java.util.Map;
@@ -72,17 +73,17 @@ public class CachedDataAccess extends DataAccess {
      * @throws  Exception if there was an error encountered while retrieving
      * the data from the EJB.
      */
-    public Map getData(RequestInt request) throws Exception {
+    public Map<String, ResultSetContainer> getData(RequestInt request) throws Exception {
         Connection conn = null;
         try {
             boolean hasCacheConnection = true;
             String key = request.getCacheKey();
-            Map map = null;
+            Map<String, ResultSetContainer> map = null;
             DataRetrieverInt dr = null;
             CacheClient cc = null;
             try {
                 cc = CacheClientFactory.createCacheClient();
-                map = (Map) (cc.get(key));
+                map = (Map<String, ResultSetContainer>) (cc.get(key));
             } catch (Exception e) {
                 log.error("UNABLE TO ESTABLISH A CONNECTION TO THE CACHE: " + e.getMessage());
                 hasCacheConnection = false;

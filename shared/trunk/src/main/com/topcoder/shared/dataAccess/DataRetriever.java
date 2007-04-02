@@ -312,7 +312,7 @@ public class DataRetriever implements DataRetrieverInt {
      * @throws Exception If some problem is encountered while executing
      *                   the queries specified by the passed-in command.
      */
-    public Map executeCommand(Map inputMap) throws Exception {
+    public Map<String, ResultSetContainer> executeCommand(Map inputMap) throws Exception {
         //create a new map to avoid mutating the passed in version.
         //log.debug("input: " + inputMap.toString());
         Map inputs = new HashMap(inputMap);
@@ -324,7 +324,8 @@ public class DataRetriever implements DataRetrieverInt {
         query = null;
         ArrayList qid;
         int queryIdList[];
-        HashMap queryTextMap, queryNameMap, querySortMap, queryStartRow, queryEndRow, resultMap;
+        HashMap queryTextMap, queryNameMap, querySortMap, queryStartRow, queryEndRow;
+        HashMap<String, ResultSetContainer> resultMap;
 
         // Get the list of queries to execute, and the names and texts of the queries
         ResultSet rs = null;
