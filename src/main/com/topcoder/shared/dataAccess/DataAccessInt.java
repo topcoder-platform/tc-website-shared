@@ -1,5 +1,7 @@
 package com.topcoder.shared.dataAccess;
 
+import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
+
 import java.util.Map;
 
 /**
@@ -19,7 +21,7 @@ public interface DataAccessInt {
      * @return the requested data
      * @throws Exception
      */
-    Map getData(RequestInt request) throws Exception;
+    Map<String, ResultSetContainer> getData(RequestInt request) throws Exception;
 
 
 }

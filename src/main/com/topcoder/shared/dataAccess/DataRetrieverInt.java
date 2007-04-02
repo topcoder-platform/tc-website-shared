@@ -1,5 +1,7 @@
 package com.topcoder.shared.dataAccess;
 
+import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
+
 import java.util.Map;
 
 /**
@@ -18,6 +20,6 @@ public interface DataRetrieverInt {
      * @return
      * @throws Exception
      */
-    public Map executeCommand(Map map) throws Exception;
+    public Map<String, ResultSetContainer> executeCommand(Map map) throws Exception;
 }
 

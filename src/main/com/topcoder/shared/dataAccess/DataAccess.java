@@ -2,6 +2,7 @@ package com.topcoder.shared.dataAccess;
 
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -48,7 +49,7 @@ public class DataAccess implements DataAccessInt {
      * @throws  Exception if there was an error encountered while retrieving
      * the data from the EJB.
      */
-    public Map getData(RequestInt request) throws Exception {
+    public Map<String, ResultSetContainer> getData(RequestInt request) throws Exception {
         Connection conn = null;
         try {
             if (dataSource!=null) {
@@ -58,8 +59,7 @@ public class DataAccess implements DataAccessInt {
             }
             log.debug(conn.getMetaData().getURL());
             DataRetrieverInt dr = getDataRetriever(conn);
-            Map map = dr.executeCommand(request.getProperties());
-            return map;
+            return dr.executeCommand(request.getProperties());
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         } finally {
