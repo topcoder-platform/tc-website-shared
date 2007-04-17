@@ -13,6 +13,7 @@ public class AdminSubmitRequest extends BaseLongContestRequest {
     private int serverID;
     private int languageID;
     private String code;
+    private boolean example;
 
     /**
      * @param coderID
@@ -34,7 +35,23 @@ public class AdminSubmitRequest extends BaseLongContestRequest {
         this.languageID = languageID;
         this.serverID = serverID;
         this.code = code;
+        this.example = false;
     }
+
+    public AdminSubmitRequest(long coderID, long componentID, long roundID,
+            long contestID, int languageID, int serverID, String code, boolean example) {
+        super();
+        this.sync= false;
+        this.coderID = coderID;
+        this.componentID = componentID;
+        this.roundID = roundID;
+        this.contestID = contestID;
+        this.languageID = languageID;
+        this.serverID = serverID;
+        this.code = code;
+        this.example = example;
+    }
+
     /**
      * @return Returns the code.
      */
@@ -76,6 +93,10 @@ public class AdminSubmitRequest extends BaseLongContestRequest {
      */
     public int getServerID() {
         return serverID;
+    }
+
+    public boolean isExample() {
+        return example;
     }
 }
 

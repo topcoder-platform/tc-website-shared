@@ -643,7 +643,7 @@ public class TCLoadRank extends TCLoad {
                 psIns.setInt(3, rank);
                 psIns.setFloat(4, (float) 100 * ((float) (size - rank) / size));
                 psIns.setInt(5, (int) tempPoints);
-
+                
                 count += psIns.executeUpdate();
                 printLoadProgress(count, "season team rank");
             }
