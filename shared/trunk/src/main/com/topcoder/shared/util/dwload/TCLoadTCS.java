@@ -17,6 +17,13 @@ import java.util.*;
  * <strong>Purpose</strong>:
  * Extends from <strong>TCLoad</strong> to load TCS date to the DW.
  * <p/>
+ * Version 1.1.2 Change notes:
+ * <ol>
+ * <li>
+ * Deleted project are processed to fisically delete all related info in the dw.
+ * </li>
+ * </ol>
+ *
  * Version 1.1.0 Change notes:
  * <ol>
  * <li>
@@ -31,7 +38,7 @@ import java.util.*;
  * </ol>
  *
  * @author rfairfax, pulky
- * @version 1.1.1
+ * @version 1.1.2
  */
 public class TCLoadTCS extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadTCS.class);
@@ -110,6 +117,8 @@ public class TCLoadTCS extends TCLoad {
             {0, 0, 0, 0, 0, 0, 5},
     };
 
+    private static final long DELETED_PROJECT_STATUS = 3;
+
     public TCLoadTCS() {
         DEBUG = false;
     }
@@ -162,11 +171,10 @@ public class TCLoadTCS extends TCLoad {
             getLastUpdateTime();
 
             doLoadReviewResp();
+
             doLoadEvent();
             doLoadUserEvent();
-
             doLoadContests();
-
             doLoadContestPrize();
             doLoadUserContestPrize();
 
@@ -898,7 +906,9 @@ public class TCLoadTCS extends TCLoad {
                             "	and psd.phase_type_id = 2 " +
                             "	and ppd.project_id = p.project_id " +
                             "	and ppd.phase_type_id = 1 " +
-                            "	and p.project_status_id <> 3 " +
+                            // we need to process deleted project, otherwise there's a possibility 
+                            // they will keep living in the DW.
+                            //"	and p.project_status_id <> 3 " +
                             "	and p.project_category_id in (1, 2) " +
                             " 	and (p.modify_date > ? " +
                             // comp versions with modified date
@@ -952,130 +962,135 @@ public class TCLoadTCS extends TCLoad {
             rs = select.executeQuery();
             int count = 0;
             while (rs.next()) {
-
-                if (rs.getLong("version_id") > 999) {
-                    log.info("the version id is more than 999");
-                    continue;
-                    // throw new Exception("component " + rs.getString("component_name") + " has a version > 999");
-                }
-
-                //update record, if 0 rows affected, insert record
-                update.setString(1, rs.getString("component_name"));
-                update.setObject(2, rs.getObject("num_registrations"));
-                update.setInt(3, rs.getInt("num_submissions"));
-                update.setInt(4, rs.getInt("num_valid_submissions"));
-                update.setObject(5, rs.getObject("avg_raw_score"));
-                update.setObject(6, rs.getObject("avg_final_score"));
-                update.setInt(7, rs.getInt("phase_id"));
-                update.setString(8, rs.getString("phase_desc"));
-                update.setInt(9, rs.getInt("category_id"));
-                update.setString(10, rs.getString("category_desc"));
-                update.setDate(11, rs.getDate("posting_date"));
-                update.setDate(12, rs.getDate("submitby_date"));
-                Timestamp completeDate = convertToDate(rs.getString("complete_date"));
-                if (completeDate != null) {
-                    update.setTimestamp(13, completeDate);
-                } else {
-                    update.setNull(13, Types.TIMESTAMP);
-                }
-                update.setLong(14, rs.getLong("component_id"));
-                update.setLong(15, rs.getLong("review_phase_id"));
-                update.setString(16, rs.getString("review_phase_name"));
-                update.setLong(17, rs.getInt("project_stat_id"));
-                update.setString(18, rs.getString("project_stat_name"));
-                update.setLong(19, rs.getLong("level_id"));
-                update.setInt(20, rs.getInt("viewable"));
-                update.setInt(21, (int) rs.getLong("version_id"));
-                update.setString(22, rs.getString("version_text"));
-                Timestamp ratingDate = convertToDate(rs.getString("rating_date"));
-                if (ratingDate != null) {
-                    update.setTimestamp(23, ratingDate);
-                } else {
-                    update.setNull(23, Types.TIMESTAMP);
-                }
-                update.setInt(24, rs.getInt("num_submissions_passed_review"));
-                if (rs.getString("winner_id") == null) {
-                    update.setNull(25, Types.DECIMAL);
-                } else {
-                    update.setLong(25, rs.getLong("winner_id"));
-                }
-
-
-                if (rs.getDate("posting_date") == null) {
-                    update.setNull(26, Types.DATE);
-                } else {
-                    try {
-                        update.setLong(26, calculateStage(rs.getDate("posting_date")));
-                    } catch (Exception e) {
-                        update.setNull(26, Types.DATE);
+                
+                if (rs.getLong("project_stat_id") != DELETED_PROJECT_STATUS) {
+                    if (rs.getLong("version_id") > 999) {
+                        log.info("the version id is more than 999");
+                        continue;
+                        // throw new Exception("component " + rs.getString("component_name") + " has a version > 999");
                     }
-                }
-                String digitRun = rs.getString("digital_run_ind");
-                update.setInt(27, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
-                update.setInt(28, rs.getInt("suspended_ind"));
-
-                update.setLong(29, rs.getLong("project_id"));
-                int retVal = update.executeUpdate();
-
-                if (retVal == 0) {
-                    //need to insert
-                    insert.setLong(1, rs.getLong("project_id"));
-                    insert.setString(2, rs.getString("component_name"));
-                    insert.setObject(3, rs.getObject("num_registrations"));
-                    insert.setInt(4, rs.getInt("num_submissions"));
-                    insert.setInt(5, rs.getInt("num_valid_submissions"));
-                    insert.setDouble(6, rs.getDouble("avg_raw_score"));
-                    insert.setDouble(7, rs.getDouble("avg_final_score"));
-                    insert.setInt(8, rs.getInt("phase_id"));
-                    insert.setString(9, rs.getString("phase_desc"));
-                    insert.setInt(10, rs.getInt("category_id"));
-                    insert.setString(11, rs.getString("category_desc"));
-                    insert.setDate(12, rs.getDate("posting_date"));
-                    insert.setDate(13, rs.getDate("submitby_date"));
-                    completeDate = convertToDate(rs.getString("complete_date"));
+    
+                    //update record, if 0 rows affected, insert record
+                    update.setString(1, rs.getString("component_name"));
+                    update.setObject(2, rs.getObject("num_registrations"));
+                    update.setInt(3, rs.getInt("num_submissions"));
+                    update.setInt(4, rs.getInt("num_valid_submissions"));
+                    update.setObject(5, rs.getObject("avg_raw_score"));
+                    update.setObject(6, rs.getObject("avg_final_score"));
+                    update.setInt(7, rs.getInt("phase_id"));
+                    update.setString(8, rs.getString("phase_desc"));
+                    update.setInt(9, rs.getInt("category_id"));
+                    update.setString(10, rs.getString("category_desc"));
+                    update.setDate(11, rs.getDate("posting_date"));
+                    update.setDate(12, rs.getDate("submitby_date"));
+                    Timestamp completeDate = convertToDate(rs.getString("complete_date"));
                     if (completeDate != null) {
-                        insert.setDate(14, new java.sql.Date(completeDate.getTime()));
+                        update.setTimestamp(13, completeDate);
                     } else {
-                        insert.setNull(14, Types.DATE);
+                        update.setNull(13, Types.TIMESTAMP);
                     }
-                    insert.setLong(15, rs.getLong("component_id"));
-                    insert.setLong(16, rs.getLong("review_phase_id"));
-                    insert.setString(17, rs.getString("review_phase_name"));
-                    insert.setLong(18, rs.getInt("project_stat_id"));
-                    insert.setString(19, rs.getString("project_stat_name"));
-                    insert.setLong(20, rs.getLong("level_id"));
-                    insert.setInt(21, rs.getInt("viewable"));
-                    insert.setInt(22, (int) rs.getLong("version_id"));
-                    insert.setString(23, rs.getString("version_text"));
-                    ratingDate = convertToDate(rs.getString("rating_date"));
+                    update.setLong(14, rs.getLong("component_id"));
+                    update.setLong(15, rs.getLong("review_phase_id"));
+                    update.setString(16, rs.getString("review_phase_name"));
+                    update.setLong(17, rs.getInt("project_stat_id"));
+                    update.setString(18, rs.getString("project_stat_name"));
+                    update.setLong(19, rs.getLong("level_id"));
+                    update.setInt(20, rs.getInt("viewable"));
+                    update.setInt(21, (int) rs.getLong("version_id"));
+                    update.setString(22, rs.getString("version_text"));
+                    Timestamp ratingDate = convertToDate(rs.getString("rating_date"));
                     if (ratingDate != null) {
-                        insert.setDate(24, new java.sql.Date(ratingDate.getTime()));
+                        update.setTimestamp(23, ratingDate);
                     } else {
-                        insert.setNull(24, Types.DATE);
+                        update.setNull(23, Types.TIMESTAMP);
                     }
-                    insert.setInt(25, rs.getInt("num_submissions_passed_review"));
+                    update.setInt(24, rs.getInt("num_submissions_passed_review"));
                     if (rs.getString("winner_id") == null) {
-                        insert.setNull(26, Types.DECIMAL);
+                        update.setNull(25, Types.DECIMAL);
                     } else {
-                        insert.setLong(26, rs.getLong("winner_id"));
+                        update.setLong(25, rs.getLong("winner_id"));
                     }
+    
+    
                     if (rs.getDate("posting_date") == null) {
-                        insert.setNull(27, Types.DATE);
+                        update.setNull(26, Types.DATE);
                     } else {
                         try {
-                            insert.setLong(27, calculateStage(rs.getDate("posting_date")));
+                            update.setLong(26, calculateStage(rs.getDate("posting_date")));
                         } catch (Exception e) {
-                            insert.setNull(27, Types.DATE);
+                            update.setNull(26, Types.DATE);
                         }
                     }
-                    digitRun = rs.getString("digital_run_ind");
-                    insert.setInt(28, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
-                    insert.setInt(29, rs.getInt("suspended_ind"));
-
-                    insert.executeUpdate();
+                    String digitRun = rs.getString("digital_run_ind");
+                    update.setInt(27, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
+                    update.setInt(28, rs.getInt("suspended_ind"));
+    
+                    update.setLong(29, rs.getLong("project_id"));
+                    int retVal = update.executeUpdate();
+    
+                    if (retVal == 0) {
+                        //need to insert
+                        insert.setLong(1, rs.getLong("project_id"));
+                        insert.setString(2, rs.getString("component_name"));
+                        insert.setObject(3, rs.getObject("num_registrations"));
+                        insert.setInt(4, rs.getInt("num_submissions"));
+                        insert.setInt(5, rs.getInt("num_valid_submissions"));
+                        insert.setDouble(6, rs.getDouble("avg_raw_score"));
+                        insert.setDouble(7, rs.getDouble("avg_final_score"));
+                        insert.setInt(8, rs.getInt("phase_id"));
+                        insert.setString(9, rs.getString("phase_desc"));
+                        insert.setInt(10, rs.getInt("category_id"));
+                        insert.setString(11, rs.getString("category_desc"));
+                        insert.setDate(12, rs.getDate("posting_date"));
+                        insert.setDate(13, rs.getDate("submitby_date"));
+                        completeDate = convertToDate(rs.getString("complete_date"));
+                        if (completeDate != null) {
+                            insert.setDate(14, new java.sql.Date(completeDate.getTime()));
+                        } else {
+                            insert.setNull(14, Types.DATE);
+                        }
+                        insert.setLong(15, rs.getLong("component_id"));
+                        insert.setLong(16, rs.getLong("review_phase_id"));
+                        insert.setString(17, rs.getString("review_phase_name"));
+                        insert.setLong(18, rs.getInt("project_stat_id"));
+                        insert.setString(19, rs.getString("project_stat_name"));
+                        insert.setLong(20, rs.getLong("level_id"));
+                        insert.setInt(21, rs.getInt("viewable"));
+                        insert.setInt(22, (int) rs.getLong("version_id"));
+                        insert.setString(23, rs.getString("version_text"));
+                        ratingDate = convertToDate(rs.getString("rating_date"));
+                        if (ratingDate != null) {
+                            insert.setDate(24, new java.sql.Date(ratingDate.getTime()));
+                        } else {
+                            insert.setNull(24, Types.DATE);
+                        }
+                        insert.setInt(25, rs.getInt("num_submissions_passed_review"));
+                        if (rs.getString("winner_id") == null) {
+                            insert.setNull(26, Types.DECIMAL);
+                        } else {
+                            insert.setLong(26, rs.getLong("winner_id"));
+                        }
+                        if (rs.getDate("posting_date") == null) {
+                            insert.setNull(27, Types.DATE);
+                        } else {
+                            try {
+                                insert.setLong(27, calculateStage(rs.getDate("posting_date")));
+                            } catch (Exception e) {
+                                insert.setNull(27, Types.DATE);
+                            }
+                        }
+                        digitRun = rs.getString("digital_run_ind");
+                        insert.setInt(28, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
+                        insert.setInt(29, rs.getInt("suspended_ind"));
+    
+                        insert.executeUpdate();
+                    }
+                } else {
+                    // we need to delete this project and all related objects in the database.
+                    log.info("Found project to delete: " + rs.getLong("project_id"));
+                    deleteProject(rs.getLong("project_id"));
                 }
                 count++;
-
             }
             log.info("loaded " + count + " records in " + (System.currentTimeMillis() - start) / 1000 + " seconds");
 
@@ -1091,6 +1106,46 @@ public class TCLoadTCS extends TCLoad {
             close(insert);
             close(update);
         }
+    }
+
+    /**
+     * Helper method that deletes all project related objects in the dw.
+     * 
+     * @param projectId the projectId to delete
+     * @since 1.1.2
+     */
+    private void deleteProject(long projectId) throws SQLException {
+        simpleDelete("subjective_response", "project_id", projectId);
+        simpleDelete("testcase_response", "project_id", projectId);
+        simpleDelete("scorecard_response", "project_id", projectId);
+        simpleDelete("submission_screening", "project_id", projectId);
+        simpleDelete("submission_review", "project_id", projectId);
+        simpleDelete("testcase_appeal", "project_id", projectId);
+        simpleDelete("streak", "start_project_id", projectId);
+        simpleDelete("streak", "end_project_id", projectId);
+        simpleDelete("user_rating", "last_rated_project_id", projectId);
+        simpleDelete("contest_project_xref", "project_id", projectId);
+        simpleDelete("project_review", "project_id", projectId);
+        simpleDelete("submission", "project_id", projectId);
+        simpleDelete("appeal", "project_id", projectId);
+        simpleDelete("project_result", "project_id", projectId);
+        simpleDelete("project", "project_id", projectId);
+    }
+
+    /**
+     * Simple helper method to delete rows from a table using an id column
+     * 
+     * @param table the target table
+     * @param column the target column
+     * @param id the the id value to delete
+     * @throws SQLException if delete execution fails
+     * @since 1.1.2
+     */
+    private void simpleDelete(String table, String column, long id) throws SQLException {
+        PreparedStatement delete = prepareStatement("delete from " + table + " where " + column + " = ?", TARGET_DB);
+        delete.setLong(1, id);
+        long count = delete.executeUpdate();
+        log.info("" + count + " records deleted in " + table + " table");        
     }
 
     private static final DateFormat[] DATE_FORMATS = new DateFormat[]{
