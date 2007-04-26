@@ -49,10 +49,10 @@ public class SimpleUser implements User, HttpSessionBindingListener {
     }
 
     public void valueBound(HttpSessionBindingEvent httpSessionBindingEvent) {
-        log.debug("user object bound");
+        log.debug("user " + username + " bound");
     }
 
     public void valueUnbound(HttpSessionBindingEvent httpSessionBindingEvent) {
-        log.debug("user object un bound");
+        log.debug("user " + username + " un bound");
     }
 }
