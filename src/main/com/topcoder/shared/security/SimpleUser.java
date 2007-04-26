@@ -1,18 +1,11 @@
 package com.topcoder.shared.security;
 
-import com.topcoder.shared.util.logging.Logger;
-
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-
 /**
  * Simple immutable container for a User.
  *
  * @author Ambrose Feinstein
  */
-public class SimpleUser implements User, HttpSessionBindingListener {
-
-    private static final Logger log = Logger.getLogger(SimpleUser.class);
+public class SimpleUser implements User {
 
     private static int GUEST_ID = -1;
     private static String GUEST_NAME = "anonymous";
@@ -46,13 +39,5 @@ public class SimpleUser implements User, HttpSessionBindingListener {
 
     public static User createGuest() {
         return new SimpleUser(GUEST_ID, GUEST_NAME, "");
-    }
-
-    public void valueBound(HttpSessionBindingEvent httpSessionBindingEvent) {
-        log.debug("user " + username + " bound");
-    }
-
-    public void valueUnbound(HttpSessionBindingEvent httpSessionBindingEvent) {
-        log.debug("user " + username + " un bound");
     }
 }
