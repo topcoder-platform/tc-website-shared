@@ -286,11 +286,13 @@ public class TCLoadTCS extends TCLoad {
     }
 
     public void doClearCache() throws Exception {
+/*
         CacheClient cc = CacheClientFactory.createCacheClient();
 
         String tempKey;
+*/
 
-        String[] keys = new String[]{"tccc05_", "tccc06_", "usdc_", "component_history", "tcs_ratings_history",
+        String[] keys = new String[]{"tccc05_", "tccc06_", "tco07_", "usdc_", "component_history", "tcs_ratings_history",
                 "member_profile", "Coder_Dev_Data", "Coder_Des_Data", "Component_",
                 "public_home_data", "top_designers", "top_developers", "tco04",
                 "coder_all_ratings", "tco05", "coder_dev", "coder_des", "coder_algo",
@@ -300,6 +302,12 @@ public class TCLoadTCS extends TCLoad {
                 "dr_current_period", "dr_stages", "dr_seasons", "component_color_change", "stage_outstanding_projects",
                 "season_outstanding_projects"
         };
+
+        for (String key : keys) {
+            CacheClearer.removelike(key);
+        }
+
+/*
 
         ArrayList list = cc.getKeys();
         for (int i = 0; i < list.size(); i++) {
@@ -311,6 +319,7 @@ public class TCLoadTCS extends TCLoad {
                 }
             }
         }
+*/
     }
 
     private void getLastUpdateTime() throws Exception {
