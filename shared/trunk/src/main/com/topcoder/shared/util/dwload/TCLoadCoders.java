@@ -24,8 +24,6 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
-import com.topcoder.shared.distCache.CacheClient;
-import com.topcoder.shared.distCache.CacheClientFactory;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
@@ -118,10 +116,17 @@ public class TCLoadCoders extends TCLoad {
     }
 
     private void clearCache(List coders) throws Exception {
+/*
         CacheClient client = CacheClientFactory.createCacheClient();
 
         String tempKey = null;
+*/
 
+        for (Object coder : coders) {
+            CacheClearer.removelike(coder.toString());
+        }
+
+/*
         int count = 0;
         ArrayList list = client.getKeys();
         boolean found = false;
@@ -137,6 +142,7 @@ public class TCLoadCoders extends TCLoad {
             }
         }
         log.info(count + " records cleared from the cache");
+*/
     }
 
     private void getLastUpdateTime() throws Exception {
