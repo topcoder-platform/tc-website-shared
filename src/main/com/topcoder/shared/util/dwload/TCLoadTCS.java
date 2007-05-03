@@ -3,15 +3,25 @@
  */
 package com.topcoder.shared.util.dwload;
 
-import com.topcoder.shared.distCache.CacheClient;
-import com.topcoder.shared.distCache.CacheClientFactory;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * <strong>Purpose</strong>:
@@ -23,7 +33,7 @@ import java.util.*;
  * Deleted project are processed to fisically delete all related info in the dw.
  * </li>
  * </ol>
- *
+ * <p/>
  * Version 1.1.0 Change notes:
  * <ol>
  * <li>
@@ -870,11 +880,11 @@ public class TCLoadTCS extends TCLoad {
                             "	,psl.name as project_stat_name " +
                             "	,cat.viewable as viewable " +
                             "	,substr(pi2.value,1,40) as version_id " +
-                            "   ,cv.version_text " + 
+                            "   ,cv.version_text " +
                             "	,pivi.value as rating_date " +
                             "	,case when pivt.value is not null then substr(pivt.value,1,20) else null end as winner_id" +
                             "	,case when pict.value is not null then substr(pict.value,1,4) else 'On' end as digital_run_ind   " +
-                            "   ,cv.suspended_ind " + 
+                            "   ,cv.suspended_ind " +
                             "   from project p , " +
                             "	project_info pir, " +
                             "   project_info piel, " +
@@ -896,7 +906,7 @@ public class TCLoadTCS extends TCLoad {
                             "	and pivi.project_info_type_id = 22 " +
                             "   and pivers.project_id = p.project_id " +
                             "   and pivers.project_info_type_id = 1 " +
-                            "   and pivers.value = cv.comp_vers_id " + 
+                            "   and pivers.value = cv.comp_vers_id " +
                             "	and pivt.project_id = p.project_id " +
                             "	and pivt.project_info_type_id = 23 " +
                             "	and pict.project_id = p.project_id " +
@@ -971,14 +981,14 @@ public class TCLoadTCS extends TCLoad {
             rs = select.executeQuery();
             int count = 0;
             while (rs.next()) {
-                
+
                 if (rs.getLong("project_stat_id") != DELETED_PROJECT_STATUS) {
                     if (rs.getLong("version_id") > 999) {
                         log.info("the version id is more than 999");
                         continue;
                         // throw new Exception("component " + rs.getString("component_name") + " has a version > 999");
                     }
-    
+
                     //update record, if 0 rows affected, insert record
                     update.setString(1, rs.getString("component_name"));
                     update.setObject(2, rs.getObject("num_registrations"));
@@ -1019,8 +1029,8 @@ public class TCLoadTCS extends TCLoad {
                     } else {
                         update.setLong(25, rs.getLong("winner_id"));
                     }
-    
-    
+
+
                     if (rs.getDate("posting_date") == null) {
                         update.setNull(26, Types.DATE);
                     } else {
@@ -1033,10 +1043,10 @@ public class TCLoadTCS extends TCLoad {
                     String digitRun = rs.getString("digital_run_ind");
                     update.setInt(27, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
                     update.setInt(28, rs.getInt("suspended_ind"));
-    
+
                     update.setLong(29, rs.getLong("project_id"));
                     int retVal = update.executeUpdate();
-    
+
                     if (retVal == 0) {
                         //need to insert
                         insert.setLong(1, rs.getLong("project_id"));
@@ -1091,7 +1101,7 @@ public class TCLoadTCS extends TCLoad {
                         digitRun = rs.getString("digital_run_ind");
                         insert.setInt(28, "On".equals(digitRun) || "Yes".equals(digitRun) ? 1 : 0);
                         insert.setInt(29, rs.getInt("suspended_ind"));
-    
+
                         insert.executeUpdate();
                     }
                 } else {
@@ -1119,7 +1129,7 @@ public class TCLoadTCS extends TCLoad {
 
     /**
      * Helper method that deletes all project related objects in the dw.
-     * 
+     *
      * @param projectId the projectId to delete
      * @since 1.1.2
      */
@@ -1143,10 +1153,10 @@ public class TCLoadTCS extends TCLoad {
 
     /**
      * Simple helper method to delete rows from a table using an id column
-     * 
-     * @param table the target table
+     *
+     * @param table  the target table
      * @param column the target column
-     * @param id the the id value to delete
+     * @param id     the the id value to delete
      * @throws SQLException if delete execution fails
      * @since 1.1.2
      */
@@ -1154,7 +1164,7 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement delete = prepareStatement("delete from " + table + " where " + column + " = ?", TARGET_DB);
         delete.setLong(1, id);
         long count = delete.executeUpdate();
-        log.info("" + count + " records deleted in " + table + " table");        
+        log.info("" + count + " records deleted in " + table + " table");
     }
 
     private static final DateFormat[] DATE_FORMATS = new DateFormat[]{
@@ -2484,7 +2494,7 @@ public class TCLoadTCS extends TCLoad {
 
         try {
             long start = System.currentTimeMillis();
-            final String SELECT = "select e.event_name, e.event_id " +
+            final String SELECT = "select e.event_desc, e.event_id " +
                     "from event e where modify_date > ?";
             final String UPDATE = "update event set event_name = ? " +
                     " where event_id = ? ";
@@ -2506,7 +2516,7 @@ public class TCLoadTCS extends TCLoad {
 
                 //update record, if 0 rows affected, insert record
                 update.clearParameters();
-                update.setObject(1, rs.getObject("event_name"));
+                update.setObject(1, rs.getObject("event_desc"));
                 update.setLong(2, rs.getLong("event_id"));
 
                 int retVal = update.executeUpdate();
@@ -2515,7 +2525,7 @@ public class TCLoadTCS extends TCLoad {
                     //need to insert
                     insert.clearParameters();
                     insert.setLong(1, rs.getLong("event_id"));
-                    insert.setObject(2, rs.getObject("event_name"));
+                    insert.setObject(2, rs.getObject("event_desc"));
 
                     insert.executeUpdate();
                 }
