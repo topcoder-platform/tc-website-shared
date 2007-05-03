@@ -9,8 +9,21 @@ import com.topcoder.shared.util.logging.Logger;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 
 /**
@@ -723,7 +736,7 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
     }
 
     private void addRow(ResultSetRow rsr) {
-        data.add((ResultSetRow)rsr.clone());
+        data.add((ResultSetRow) rsr.clone());
     }
 
 
@@ -824,18 +837,35 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
             TCResultItem ri1 = rsr1.getItem(columnToCompare);
             TCResultItem ri2 = rsr2.getItem(columnToCompare);
             int temp = ri1.compareTo(ri2);
+
+            //always sort nulls down
+            //if ascending, null is greater than everything
+
+
             if (temp == 0) {
                 ri1 = rsr1.getItem(secondaryColumn);
                 ri2 = rsr2.getItem(secondaryColumn);
                 temp = ri1.compareTo(ri2);
                 if (sortSecondaryAscending) {
-                    return temp;
+                    if (ri1.getResultData() == null && ri2.getResultData() != null) {
+                        return 1;
+                    } else if (ri1.getResultData() != null && ri2.getResultData() == null) {
+                        return -1;
+                    } else {
+                        return temp;
+                    }
                 } else {
                     return -temp;
                 }
             } else {
                 if (sortAscending) {
-                    return temp;
+                    if (ri1.getResultData() == null && ri2.getResultData() != null) {
+                        return 1;
+                    } else if (ri1.getResultData() != null && ri2.getResultData() == null) {
+                        return -1;
+                    } else {
+                        return temp;
+                    }
                 } else {
                     return -temp;
                 }
@@ -1429,7 +1459,7 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
      * @param a Runtime type of the return array will be that of the specified array
      * @return Array of row data
      */
-    public <ResultSetRow>ResultSetRow[] toArray(ResultSetRow[] a) {
+    public <ResultSetRow> ResultSetRow[] toArray(ResultSetRow[] a) {
         return data.toArray(a);
     }
 
@@ -1655,7 +1685,7 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
         ResultSetRow rsr;
         while (it.hasNext()) {
             rsr = (ResultSetRow) it.next();
-            rsc.data.add((ResultSetRow)rsr.clone());
+            rsc.data.add((ResultSetRow) rsr.clone());
         }
         return rsc;
     }
