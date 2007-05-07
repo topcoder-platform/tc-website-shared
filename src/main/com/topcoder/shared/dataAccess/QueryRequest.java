@@ -1,7 +1,11 @@
 package com.topcoder.shared.dataAccess;
 
-import java.util.*;
 import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * This class provides a way to build a request for data
@@ -25,6 +29,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Constructor that takes a map that it calls <code>setProperties()</code> on
+     *
      * @param map
      * @throws Exception
      */
@@ -35,6 +40,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Gets all the property-mappings for this request bean
+     *
      * @return java.util.Properties
      */
     public Map getProperties() {
@@ -43,7 +49,8 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Sets the properties for the bean. Called in non-default
-     *  constructor
+     * constructor
+     *
      * @param map A set of mappings
      * @throws Exception
      */
@@ -60,7 +67,7 @@ public class QueryRequest implements RequestInt {
             if (me.getValue() instanceof String) {
                 sKey = me.getKey().toString(); //maps can't have null-key
                 sValue = (String) me.getValue();
-                sValue = sValue == null?"":sValue; //nulls not allowed in Properties
+                sValue = sValue == null ? "" : sValue; //nulls not allowed in Properties
                 if (sKey.equals(DataAccessConstants.QUERY_KEY)) {
                     addQuery(sKey, sValue);
                 } else
@@ -92,17 +99,24 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Gets a specific property for this request bean
+     *
      * @param sKey the key for the property
      * @return String the value of the property, or null if
      *         property is unassigned.
      */
     public String getProperty(String sKey) {
-        return mProp.get(sKey).toString();
+        Object o = mProp.get(sKey);
+        if (o == null) {
+            return null;
+        } else {
+            return o.toString();
+        }
     }
 
     /**
      * Gets a specific property for this request bean
-     * @param sKey the key for the property
+     *
+     * @param sKey          the key for the property
      * @param sDefaultValue the default value if null
      * @return String the value of the property
      */
@@ -115,6 +129,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Sets a specific property for this request bean
+     *
      * @param sKey The property key
      * @param sVal The property value
      */
@@ -126,6 +141,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Gets the queries associated with this object.
+     *
      * @return Map the queries.
      */
     public Map getQueries() {
@@ -134,6 +150,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Sets the queries associated with this object.
+     *
      * @param queries the queries.
      */
     public void setQueries(Map queries) {
@@ -143,6 +160,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Gets a particular query associated with this object.
+     *
      * @param key
      * @return String a key used to retrieve the query.
      */
@@ -152,6 +170,7 @@ public class QueryRequest implements RequestInt {
 
     /**
      * Adds the given query.
+     *
      * @param name
      * @param query
      */
@@ -164,6 +183,7 @@ public class QueryRequest implements RequestInt {
      * Implementation of toString, it includes each
      * of the key/value pairs from the properties
      * object of this object.
+     *
      * @return a String representation of this object
      */
     public String toString() {
@@ -183,6 +203,7 @@ public class QueryRequest implements RequestInt {
     /**
      * Generate a string from this object sutable for using
      * as a key for some key/value pair construct.
+     *
      * @return the String
      */
     public String getCacheKey() {
@@ -195,13 +216,13 @@ public class QueryRequest implements RequestInt {
         for (Iterator it = t.entrySet().iterator(); it.hasNext();) {
             me = (Map.Entry) it.next();
             if (me.getKey().equals(DataAccessConstants.QUERY_KEY)) {
-                TreeMap queries = new TreeMap((Map)me.getValue());
+                TreeMap queries = new TreeMap((Map) me.getValue());
                 Map.Entry me1 = null;
                 for (Iterator qIt = queries.entrySet().iterator(); qIt.hasNext();) {
                     me1 = (Map.Entry) qIt.next();
                     sb.append(me1.getKey().toString());
                     sb.append("=");
-                    sb.append(md5((String)me1.getValue()));  //it's a whole query, so use the md5 sum to save space
+                    sb.append(md5((String) me1.getValue()));  //it's a whole query, so use the md5 sum to save space
                     sb.append("|");
                 }
             } else {
