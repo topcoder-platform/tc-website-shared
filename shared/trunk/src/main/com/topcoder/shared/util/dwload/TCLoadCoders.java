@@ -122,6 +122,7 @@ public class TCLoadCoders extends TCLoad {
         String tempKey = null;
 */
 
+        CacheClearer.removelike("member_count");
         for (Object coder : coders) {
             CacheClearer.removelike(coder.toString());
         }
@@ -376,7 +377,7 @@ public class TCLoadCoders extends TCLoad {
             query.append("          FROM group_user gu ");
             query.append("         WHERE gu.user_id = c.coder_id ");
             query.append("           AND gu.group_id = 13)");
-            
+
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             // Our insert statement
@@ -1618,10 +1619,9 @@ public class TCLoadCoders extends TCLoad {
                     psIns.setInt(2, rs.getInt("coder_id"));
                     retVal = psIns.executeUpdate();
                     count = count + retVal;
-                }  catch (Exception e) {
+                } catch (Exception e) {
                     // if the row already exists, there's no need to update it because the PK is the entire row
                 }
-
 
 
                 printLoadProgress(count, "team_coder_xref");
@@ -1638,7 +1638,6 @@ public class TCLoadCoders extends TCLoad {
             close(psIns);
         }
     }
-
 
 
     public void loadEvent() throws Exception {
