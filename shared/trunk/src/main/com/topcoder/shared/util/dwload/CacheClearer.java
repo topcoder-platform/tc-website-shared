@@ -69,7 +69,7 @@ public class CacheClearer {
     private static Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
         Method[] methods = cache.getClass().getDeclaredMethods();
         for (Method m : methods) {
-            log.debug("method " + m.getName() + " params " + m.getParameterTypes());
+            //log.debug("method " + m.getName() + " params " + m.getParameterTypes());
             if ("getChildrenNames".equals(m.getName()) &&
                     m.getParameterTypes().length == 1 &&
                     m.getParameterTypes()[0].equals(String.class)) {
