@@ -12,7 +12,6 @@ package com.topcoder.shared.util.dwload;
 
 import com.topcoder.shared.util.TCContext;
 import com.topcoder.shared.util.TCResourceBundle;
-import org.jboss.cache.Fqn;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -102,7 +101,7 @@ public class CacheClearer {
         String fqn;
         for (Object child : getChildrenNames(parent, cache)) {
             kid = (String) child;
-            fqn = parent + Fqn.SEPARATOR + kid;
+            fqn = parent + "/" + kid;
             if (kid.indexOf(key) >= 0) {
                 remove(fqn, cache);
             } else {
