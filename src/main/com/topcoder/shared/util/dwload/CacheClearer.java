@@ -12,6 +12,7 @@ package com.topcoder.shared.util.dwload;
 
 import com.topcoder.shared.util.TCContext;
 import com.topcoder.shared.util.TCResourceBundle;
+import com.topcoder.shared.util.logging.Logger;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -23,6 +24,7 @@ import java.util.Set;
  * @author rfairfax
  */
 public class CacheClearer {
+    private static final Logger log = Logger.getLogger(CacheClearer.class);
 
     /**
      * Creates a new instance of CacheClearer
@@ -67,9 +69,10 @@ public class CacheClearer {
     private static Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
         Method[] methods = cache.getClass().getDeclaredMethods();
         for (Method m : methods) {
+            log.debug("method " + m.getName() + " params " + m.getParameterTypes());
             if ("getChildrenNames".equals(m.getName()) &&
                     m.getParameterTypes().length == 1 &&
-                    m.getParameterTypes()[0].equals(String.class.getName())) {
+                    m.getParameterTypes()[0].equals(String.class)) {
                 return (Set) m.invoke(cache, s);
             }
         }
@@ -82,7 +85,7 @@ public class CacheClearer {
         for (Method m : methods) {
             if ("remove".equals(m.getName()) &&
                     m.getParameterTypes().length == 1 &&
-                    m.getParameterTypes()[0].equals(String.class.getName())) {
+                    m.getParameterTypes()[0].equals(String.class)) {
                 m.invoke(cache, s);
                 return;
             }
