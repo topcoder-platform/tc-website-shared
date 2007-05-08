@@ -12,6 +12,7 @@ package com.topcoder.shared.util.dwload;
 
 import com.topcoder.shared.util.TCContext;
 import com.topcoder.shared.util.TCResourceBundle;
+import org.jboss.cache.Fqn;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -20,15 +21,16 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 /**
- *
  * @author rfairfax
  */
 public class CacheClearer {
-    
-    /** Creates a new instance of CacheClearer */
+
+    /**
+     * Creates a new instance of CacheClearer
+     */
     public CacheClearer() {
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -49,35 +51,7 @@ public class CacheClearer {
             ctx = TCContext.getInitial(b.getProperty("host_url"));
             //using reflection so that we don't a lot of nasty dependencies when using the class.
             Object o = ctx.lookup(b.getProperty("jndi_name"));
-            Method[] methods = o.getClass().getDeclaredMethods();
-            Set keys = null;
-            for (Method m : methods) {
-                if ("getKeys".equals(m.getName())) {
-                    for (Class c : m.getParameterTypes()) {
-                        if ("java.lang.String".equals(c.getName())) {
-                            keys = (Set)m.invoke(o, "/");
-                        }
-                    }
-                }
-            }
-
-            Method myMethod = null;
-            for (Method m : methods) {
-                if ("remove".equals(m.getName())) {
-                    Class[] classes =m.getParameterTypes();
-                    if (classes.length==2 && "java.lang.String".equals(classes[0].getName())
-                            && "java.lang.Object".equals(classes[1].getName())) {
-                        myMethod = m;
-                    }
-                }
-            }
-            String mykey;
-            for (Object key : keys) {
-                if (((String)key).indexOf(s)>=0) {
-                    myMethod.invoke(o, "/", key);
-                }
-            }
-
+            removelike(s, "/", o);
 
         } catch (NamingException e) {
             throw new RuntimeException(e);
@@ -91,5 +65,56 @@ public class CacheClearer {
 
     }
 
-    
+    private static Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
+        Method[] methods = cache.getClass().getDeclaredMethods();
+        for (Method m : methods) {
+            if ("getChildrenNames".equals(m.getName())) {
+                for (Class c : m.getParameterTypes()) {
+                    if ("java.lang.String".equals(c.getName())) {
+                        return (Set) m.invoke(cache, s);
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Couldn't find getChildrenNames(String) method");
+
+    }
+
+    private static void remove(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
+        Method[] methods = cache.getClass().getDeclaredMethods();
+        for (Method m : methods) {
+            if ("remove".equals(m.getName())) {
+                for (Class c : m.getParameterTypes()) {
+                    if ("java.lang.String".equals(c.getName())) {
+                        m.invoke(cache, s);
+                        return;
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Couldn't find getChildrenNames(String) method");
+
+    }
+
+
+    private static void removelike(String key, String parent, Object cache) throws IllegalAccessException, InvocationTargetException {
+        String kid;
+        String fqn;
+        for (Object child : getChildrenNames(parent, cache)) {
+            kid = (String) child;
+            fqn = parent + Fqn.SEPARATOR + kid;
+            if (kid.indexOf(key) >= 0) {
+                remove(fqn, cache);
+            } else {
+                Set kids = getChildrenNames(fqn, cache);
+                if (kids != null && !kids.isEmpty()) {
+                    removelike(key, fqn, cache);
+                }
+            }
+        }
+    }
+
 }
+
+
+
