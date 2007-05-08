@@ -67,12 +67,10 @@ public class CacheClearer {
     private static Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
         Method[] methods = cache.getClass().getDeclaredMethods();
         for (Method m : methods) {
-            if ("getChildrenNames".equals(m.getName())) {
-                for (Class c : m.getParameterTypes()) {
-                    if ("java.lang.String".equals(c.getName())) {
-                        return (Set) m.invoke(cache, s);
-                    }
-                }
+            if ("getChildrenNames".equals(m.getName()) &&
+                    m.getParameterTypes().length == 1 &&
+                    m.getParameterTypes()[0].equals(String.class.getName())) {
+                return (Set) m.invoke(cache, s);
             }
         }
         throw new RuntimeException("Couldn't find getChildrenNames(String) method");
@@ -82,13 +80,11 @@ public class CacheClearer {
     private static void remove(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
         Method[] methods = cache.getClass().getDeclaredMethods();
         for (Method m : methods) {
-            if ("remove".equals(m.getName())) {
-                for (Class c : m.getParameterTypes()) {
-                    if ("java.lang.String".equals(c.getName())) {
-                        m.invoke(cache, s);
-                        return;
-                    }
-                }
+            if ("remove".equals(m.getName()) &&
+                    m.getParameterTypes().length == 1 &&
+                    m.getParameterTypes()[0].equals(String.class.getName())) {
+                m.invoke(cache, s);
+                return;
             }
         }
         throw new RuntimeException("Couldn't find getChildrenNames(String) method");
