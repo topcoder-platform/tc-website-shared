@@ -52,7 +52,7 @@ public class CacheClearer {
             ctx = TCContext.getInitial(b.getProperty("host_url"));
             //using reflection so that we don't a lot of nasty dependencies when using the class.
             Object o = ctx.lookup(b.getProperty("jndi_name"));
-            removelike(s, "/", o);
+            new CacheClearer().removelike(s, "/", o);
 
         } catch (NamingException e) {
             throw new RuntimeException(e);
@@ -66,36 +66,50 @@ public class CacheClearer {
 
     }
 
-    private static Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
-        Method[] methods = cache.getClass().getDeclaredMethods();
-        for (Method m : methods) {
-            //log.debug("method " + m.getName() + " params " + m.getParameterTypes());
-            if ("getChildrenNames".equals(m.getName()) &&
-                    m.getParameterTypes().length == 1 &&
-                    m.getParameterTypes()[0].equals(String.class)) {
-                return (Set) m.invoke(cache, s);
+    private Method getChildrenNames=null;
+    private Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
+        if (getChildrenNames==null) {
+            Method[] methods = cache.getClass().getDeclaredMethods();
+            for (Method m : methods) {
+                //log.debug("method " + m.getName() + " params " + m.getParameterTypes());
+                if ("getChildrenNames".equals(m.getName()) &&
+                        m.getParameterTypes().length == 1 &&
+                        m.getParameterTypes()[0].equals(String.class)) {
+                    getChildrenNames = m;
+                    break;
+                }
             }
         }
-        throw new RuntimeException("Couldn't find getChildrenNames(String) method");
+        if (getChildrenNames==null) {
+            throw new RuntimeException("Couldn't find getChildrenNames(String) method");
+        } else {
+            return (Set) getChildrenNames.invoke(cache, s);
+        }
 
     }
 
-    private static void remove(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
-        Method[] methods = cache.getClass().getDeclaredMethods();
-        for (Method m : methods) {
-            if ("remove".equals(m.getName()) &&
-                    m.getParameterTypes().length == 1 &&
-                    m.getParameterTypes()[0].equals(String.class)) {
-                m.invoke(cache, s);
-                return;
+    private Method remove = null;
+    private void remove(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
+        if (remove==null) {
+            Method[] methods = cache.getClass().getDeclaredMethods();
+            for (Method m : methods) {
+                if ("remove".equals(m.getName()) &&
+                        m.getParameterTypes().length == 1 &&
+                        m.getParameterTypes()[0].equals(String.class)) {
+                    remove = m;
+                    break;
+                }
             }
         }
-        throw new RuntimeException("Couldn't find getChildrenNames(String) method");
-
+        if (remove==null) {
+            throw new RuntimeException("Couldn't find getChildrenNames(String) method");
+        } else {
+            remove.invoke(cache, s);
+        }
     }
 
 
-    private static void removelike(String key, String parent, Object cache) throws IllegalAccessException, InvocationTargetException {
+    private void removelike(String key, String parent, Object cache) throws IllegalAccessException, InvocationTargetException {
         String kid;
         String fqn;
         for (Object child : getChildrenNames(parent, cache)) {
