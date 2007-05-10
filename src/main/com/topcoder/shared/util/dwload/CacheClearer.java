@@ -53,6 +53,7 @@ public class CacheClearer {
             //using reflection so that we don't a lot of nasty dependencies when using the class.
             Object o = ctx.lookup(b.getProperty("jndi_name"));
             new CacheClearer().removelike(s, "/", o);
+            log.info("removed " + s);
 
         } catch (NamingException e) {
             throw new RuntimeException(e);
