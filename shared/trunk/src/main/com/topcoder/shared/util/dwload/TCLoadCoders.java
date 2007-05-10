@@ -123,8 +123,8 @@ public class TCLoadCoders extends TCLoad {
         String tempKey = null;
 */
 
-        CacheClearer.removelike("member_count");
         HashSet<String> set = new HashSet<String>();
+        set.add("member_count");
         for (Object coder : coders) {
             set.add(coder.toString());
         }
