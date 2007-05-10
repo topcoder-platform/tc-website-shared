@@ -128,9 +128,7 @@ public class TCLoadCoders extends TCLoad {
         for (Object coder : coders) {
             set.add(coder.toString());
         }
-        for (Object coder : coders) {
-            CacheClearer.removelike(set);
-        }
+        CacheClearer.removelike(set);
 
 /*
         int count = 0;
