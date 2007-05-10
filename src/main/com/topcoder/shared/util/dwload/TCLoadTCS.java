@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.HashSet;
 
 /**
  * <strong>Purpose</strong>:
@@ -313,9 +314,11 @@ public class TCLoadTCS extends TCLoad {
                 "season_outstanding_projects"
         };
 
+        HashSet<String> s = new HashSet<String>();
         for (String key : keys) {
-            CacheClearer.removelike(key);
+            s.add(key);
         }
+        CacheClearer.removelike(s);
 
 /*
 
