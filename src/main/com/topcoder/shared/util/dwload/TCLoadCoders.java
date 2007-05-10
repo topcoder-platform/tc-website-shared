@@ -34,6 +34,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.HashSet;
 
 public class TCLoadCoders extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadCoders.class);
@@ -123,8 +124,12 @@ public class TCLoadCoders extends TCLoad {
 */
 
         CacheClearer.removelike("member_count");
+        HashSet<String> set = new HashSet<String>();
         for (Object coder : coders) {
-            CacheClearer.removelike(coder.toString());
+            set.add(coder.toString());
+        }
+        for (Object coder : coders) {
+            CacheClearer.removelike(set);
         }
 
 /*
