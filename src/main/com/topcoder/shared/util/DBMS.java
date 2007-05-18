@@ -87,7 +87,6 @@ public class DBMS {
     public final static String TESTING_QUEUE = getProperty("TESTING_QUEUE", "queue/testingQueue");
     public final static String REFERENCE_TESTING_QUEUE = getProperty("REFERENCE_TESTING_QUEUE", "referenceTestingQueue");
     public final static String TOPIC = getProperty("TOPIC", "contestTopic");
-    public final static String PACTS_QUEUE = getProperty("PACTS_QUEUE", "queue/pactsQueue");
     public final static String WEB_SERVICE_QUEUE = getProperty("WEB_SERVICE_QUEUE", "webServiceGeneratorQueue");
     public final static String LONG_RESPONSE_QUEUE = getProperty("LONG_RESPONSE_QUEUE", "queue/longResponseQueue");
     public final static String LONG_TEST_QUEUE = getProperty("LONG_TEST_QUEUE", "queue/longTestQueue");
