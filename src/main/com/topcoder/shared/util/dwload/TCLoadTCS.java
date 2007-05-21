@@ -705,6 +705,7 @@ public class TCLoadTCS extends TCLoad {
         PreparedStatement insert = null;
         PreparedStatement update = null;
         ResultSet rs = null;
+        long userId=-1;
         try {
 
             long start = System.currentTimeMillis();
@@ -747,6 +748,7 @@ public class TCLoadTCS extends TCLoad {
             int count = 0;
             while (rs.next()) {
                 count++;
+                userId = rs.getLong("user_id");
                 //log.debug("PROCESSING USER " + rs.getInt("user_id"));
 
                 //update record, if 0 rows affected, insert record
@@ -786,7 +788,7 @@ public class TCLoadTCS extends TCLoad {
 
         } catch (SQLException sqle) {
             DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'user_rating' table failed.\n" +
+            throw new Exception("Load of 'user_rating' table failed for " + userId + " .\n" +
                     sqle.getMessage());
         } finally {
             close(rs);
