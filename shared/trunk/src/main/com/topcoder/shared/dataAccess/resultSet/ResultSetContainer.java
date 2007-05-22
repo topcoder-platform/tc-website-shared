@@ -15,15 +15,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 
 /**
@@ -1198,6 +1190,14 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
             return columnNameMap.containsKey(name);
         }
 
+
+        public Map<String, Object> getMap() {
+            HashMap<String, Object> ret = new HashMap<String, Object>();
+            for (int i = 0; i < columns.length; i++) {
+                ret.put(columns[i].getName(), mtcItems[i].getResultData());
+            }
+            return ret;
+        }
 
     }
 
