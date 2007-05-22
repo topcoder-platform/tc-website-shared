@@ -1197,7 +1197,6 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
                 ret.put(columns[i].getName(), mtcItems[i].getResultData());
             }
             return Collections.unmodifiableMap(ret);
-;
         }
 
     }
