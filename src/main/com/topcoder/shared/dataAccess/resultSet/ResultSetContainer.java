@@ -992,6 +992,7 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
      */
     public class ResultSetRow implements Cloneable, Serializable {
         private TCResultItem[] mtcItems;
+        private Map<String, Object> itemMap;
 
         /**
          * Constructor to initialize the row data container
@@ -1002,6 +1003,12 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
          */
         public ResultSetRow(TCResultItem tcri[]) {
             mtcItems = tcri;
+            itemMap = new HashMap<String, Object>();
+            for (int i = 0; i < columns.length; i++) {
+                itemMap.put(columns[i].getName(), mtcItems[i].getResultData());
+            }
+
+
         }
 
         /**
@@ -1192,11 +1199,7 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
 
 
         public Map<String, Object> getMap() {
-            HashMap<String, Object> ret = new HashMap<String, Object>();
-            for (int i = 0; i < columns.length; i++) {
-                ret.put(columns[i].getName(), mtcItems[i].getResultData());
-            }
-            return Collections.unmodifiableMap(ret);
+            return Collections.unmodifiableMap(itemMap);
         }
 
     }
