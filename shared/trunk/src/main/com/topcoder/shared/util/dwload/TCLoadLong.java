@@ -1033,6 +1033,12 @@ public class TCLoadLong extends TCLoad {
             query.append("     , rr.system_point_total ");
             query.append("     , cs.submission_number ");
             query.append("     , rr.attended");
+            query.append("     , rr.old_rating");
+            query.append("     , rr.new_rating");
+            query.append("     , rr.old_vol");
+            query.append("     , rr.new_vol");
+            query.append("     , rr.rated_ind");
+            query.append("     , rr.advanced");
             query.append("  from long_comp_result rr ");
             query.append("     , long_component_state cs ");
             query.append(" where rr.round_id = ? ");
@@ -1060,8 +1066,17 @@ public class TCLoadLong extends TCLoad {
             query.append("       ,point_total ");                     // 4
             query.append("       ,system_point_total ");                     // 5
             query.append("       ,num_submissions");                  // 6
-            query.append("       ,attended)");                        // 7
-            query.append("VALUES (?,?,?,?,?,?,?)");                     // 7 values
+            query.append("       ,attended");                        // 7
+            query.append("       ,old_rating");                       //8
+            query.append("       ,new_rating");                       //9
+            query.append("       ,old_vol");                       //10
+            query.append("       ,new_vol");                        //11
+            query.append("       ,rated_ind");                      //12
+            query.append("       ,advanced");                        //13
+            query.append("       ,old_rating_id");                   //14
+            query.append("       ,new_rating_id)");                  //15
+
+            query.append("VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1091,6 +1106,16 @@ public class TCLoadLong extends TCLoad {
                 psIns.setDouble(5, rs.getDouble("system_point_total"));
                 psIns.setInt(6, rs.getInt("submission_number"));
                 psIns.setString(7, rs.getString("attended"));
+                psIns.setInt(8, rs.getInt("old_rating"));
+                psIns.setInt(9, rs.getInt("new_rating"));
+                psIns.setInt(10, rs.getInt("old_vol"));
+                psIns.setInt(11, rs.getInt("new_vol"));
+                psIns.setInt(12, rs.getInt("rated_ind"));
+                psIns.setString(13, rs.getString("advanced"));
+                //we can just use the rating because the id's and ratings match up.  may not be the case one day.
+                psIns.setInt(14, rs.getInt("old_rating") == 0 ? -2 : rs.getInt("old_rating"));
+                psIns.setInt(15, rs.getInt("new_rating") == 0 ? -2 : rs.getInt("new_rating"));
+
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
