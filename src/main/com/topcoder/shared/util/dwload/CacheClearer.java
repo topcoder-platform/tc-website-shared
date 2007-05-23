@@ -10,15 +10,16 @@
 
 package com.topcoder.shared.util.dwload;
 
-import com.topcoder.shared.util.TCContext;
-import com.topcoder.shared.util.TCResourceBundle;
-import com.topcoder.shared.util.logging.Logger;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import com.topcoder.shared.util.TCContext;
+import com.topcoder.shared.util.TCResourceBundle;
+import com.topcoder.shared.util.logging.Logger;
 
 /**
  * @author rfairfax
@@ -32,18 +33,6 @@ public class CacheClearer {
     public CacheClearer() {
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-        TCLoadTCS load = new TCLoadTCS();
-        try {
-            load.doClearCache();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void removelike(String s) {
         InitialContext ctx = null;
