@@ -233,7 +233,8 @@ public class TCLoadPayments extends TCLoad {
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
-                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id not in (69, 65) ");  ///not deleted or cancelled
+                ///not deleted.  have to move canceled payments (at least currently) because they get cancelled when the associated affidavit expires
+                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id not in (69) ");
                 query.append("and (pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ?) ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
