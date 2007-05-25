@@ -9,15 +9,15 @@ package com.topcoder.shared.util.dwload;
  * @version 1.0.1
  */
 
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Hashtable;
-
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 
 public class TCLoadPayments extends TCLoad {
     private static final int PAYMENTS_LOG_TYPE = 6;
@@ -193,7 +193,7 @@ public class TCLoadPayments extends TCLoad {
             query.append("where payment_id = ? ");
 
             psDelUserPayment = prepareStatement(query.toString(), TARGET_DB);
-            
+
             modifiedPayments = psSelModified.executeQuery();
 
             int i = 0;
@@ -206,7 +206,7 @@ public class TCLoadPayments extends TCLoad {
                 psDelUserPayment.clearParameters();
                 psDelUserPayment.setLong(1, paymentId);
                 psDelUserPayment.executeUpdate();
-                
+
                 psDelPayment.clearParameters();
                 psDelPayment.setLong(1, paymentId);
                 psDelPayment.executeUpdate();
@@ -228,19 +228,19 @@ public class TCLoadPayments extends TCLoad {
                 query.append("pd.payment_type_id, ptl.payment_type_desc, show_in_profile_ind, show_details_ind, ");
                 query.append("ptl.payment_reference_id, date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
-                query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, "); 
-                query.append("pd.date_paid, sl.status_id, sl.status_desc, charity_ind "); 
+                query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, ");
+                query.append("pd.date_paid, sl.status_id, sl.status_desc, charity_ind ");
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
-                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id <> 69 ");
+                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id not in (69, 65) ");  ///not deleted or cancelled
                 query.append("and (pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ?) ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
                 psSel.setTimestamp(2, fLastLogTime);
                 psSel.setTimestamp(3, fLastLogTime);
                 psSel.setTimestamp(4, fLastLogTime);
-                    
+
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, payment_desc, payment_type_id, ");
                 query.append("payment_type_desc, reference_id, parent_payment_id, charity_ind, ");
@@ -254,10 +254,10 @@ public class TCLoadPayments extends TCLoad {
                 query.append("values (?, ?, ?, ?, ?, ?) ");
                 psInsUsrPayment = prepareStatement(query.toString(), TARGET_DB);
 
-            
+
                 rs = psSel.executeQuery();
 
-                while (rs.next()) {                    
+                while (rs.next()) {
                     paymentId = rs.getLong("payment_id");
 
                     psInsPayment.clearParameters();
@@ -266,13 +266,13 @@ public class TCLoadPayments extends TCLoad {
                     psInsPayment.setLong(3, rs.getLong("payment_type_id"));
                     psInsPayment.setString(4, rs.getString("payment_type_desc"));
                     long referenceId = selectReferenceId(rs.getInt("payment_reference_id"),
-                        rs.getLong("algorithm_round_id"),
-                        rs.getLong("algorithm_problem_id"),
-                        rs.getLong("component_contest_id"),
-                        rs.getLong("component_project_id"),
-                        rs.getLong("studio_contest_id"),
-                        rs.getLong("digital_run_stage_id"),
-                        rs.getLong("digital_run_season_id"));
+                            rs.getLong("algorithm_round_id"),
+                            rs.getLong("algorithm_problem_id"),
+                            rs.getLong("component_contest_id"),
+                            rs.getLong("component_project_id"),
+                            rs.getLong("studio_contest_id"),
+                            rs.getLong("digital_run_stage_id"),
+                            rs.getLong("digital_run_season_id"));
                     if (referenceId > 0) {
                         psInsPayment.setLong(5, referenceId);
                     } else {
@@ -288,7 +288,7 @@ public class TCLoadPayments extends TCLoad {
                     log.debug("inserting payment_id = " + paymentId);
 
                     retVal = psInsPayment.executeUpdate();
-    
+
                     if (retVal != 1) {
                         throw new SQLException("TCLoadPayments: Load payment for payment_id " + rs.getLong("payment_id") +
                                 " could not be inserted.");
@@ -301,17 +301,17 @@ public class TCLoadPayments extends TCLoad {
                     psInsUsrPayment.setDouble(4, rs.getDouble("gross_amount"));
 
                     if (rs.getTimestamp("date_due") != null) {
-                        psInsUsrPayment.setLong(5, lookupCalendarId(rs.getTimestamp("date_due"),TARGET_DB));
+                        psInsUsrPayment.setLong(5, lookupCalendarId(rs.getTimestamp("date_due"), TARGET_DB));
                     } else {
                         psInsUsrPayment.setNull(5, Types.DECIMAL);
                     }
                     if (rs.getTimestamp("date_paid") != null) {
-                        psInsUsrPayment.setLong(6, lookupCalendarId(rs.getTimestamp("date_paid"),TARGET_DB));
+                        psInsUsrPayment.setLong(6, lookupCalendarId(rs.getTimestamp("date_paid"), TARGET_DB));
                     } else {
                         psInsUsrPayment.setNull(6, Types.DECIMAL);
                     }
                     retVal = psInsUsrPayment.executeUpdate();
-    
+
                     if (retVal != 1) {
                         throw new SQLException("TCLoadPayments: Load payment for payment_id " + rs.getLong("payment_id") +
                                 " could not be inserted.");
@@ -320,7 +320,7 @@ public class TCLoadPayments extends TCLoad {
                     count++;
                     printLoadProgress(count, "payments");
                 }
-            }            
+            }
 
             log.info("total payment records copied = " + count);
         } catch (SQLException sqle) {
@@ -329,7 +329,7 @@ public class TCLoadPayments extends TCLoad {
                     sqle.getMessage());
         } finally {
             DBMS.close(modifiedPayments);
-            DBMS.close(rs);            
+            DBMS.close(rs);
             DBMS.close(psSel);
             DBMS.close(psInsPayment);
             DBMS.close(psInsUsrPayment);
@@ -340,25 +340,25 @@ public class TCLoadPayments extends TCLoad {
         }
     }
 
-    private long selectReferenceId(int paymentReferenceId, long algorithmRoundId, long algorithmProblemId, 
-        long componentContestId, long componentProjectId, long studioContestId, long digitalRunStageId, 
-        long digitalRunSeasonId) {
-        
+    private long selectReferenceId(int paymentReferenceId, long algorithmRoundId, long algorithmProblemId,
+                                   long componentContestId, long componentProjectId, long studioContestId, long digitalRunStageId,
+                                   long digitalRunSeasonId) {
+
         switch (paymentReferenceId) {
-        case 1:
-            return algorithmRoundId;
-        case 2:
-            return componentProjectId;
-        case 3:
-            return algorithmProblemId;
-        case 4:
-            return studioContestId;
-        case 5:
-            return componentContestId;
-        case 6:
-            return digitalRunStageId;
-        case 7:
-            return digitalRunSeasonId;
+            case 1:
+                return algorithmRoundId;
+            case 2:
+                return componentProjectId;
+            case 3:
+                return algorithmProblemId;
+            case 4:
+                return studioContestId;
+            case 5:
+                return componentContestId;
+            case 6:
+                return digitalRunStageId;
+            case 7:
+                return digitalRunSeasonId;
         }
         return 0;
     }
@@ -368,7 +368,7 @@ public class TCLoadPayments extends TCLoad {
         StringBuffer query = null;
 
         try {
-            int retVal = 0; 
+            int retVal = 0;
             query = new StringBuffer(100);
             query.append("INSERT INTO update_log ");
             query.append("      (log_id ");        // 1
