@@ -228,13 +228,13 @@ public class TCLoadPayments extends TCLoad {
                 query.append("pd.payment_type_id, ptl.payment_type_desc, show_in_profile_ind, show_details_ind, ");
                 query.append("ptl.payment_reference_id, date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
-                query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, ");
-                query.append("pd.date_paid, sl.status_id, sl.status_desc, charity_ind ");
-                query.append("from payment_detail pd, payment p, payment_type_lu ptl, status_lu sl ");
+                query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, "); 
+                query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind "); 
+                query.append("from payment_detail pd, payment p, payment_type_lu ptl, payment_status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
                 ///not deleted.  have to move canceled payments (at least currently) because they get cancelled when the associated affidavit expires
-                query.append("and pd.status_id = sl.status_id and sl.status_type_id = 53 and pd.status_id not in (69) ");
+                query.append("and pd.payment_status_id = sl.payment_status_id and pd.payment_status_id <> 69 ");
                 query.append("and (pd.date_modified > ? or pd.create_date > ? or ptl.modify_date > ? or ptl.create_date > ?) ");
                 psSel = prepareStatement(query.toString(), SOURCE_DB);
                 psSel.setTimestamp(1, fLastLogTime);
@@ -283,8 +283,8 @@ public class TCLoadPayments extends TCLoad {
                     psInsPayment.setInt(7, rs.getInt("charity_ind"));
                     psInsPayment.setInt(8, rs.getInt("show_in_profile_ind"));
                     psInsPayment.setInt(9, rs.getInt("show_details_ind"));
-                    psInsPayment.setLong(10, rs.getLong("status_id"));
-                    psInsPayment.setString(11, rs.getString("status_desc"));
+                    psInsPayment.setLong(10, rs.getLong("payment_status_id"));
+                    psInsPayment.setString(11, rs.getString("payment_status_desc"));
 
                     log.debug("inserting payment_id = " + paymentId);
 
