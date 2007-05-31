@@ -905,7 +905,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
      * @param name Full name of the class
      * @return The class or <code>null</code> on any error
      */
-    private Class findClassGuarded(String name) {
+    protected Class findClassGuarded(String name) {
         try {
             return ClassCache.findClass(name);
         } catch (Exception e) {

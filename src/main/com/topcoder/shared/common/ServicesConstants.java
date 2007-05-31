@@ -46,6 +46,7 @@ public final class ServicesConstants {
     public static final String LONG_SUBMISSIONS = BASE + "/submissions/long/";
 
     public static final String APPS_CLASSES = BASE + "/build/classes.jar";
+    public static final String WRITER_JAR = BASE + "/build/writer.jar";
     public static final String RESOURCES_FOLDER = BASE + "/resources";
     public static final String TESTER_POLICY = BASE + "/scripts/services/tester.policy";
     public static final String DOTNET_BIN = BASE + "/build/dotNet";
