@@ -37,6 +37,8 @@ public class ApplicationServer {
     public static String BASE_DIR = bundle.getProperty("BASE_DIR", "/usr/web/build/classes");
     public static String SECURITY_PROVIDER_URL = bundle.getProperty("SECURITY_PROVIDER_URL", "172.16.20.40:1099");
     public static String FILE_CONVERSION_PROVIDER_URL = bundle.getProperty("FILE_CONVERSION_PROVIDER_URL", "172.16.210.53:1099");
+    public static String DISTRIBUTED_UI_SERVER_NAME = bundle.getProperty("DISTRIBUTED_UI_SERVER_NAME", "63.118.154.181:2399");
+    public static String OR_WEBSERVICES_HOST = bundle.getProperty("OR_WEBSERVICES_HOST", "63.118.154.186:8080");
 
 
     public final static String JNDI_FACTORY = bundle.getProperty("JNDI_FACTORY", "weblogic.jndi.WLInitialContextFactory");
