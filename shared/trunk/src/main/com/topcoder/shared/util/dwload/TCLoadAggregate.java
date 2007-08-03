@@ -22,6 +22,10 @@ package com.topcoder.shared.util.dwload;
  * @version $Revision$
  */
 
+import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,10 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
-
-import com.topcoder.shared.dataAccess.resultSet.ResultSetContainer;
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
+import java.util.TreeSet;
 
 public class TCLoadAggregate extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadAggregate.class);
@@ -421,8 +422,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("  WHERE rr.round_id = r.round_id ");
             query.append("  AND r.round_type_id = rt.round_type_id ");
 
-            if (!FULL_LOAD)
-            {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND rr.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -709,8 +709,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("     AND r.round_type_id = rt.round_type_id ");
             query.append("     AND rt.algo_rating_type_id = " + algoType);
 
-            if (!FULL_LOAD)
-            {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND cp.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -1016,8 +1015,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("      AND r.round_type_id = rt.round_type_id ");
             query.append("      AND rt.algo_rating_type_id = " + algoType);
 
-            if (!FULL_LOAD)
-            {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -1628,6 +1626,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("SELECT rr.coder_id ");      // 1
             query.append("       ,rr.round_id ");     // 2
             query.append("       ,r.calendar_id");    // 3
+            query.append("       ,rr.division_id");
             query.append("  FROM room_result rr ");
             query.append("       ,round r ");
             query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
@@ -1654,17 +1653,36 @@ public class TCLoadAggregate extends TCLoad {
 
             query = new StringBuffer(100);
             query.append(" SELECT calendar_id, round_id FROM round r where round_type_id = " + SINGLE_ROUND_MATCH + " and rated_ind = 1");
-            query.append("  and exists (select 1 from room_result rr where rr.round_id=r.round_id) ");
+            query.append("  and exists (select 1 from room_result rr where rr.round_id=r.round_id and rr.rated_flag = 1 and rr.division_id = ?) ");
             query.append("  ORDER BY calendar_id ");
             psSel2 = prepareStatement(query.toString(), SOURCE_DB);
 
-            long latest_round_id = -1;
-            ArrayList rounds = new ArrayList();
+            long div1LastRoundId = -1;
+            ArrayList<Integer> div1Rounds = new ArrayList<Integer>();
+            psSel2.setInt(1, 1);
             rs = psSel2.executeQuery();
-            while(rs.next()) {
-                rounds.add(new Integer(rs.getInt("calendar_id")));
-                latest_round_id = rs.getInt("round_id"); //  the last round will be stored...nasty trick ;)
+            while (rs.next()) {
+                div1Rounds.add(rs.getInt("calendar_id"));
+                div1LastRoundId = rs.getInt("round_id"); //  the last round will be stored...nasty trick ;)
             }
+
+            long div2LastRoundId = -1;
+            ArrayList<Integer> div2Rounds = new ArrayList<Integer>();
+            psSel2.clearParameters();
+            psSel2.setInt(1, 2);
+            close(rs);
+            rs = psSel2.executeQuery();
+            while (rs.next()) {
+                div2Rounds.add(rs.getInt("calendar_id"));
+                div2LastRoundId = rs.getInt("round_id"); //  the last round will be stored...nasty trick ;)
+            }
+
+            TreeSet<Integer> tempAllRounds = new TreeSet<Integer>();
+            tempAllRounds.addAll(div1Rounds);
+            tempAllRounds.addAll(div2Rounds);
+
+            ArrayList<Integer> allRounds = new ArrayList<Integer>(tempAllRounds.size());
+            allRounds.addAll(tempAllRounds);
 
             query = new StringBuffer(100);
             query.append("DELETE FROM streak WHERE streak_type_id in (" + RATING_SRM_APPEARANCES + ")");
@@ -1685,50 +1703,61 @@ public class TCLoadAggregate extends TCLoad {
                 int coder_id = -2;
                 int round_id = -2;
                 int calendar_id = -2;
+                int divisionId = -2;
 
                 if (hasNext) {
                     coder_id = rs.getInt("coder_id");
                     round_id = rs.getInt("round_id");
                     calendar_id = rs.getInt("calendar_id");
+                    divisionId = rs.getInt("division_id");
                 }
 
-                // if it's the same coder and he participated in the next round he is expected to, it's consecutive
-                if (coder_id == cur_coder_id && roundIdx >= 0 && ((Integer) rounds.get(roundIdx)).intValue() == calendar_id) {
-                    numConsecutive++;
-                    roundIdx++;
-                    end_round_id = round_id;
-                } else {
-                    // it was not consecutive, so save the streak if needed and start a new one
-                    if (numConsecutive > 1) {
-                        psIns.clearParameters();
-                        psIns.setInt(1, cur_coder_id);
-                        psIns.setInt(2, RATING_SRM_APPEARANCES);
-                        psIns.setInt(3, start_round_id);
-                        psIns.setInt(4, end_round_id);
-                        psIns.setInt(5, numConsecutive);
-                        psIns.setInt(6, end_round_id == latest_round_id ? 1 : 0);
+                if ((divisionId == 1 && div1Rounds.contains(new Integer(calendar_id))) ||
+                        (divisionId == 2 && div2Rounds.contains(new Integer(calendar_id)))) {
 
-                        retVal = psIns.executeUpdate();
-                        count += retVal;
-                        if (retVal != 1) {
-                            throw new SQLException("TCLoadAggregate: Insert for coder_id " + coder_id +  ", streak_type_id " + RATING_SRM_APPEARANCES +
-                                    " modified " + retVal + " rows, not one.");
-                        }
-                        printLoadProgress(count, "Consecutive SRM appeareance streak");
-                    }
-
-                    if (hasNext) {
-                        roundIdx = Collections.binarySearch(rounds, new Integer(calendar_id));
-                        if (roundIdx < 0) {
-                            throw new Exception("Round with calendar_id=" + calendar_id + " not found!");
-                        }
+                    // if it's the same coder and he participated in the next round he is expected to, it's consecutive
+                    if (coder_id == cur_coder_id && roundIdx >= 0 && allRounds.get(roundIdx) == calendar_id) {
+                        numConsecutive++;
                         roundIdx++;
-                        cur_coder_id = coder_id;
-                        start_round_id = round_id;
                         end_round_id = round_id;
-                        numConsecutive = 1;
+                    } else {
+                        // it was not consecutive, so save the streak if needed and start a new one
+                        if (numConsecutive > 1) {
+                            psIns.clearParameters();
+                            psIns.setInt(1, cur_coder_id);
+                            psIns.setInt(2, RATING_SRM_APPEARANCES);
+                            psIns.setInt(3, start_round_id);
+                            psIns.setInt(4, end_round_id);
+                            psIns.setInt(5, numConsecutive);
+                            if (divisionId == 1) {
+                                psIns.setInt(6, end_round_id == div1LastRoundId ? 1 : 0);
+                            } else {
+                                psIns.setInt(6, end_round_id == div2LastRoundId ? 1 : 0);
+                            }
+
+                            retVal = psIns.executeUpdate();
+                            count += retVal;
+                            if (retVal != 1) {
+                                throw new SQLException("TCLoadAggregate: Insert for coder_id " + coder_id + ", streak_type_id " + RATING_SRM_APPEARANCES +
+                                        " modified " + retVal + " rows, not one.");
+                            }
+                            printLoadProgress(count, "Consecutive SRM appeareance streak");
+                        }
+
+                        if (hasNext) {
+                            roundIdx = Collections.binarySearch(allRounds, calendar_id);
+                            if (roundIdx < 0) {
+                                throw new Exception("Round with calendar_id=" + calendar_id + " not found!");
+                            }
+                            roundIdx++;
+                            cur_coder_id = coder_id;
+                            start_round_id = round_id;
+                            end_round_id = round_id;
+                            numConsecutive = 1;
+                        }
                     }
                 }
+
             }
             log.info("Records loaded for Consecutive SRM appeareance streak: " + count);
         } catch (SQLException sqle) {
@@ -1766,8 +1795,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append(" ,SUM(cp.submission_points) ");
             query.append(" ,SUM(CASE WHEN cp.end_status_id >= " + STATUS_SUBMITTED + " THEN 1 ELSE 0 END)");
             query.append(" FROM coder_problem cp");
-            if (!FULL_LOAD)
-            {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" WHERE cp.coder_id IN");
                 query.append(" (SELECT coder_id");
                 query.append(" FROM room_result");
@@ -2615,8 +2643,7 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,SUM(team_points) team_points");          // 24
             query.append("  FROM room_result ");
             query.append("  WHERE team_id is not null ");
-            if (!FULL_LOAD)
-            {   //if it's not a full load, just load up the people that competed in the round we're loading
+            if (!FULL_LOAD) {   //if it's not a full load, just load up the people that competed in the round we're loading
                 query.append(" AND round_id = " + fRoundId);
             }
             query.append(" GROUP BY round_id ");
