@@ -1633,11 +1633,11 @@ public class TCLoadAggregate extends TCLoad {
             query.append("       ,rr.round_id ");     // 2
             query.append("       ,r.calendar_id");    // 3
             query.append("       ,rr.division_id");
+            query.append("       ,rr.rated_flag");
             query.append("  FROM room_result rr ");
             query.append("       ,round r ");
             query.append(" WHERE r.round_type_id in (" + SINGLE_ROUND_MATCH + ")");
             query.append("   AND r.round_id = rr.round_id ");
-            query.append("   AND rr.rated_flag = 1 ");
             query.append("   AND rr.attended = 'Y' ");
             query.append("   AND r.rated_ind = 1 ");
             query.append(" ORDER BY rr.coder_id ");
@@ -1722,64 +1722,62 @@ public class TCLoadAggregate extends TCLoad {
                 int round_id = -2;
                 int calendar_id = -2;
                 int divisionId = -2;
+                int ratedFlag = -2;
 
                 if (hasNext) {
                     coder_id = rs.getInt("coder_id");
                     round_id = rs.getInt("round_id");
                     calendar_id = rs.getInt("calendar_id");
                     divisionId = rs.getInt("division_id");
+                    ratedFlag = rs.getInt("rated_flag");
                 }
 
-                if ((divisionId == 1 && div1Rounds.contains(new Integer(calendar_id))) ||
-                        (divisionId == 2 && div2Rounds.contains(new Integer(calendar_id)))) {
-
-                    // if it's the same coder and he participated in the next round he is expected to, it's consecutive
-                    if (coder_id == cur_coder_id && roundIdx >= 0 && allRounds.get(roundIdx) == calendar_id) {
+                if (coder_id == cur_coder_id && roundIdx >= 0 && allRounds.get(roundIdx) == calendar_id) {
+                    if (ratedFlag == 1) {
+                        // if it's the same coder and he participated in the next round he is expected to, and he was rated, it's consecutive
                         numConsecutive++;
                         roundIdx++;
                         end_round_id = round_id;
                     } else {
-                        // it was not consecutive, so save the streak if needed and start a new one
-                        if (numConsecutive > 1) {
-                            psIns.clearParameters();
-                            psIns.setInt(1, cur_coder_id);
-                            psIns.setInt(2, RATING_SRM_APPEARANCES);
-                            psIns.setInt(3, start_round_id);
-                            psIns.setInt(4, end_round_id);
-                            psIns.setInt(5, numConsecutive);
-                            if (divisionId == 1) {
-                                psIns.setInt(6, end_round_id == div1LastRoundId ? 1 : 0);
-                            } else {
-                                psIns.setInt(6, end_round_id == div2LastRoundId ? 1 : 0);
-                            }
-
-                            retVal = psIns.executeUpdate();
-                            count += retVal;
-                            if (retVal != 1) {
-                                throw new SQLException("TCLoadAggregate: Insert for coder_id " + coder_id + ", streak_type_id " + RATING_SRM_APPEARANCES +
-                                        " modified " + retVal + " rows, not one.");
-                            }
-                            printLoadProgress(count, "Consecutive SRM appeareance streak");
-                        }
-
-                        if (hasNext) {
-                            roundIdx = Collections.binarySearch(allRounds, calendar_id);
-                            if (roundIdx < 0) {
-                                throw new Exception("Round with calendar_id=" + calendar_id + " not found!");
-                            }
-                            roundIdx++;
-                            cur_coder_id = coder_id;
-                            start_round_id = round_id;
-                            end_round_id = round_id;
-                            numConsecutive = 1;
-                        }
+                        //if he wasn't rated, then it doesn't break his streak
+                        roundIdx++;
                     }
+
                 } else {
-                    //the round wasn't rated, so just skip it.  advance to the next
-                    if (log.isDebugEnabled()) {
-                        log.debug("skipping for " + coder_id + " " + calendar_id + " " + round_id + " " + " " + divisionId + " " + roundIdx);
+                    // it was not consecutive, so save the streak if needed and start a new one
+                    if (numConsecutive > 1) {
+                        psIns.clearParameters();
+                        psIns.setInt(1, cur_coder_id);
+                        psIns.setInt(2, RATING_SRM_APPEARANCES);
+                        psIns.setInt(3, start_round_id);
+                        psIns.setInt(4, end_round_id);
+                        psIns.setInt(5, numConsecutive);
+                        if (divisionId == 1) {
+                            psIns.setInt(6, end_round_id == div1LastRoundId ? 1 : 0);
+                        } else {
+                            psIns.setInt(6, end_round_id == div2LastRoundId ? 1 : 0);
+                        }
+
+                        retVal = psIns.executeUpdate();
+                        count += retVal;
+                        if (retVal != 1) {
+                            throw new SQLException("TCLoadAggregate: Insert for coder_id " + coder_id + ", streak_type_id " + RATING_SRM_APPEARANCES +
+                                    " modified " + retVal + " rows, not one.");
+                        }
+                        printLoadProgress(count, "Consecutive SRM appeareance streak");
                     }
-                    roundIdx++;
+
+                    if (hasNext) {
+                        roundIdx = Collections.binarySearch(allRounds, calendar_id);
+                        if (roundIdx < 0) {
+                            throw new Exception("Round with calendar_id=" + calendar_id + " not found!");
+                        }
+                        roundIdx++;
+                        cur_coder_id = coder_id;
+                        start_round_id = round_id;
+                        end_round_id = round_id;
+                        numConsecutive = 1;
+                    }
                 }
 
             }
