@@ -1756,6 +1756,9 @@ public class TCLoadAggregate extends TCLoad {
                             numConsecutive = 1;
                         }
                     }
+                } else {
+                    //the round wasn't rated, so just skip it.  advance to the next
+                    roundIdx++;
                 }
 
             }
