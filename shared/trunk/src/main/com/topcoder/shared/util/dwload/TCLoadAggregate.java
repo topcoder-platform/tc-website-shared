@@ -1690,9 +1690,16 @@ public class TCLoadAggregate extends TCLoad {
             ArrayList<Integer> allRounds = new ArrayList<Integer>(tempAllRounds.size());
             allRounds.addAll(tempAllRounds);
             if (log.isDebugEnabled()) {
+/*
                 for (Integer i : allRounds) {
                     log.debug("i " + i);
                 }
+*/
+                log.debug("div 2");
+                for (Integer i : div2Rounds) {
+                    log.debug("i " + i);
+                }
+
             }
 
             query = new StringBuffer(100);
