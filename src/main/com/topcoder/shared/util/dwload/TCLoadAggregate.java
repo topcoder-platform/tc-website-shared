@@ -187,7 +187,6 @@ public class TCLoadAggregate extends TCLoad {
                 return;
             }
             algoType = getRoundType(fRoundId);
-/*
             loadRoomResult2();
             loadCoderDivision();
 
@@ -198,10 +197,8 @@ public class TCLoadAggregate extends TCLoad {
             loadCoderProblemSummary();
 
             loadCoderLevel();
-*/
 
             if (algoType == TC_RATING_TYPE_ID) {
-/*
                 loadStreak();
 
                 loadRatingIncreaseStreak(true);
@@ -211,12 +208,10 @@ public class TCLoadAggregate extends TCLoad {
                 loadRatingDecreaseStreak(true);
 
                 loadRatingDecreaseStreak(false);
-*/
 
                 loadConsecutiveSRMAppearances();
             }
 
-/*
             loadRoundProblem();
 
             loadProblemLanguage();
@@ -230,7 +225,6 @@ public class TCLoadAggregate extends TCLoad {
 
             //if running for an old round, the rating history load can not be run
             loadRatingHistory();
-*/
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
