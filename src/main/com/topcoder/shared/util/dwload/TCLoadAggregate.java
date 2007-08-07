@@ -1777,7 +1777,7 @@ public class TCLoadAggregate extends TCLoad {
                 } else {
                     //the round wasn't rated, so just skip it.  advance to the next
                     if (log.isDebugEnabled()) {
-                        log.debug("skipping for " + cur_coder_id + " " + calendar_id + " " + allRounds.get(roundIdx) + " " + roundIdx);
+                        log.debug("skipping for " + coder_id + " " + calendar_id + " " + round_id + " " + " " + divisionId + " " + roundIdx);
                     }
                     roundIdx++;
                 }
