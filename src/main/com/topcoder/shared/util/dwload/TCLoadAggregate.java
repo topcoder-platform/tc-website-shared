@@ -1611,6 +1611,8 @@ public class TCLoadAggregate extends TCLoad {
      * This method loads the 'streak' table for consecutive appeareance in srms
      * Unrated rounds are not considered.
      */
+
+    //todo consider changing this so that all matches that didn't "fail" count 
     private void loadConsecutiveSRMAppearances() throws Exception {
         int retVal = 0;
         int count = 0;
