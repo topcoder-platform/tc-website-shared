@@ -1706,34 +1706,37 @@ public class TCLoadAggregate extends TCLoad {
 
             rs = psSel.executeQuery();
 
-            int cur_coder_id = -1;
-            int start_round_id = -1, end_round_id = -1;
+            int curCoderId = -1;
+            int curDivisionId = -1;
+            int startRoundId = -1;
+            int endRoundId = -1;
             int numConsecutive = 0;
             int roundIdx = -1;
             boolean hasNext = true;
 
             while (hasNext) {
                 hasNext = rs.next();
-                int coder_id = -2;
-                int round_id = -2;
-                int calendar_id = -2;
+                int coderId = -2;
+                int roundId = -2;
+                int calendarId = -2;
                 int divisionId = -2;
                 int ratedFlag = -2;
 
                 if (hasNext) {
-                    coder_id = rs.getInt("coder_id");
-                    round_id = rs.getInt("round_id");
-                    calendar_id = rs.getInt("calendar_id");
+                    coderId = rs.getInt("coder_id");
+                    roundId = rs.getInt("round_id");
+                    calendarId = rs.getInt("calendar_id");
                     divisionId = rs.getInt("division_id");
                     ratedFlag = rs.getInt("rated_flag");
                 }
 
-                if (coder_id == cur_coder_id && roundIdx >= 0 && allRounds.get(roundIdx) == calendar_id) {
+                if (coderId == curCoderId && roundIdx >= 0 && allRounds.get(roundIdx) == calendarId) {
                     if (ratedFlag == 1) {
                         // if it's the same coder and he participated in the next round he is expected to, and he was rated, it's consecutive
                         numConsecutive++;
                         roundIdx++;
-                        end_round_id = round_id;
+                        endRoundId = roundId;
+                        curDivisionId = divisionId;
                     } else {
                         //if he wasn't rated, then it doesn't break his streak
                         roundIdx++;
@@ -1743,35 +1746,36 @@ public class TCLoadAggregate extends TCLoad {
                     // it was not consecutive, so save the streak if needed and start a new one
                     if (numConsecutive > 1) {
                         psIns.clearParameters();
-                        psIns.setInt(1, cur_coder_id);
+                        psIns.setInt(1, curCoderId);
                         psIns.setInt(2, RATING_SRM_APPEARANCES);
-                        psIns.setInt(3, start_round_id);
-                        psIns.setInt(4, end_round_id);
+                        psIns.setInt(3, startRoundId);
+                        psIns.setInt(4, endRoundId);
                         psIns.setInt(5, numConsecutive);
-                        if (divisionId == 1) {
-                            psIns.setInt(6, end_round_id == div1LastRoundId ? 1 : 0);
+                        if (curDivisionId == 1) {
+                            psIns.setInt(6, endRoundId == div1LastRoundId ? 1 : 0);
                         } else {
-                            psIns.setInt(6, end_round_id == div2LastRoundId ? 1 : 0);
+                            psIns.setInt(6, endRoundId == div2LastRoundId ? 1 : 0);
                         }
 
                         retVal = psIns.executeUpdate();
                         count += retVal;
                         if (retVal != 1) {
-                            throw new SQLException("TCLoadAggregate: Insert for coder_id " + coder_id + ", streak_type_id " + RATING_SRM_APPEARANCES +
+                            throw new SQLException("TCLoadAggregate: Insert for coder_id " + coderId + ", streak_type_id " + RATING_SRM_APPEARANCES +
                                     " modified " + retVal + " rows, not one.");
                         }
                         printLoadProgress(count, "Consecutive SRM appeareance streak");
                     }
 
                     if (hasNext) {
-                        roundIdx = Collections.binarySearch(allRounds, calendar_id);
+                        roundIdx = Collections.binarySearch(allRounds, calendarId);
                         if (roundIdx < 0) {
-                            throw new Exception("Round with calendar_id=" + calendar_id + " not found!");
+                            throw new Exception("Round with calendar_id=" + calendarId + " not found!");
                         }
                         roundIdx++;
-                        cur_coder_id = coder_id;
-                        start_round_id = round_id;
-                        end_round_id = round_id;
+                        curCoderId = coderId;
+                        curDivisionId = divisionId;
+                        startRoundId = roundId;
+                        endRoundId = roundId;
                         numConsecutive = 1;
                     }
                 }
