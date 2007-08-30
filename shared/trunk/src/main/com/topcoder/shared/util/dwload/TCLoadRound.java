@@ -2190,6 +2190,7 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,chal.defendant_points ");   // 11
             query.append("       ,chal.expected ");           // 12
             query.append("       ,chal.received ");           // 13
+            query.append("       , (select start_time from round_segment where round_id = chal.round_id and segment_id = 4) as start_time"); //14
             query.append("  FROM challenge chal, component comp");
             query.append(" WHERE chal.round_id = ? ");
             query.append("   AND chal.component_id = comp.component_id");
@@ -2204,16 +2205,6 @@ public class TCLoadRound extends TCLoad {
             query.append("          FROM user_group_xref ugx ");
             query.append("         WHERE ugx.login_id= chal.defendant_id ");
             query.append("           AND ugx.group_id = 2000115)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = chal.defendant_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = chal.challenger_id ");
-            query.append("           AND gu.group_id = 13)");
 
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
@@ -2232,10 +2223,11 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,challenger_points ");  // 10
             query.append("       ,defendant_points ");   // 11
             query.append("       ,expected ");           // 12
-            query.append("       ,received) ");          // 13
+            query.append("       ,received ");           // 13
+            query.append("       ,time_elapsed)");      // 14
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10 values
-            query.append("?,?,?)");                // 13 total values
+            query.append("?,?,?,?)");                // 14 total values
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -2266,6 +2258,7 @@ public class TCLoadRound extends TCLoad {
                 psIns.setFloat(11, rs.getFloat(11));  // defendant_points
                 setBytes(psIns, 12, getBlobObject(rs, 12));  // expected
                 setBytes(psIns, 13, getBlobObject(rs, 13));  // received
+                psIns.setLong(14, rs.getLong(6)-rs.getTimestamp("start_time").getTime());
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
