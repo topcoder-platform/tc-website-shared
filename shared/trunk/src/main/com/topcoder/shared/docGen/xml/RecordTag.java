@@ -114,7 +114,7 @@ public class RecordTag extends Tag {
             //Iterate through elementList appending the getXML outputs.
             for (int i = 0; i < elementList.size(); i++) {
                 Tag tempTag = (Tag) elementList.get(i);
-                retVal.append(tempTag.getXML(offSet + 2));
+                retVal.append(tempTag.getXML(filter, offSet + 2));
             }
 
             if (offSet > 0) {
@@ -145,7 +145,7 @@ public class RecordTag extends Tag {
             //Iterate through elementList appending the getXML outputs.
             for (int i = 0; i < elementList.size(); i++) {
                 Tag tempTag = (Tag) elementList.get(i);
-                retVal.append(tempTag.getXML());
+                retVal.append(tempTag.getXML(filter));
             }
             retVal.append("</");
             retVal.append(this.name);
