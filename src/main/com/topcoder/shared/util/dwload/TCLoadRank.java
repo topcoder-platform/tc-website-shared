@@ -29,18 +29,18 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class TCLoadRank extends TCLoad {
-    private int roundId = 0;
+    protected int roundId = 0;
     private boolean FULL_LOAD = false;
     private boolean TEAMS_RANK_FULL_LOAD = false;
 
     private static Logger log = Logger.getLogger(TCLoadRank.class);
-    private static final int OVERALL_RATING_RANK_TYPE_ID = 1;
-    private static final int ACTIVE_RATING_RANK_TYPE_ID = 2;
+    protected static final int OVERALL_RATING_RANK_TYPE_ID = 1;
+    protected static final int ACTIVE_RATING_RANK_TYPE_ID = 2;
 
     private static final int TC_RATING_TYPE_ID = 1;
     private static final int TC_HS_RATING_TYPE_ID = 2;
 /*
-    private static final int SRM_ROUND_TYPE = 1;
+    private static final int SRM_ROUNDTYPE = 1;
     private static final int TOURNAMENT_ROUND_TYPE = 2;
     private static final int AVERAGE_RATING_RANK_TYPE_ID = 1;
 */
@@ -125,7 +125,7 @@ public class TCLoadRank extends TCLoad {
 
             // school rating just for regular competitions, not for HS
             if (algoType == TC_RATING_TYPE_ID) {
-                loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, l);
+                loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
             }
 
             loadCountryRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
@@ -137,7 +137,7 @@ public class TCLoadRank extends TCLoad {
 
             // school rating just for regular competitions, not for HS
             if (algoType == TC_RATING_TYPE_ID) {
-                loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, l);
+                loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
             }
 //            loadAgeGroupAvgRatingRank();
 
@@ -221,7 +221,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the coder_rank table with information about
      * overall rating rank.
      */
-    private void loadRatingRank(int rankType, int ratingType, List list) throws Exception {
+    protected void loadRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -804,7 +804,7 @@ public class TCLoadRank extends TCLoad {
     }
 
 
-    private void loadRatingRankHistory(int rankType, int ratingType, List list) throws Exception {
+    protected void loadRatingRankHistory(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadRatingRankHistory called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -890,7 +890,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the country_coder_rank table with information about
      * rating rank within a country.
      */
-    private void loadCountryRatingRank(int rankType, int ratingType, List list) throws Exception {
+    protected void loadCountryRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadCountryRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -993,7 +993,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the state_coder_rank table with information about
      * rating rank within a state.
      */
-    private void loadStateRatingRank(int rankType, int ratingType, List list) throws Exception {
+    protected void loadStateRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadStateRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -1101,7 +1101,7 @@ public class TCLoadRank extends TCLoad {
      * Loads the school_coder_rank table with information about
      * rating rank within a school.
      */
-    private void loadSchoolRatingRank(int rankType, List list) throws Exception {
+    protected void loadSchoolRatingRank(int rankType, int ratingType, List list) throws Exception {
         log.debug("loadSchoolRatingRank called...");
         StringBuffer query = null;
         PreparedStatement psDel = null;
@@ -1123,8 +1123,8 @@ public class TCLoadRank extends TCLoad {
 
             query = new StringBuffer(100);
             query.append(" INSERT");
-            query.append(" INTO school_coder_rank (coder_id, percentile, rank, rank_no_tie, school_id, coder_rank_type_id)");
-            query.append(" VALUES (?, ?, ?, ?, ?, ?)");
+            query.append(" INTO school_coder_rank (coder_id, percentile, rank, rank_no_tie, school_id, coder_rank_type_id, algo_rating_type_id)");
+            query.append(" VALUES (?, ?, ?, ?, ?, ?, ?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // delete all the records from the country ranking table
@@ -1180,6 +1180,7 @@ public class TCLoadRank extends TCLoad {
                     psIns.setInt(4, j + 1);
                     psIns.setLong(5, curr.getSchoolId());
                     psIns.setInt(6, rankType);
+                    psIns.setInt(7, ratingType);
                     count += psIns.executeUpdate();
                     printLoadProgress(count, "school coder rating rank");
                 }
@@ -1202,11 +1203,11 @@ public class TCLoadRank extends TCLoad {
     }
 
 
-    private List getCurrentRatings(int algoType) throws Exception {
+    protected List<CoderRating> getCurrentRatings(int algoType) throws Exception {
         StringBuffer query = null;
         PreparedStatement psSel = null;
         ResultSet rs = null;
-        List ret = null;
+        List<CoderRating> ret = null;
 
         try {
 
@@ -1217,22 +1218,46 @@ public class TCLoadRank extends TCLoad {
             query.append(" , c.coder_type_id ");
             query.append(" , c.comp_country_code as country_code ");
             query.append(" , c.state_code ");
-            query.append(" , case when exists (select '1'");
-            query.append("                       from room_result rr");
-            query.append("                          , round r1");
-            query.append("                          , calendar cal");
-            query.append("                          , round_type_lu  rt");
-            query.append("                      where rr.round_id = r1.round_id");
-            query.append("                        and rr.attended = 'Y'");
-            query.append("                        and r1.round_type_id = rt.round_type_id");
-            query.append("                        and rt.algo_rating_type_id = r.algo_rating_type_id ");
-            query.append("                        and rr.rated_flag = 1 ");
-            query.append("                        and r1.calendar_id = cal.calendar_id");
-            query.append("                        and rr.coder_id = r.coder_id");
-            query.append("                        and cal.calendar_id <= (select calendar_id from round where round_id = r.round_id)");
-            query.append("                        and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2");
-            query.append("                                                  where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id))");
-            query.append("                 then 1 else 0 end as active ");
+            
+            
+            if (algoType == MARATHON_RATING_TYPE_ID) {
+                query.append(" , case when exists (select '1'");
+                query.append("                       from long_comp_result lcr ");
+                query.append("                         , round r1 ");
+                query.append("                         , calendar cal ");
+                query.append("                         , round_type_lu  rt ");
+                query.append("                       where lcr.round_id = r1.round_id ");
+                query.append("                         and lcr.attended = 'Y' ");
+                query.append("                         and r1.round_type_id = rt.round_type_id ");
+                query.append("                         and rt.algo_rating_type_id = " + MARATHON_RATING_TYPE_ID); 
+                query.append("                         and lcr.rated_ind = 1  ");
+                query.append("                         and r1.calendar_id = cal.calendar_id  ");
+                query.append("                         and lcr.coder_id = r.coder_id ");
+                query.append("                         and cal.calendar_id <= (select calendar_id from round where round_id = r.round_id)  ");
+                query.append("                         and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2 ");
+                query.append("                             where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id)) ");
+                query.append("                 then 1 else 0 end as active ");
+            } else {
+                query.append(" , case when exists (select '1'");
+                query.append("                       from room_result rr");
+                query.append("                          , round r1");
+                query.append("                          , calendar cal");
+                query.append("                          , round_type_lu  rt");
+                query.append("                      where rr.round_id = r1.round_id");
+                query.append("                        and rr.attended = 'Y'");
+                query.append("                        and r1.round_type_id = rt.round_type_id");
+                query.append("                        and rt.algo_rating_type_id = r.algo_rating_type_id ");
+                query.append("                        and rr.rated_flag = 1 ");
+                query.append("                        and r1.calendar_id = cal.calendar_id");
+                query.append("                        and rr.coder_id = r.coder_id");
+                query.append("                        and cal.calendar_id <= (select calendar_id from round where round_id = r.round_id)");
+                query.append("                        and cal.date >= (select c2.date - interval(180) day(9) to day from round r2, calendar c2");
+                query.append("                                                  where r2.calendar_id = c2.calendar_id and r2.round_id = r.round_id))");
+                query.append("                 then 1 else 0 end as active ");                
+            }
+
+                                       
+                                       
             query.append("  from algo_rating_history r ");
             query.append(" , outer current_school cs ");
             query.append(" , coder c ");
@@ -1243,12 +1268,11 @@ public class TCLoadRank extends TCLoad {
             query.append(" and c.status = 'A' ");
             query.append(" and r.round_id = ?");
 
-
             psSel = prepareStatement(query.toString(), TARGET_DB);
             psSel.setInt(1, roundId);
 
             rs = psSel.executeQuery();
-            ret = new ArrayList();
+            ret = new ArrayList<CoderRating>();
             while (rs.next()) {
                 //pros
                 if (rs.getInt("coder_type_id") == 2) {
@@ -1474,7 +1498,7 @@ public class TCLoadRank extends TCLoad {
         return l;
     }
 
-    private class CoderRating implements Comparable {
+    protected class CoderRating implements Comparable<CoderRating> {
         private long coderId = 0;
         private int rating = 0;
         private long schoolId = 0;
@@ -1491,10 +1515,10 @@ public class TCLoadRank extends TCLoad {
             this.stateCode = stateCode;
         }
 
-        public int compareTo(Object other) {
-            if (((CoderRating) other).getRating() > rating)
+        public int compareTo(CoderRating other) {
+            if (other.getRating() > rating)
                 return 1;
-            else if (((CoderRating) other).getRating() < rating)
+            else if (other.getRating() < rating)
                 return -1;
             else
                 return 0;

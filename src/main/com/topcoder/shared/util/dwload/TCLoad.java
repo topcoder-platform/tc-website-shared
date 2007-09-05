@@ -65,6 +65,18 @@ public abstract class TCLoad {
      */
     private static final int LOAD_PRINT_INTERVAL = 25;
 
+    /**
+     * Algorithm types
+     */
+    protected static final int TC_RATING_TYPE_ID = 1;
+    protected static final int HS_RATING_TYPE_ID = 2;
+    protected static final int MARATHON_RATING_TYPE_ID = 3;
+
+    /**
+     * Round types
+     */
+    protected static final int ROUND_TYPE_MARATHON_TOURNAMENT = 19;
+    
     // PUBLIC METHODS
 
     /**
@@ -373,7 +385,45 @@ public abstract class TCLoad {
             close(psSel);
         }
     }
+    
+    protected int lookupTimeId(java.sql.Timestamp date, int connIdx) throws SQLException {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        StringBuffer query = null;
 
+        int minute = cal.get(Calendar.MINUTE);
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+
+        query = new StringBuffer(100);
+        query.append("SELECT time_id ");
+        query.append("  FROM time ");
+        query.append(" WHERE minute = ? ");
+        query.append("   AND hour_24 = ? ");
+        psSel = prepareStatement(query.toString(), connIdx);
+
+        psSel.setInt(1, minute);
+        psSel.setInt(2, hour);
+
+        try {
+            rs = psSel.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            } else {
+                throw new SQLException("Unable to locate time_id for " +
+                        date.toString());
+            }
+        } catch (SQLException sqle) {
+            throw sqle;
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+    }
+
+    
     /**
      * Convenience method for retrieving an integer parameter from
      * the Hashtable of parameters passed to this load.
