@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 public class TCLoadPayments extends TCLoad {
@@ -47,6 +48,8 @@ public class TCLoadPayments extends TCLoad {
 
             //loadPaymentTypes();
             loadPayments();
+
+            doClearCache();
 
             setLastUpdateTime();
 
@@ -363,7 +366,19 @@ public class TCLoadPayments extends TCLoad {
         }
         return 0;
     }
+    
+    
+    private void doClearCache() throws Exception {
+        String[] keys = new String[]{"member_profile", "payment_detail", "payment_summary"};
 
+        HashSet<String> s = new HashSet<String>();
+        for (String key : keys) {
+            s.add(key);
+        }
+        CacheClearer.removelike(s);
+    }
+
+    
     private void setLastUpdateTime() throws Exception {
         PreparedStatement psUpd = null;
         StringBuffer query = null;
