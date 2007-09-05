@@ -1,11 +1,5 @@
 package com.topcoder.shared.dataAccess.resultSet;
 
-import com.topcoder.shared.dataAccess.StringUtilities;
-import com.topcoder.shared.docGen.xml.RecordTag;
-import com.topcoder.shared.docGen.xml.ValueTag;
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,7 +9,22 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import com.topcoder.shared.dataAccess.StringUtilities;
+import com.topcoder.shared.docGen.xml.RecordTag;
+import com.topcoder.shared.docGen.xml.ValueTag;
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 
 
 /**
@@ -65,6 +74,12 @@ import java.util.*;
  * @version 1.01, 02/14/2002
  */
 public class ResultSetContainer implements Serializable, List<ResultSetContainer.ResultSetRow>, Cloneable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6750551108318797975L;
+
     private static Logger log = Logger.getLogger(ResultSetContainer.class);
 
     // Stores ArrayList of ResultSetRow
@@ -440,6 +455,55 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
         endRow = end;
     }
 
+    /**
+     * Build a container with an extra calculated column
+     * 
+     * @param rs container to be copied
+     * @param cf extra calculated column 
+     * @throws Exception
+     */
+    public ResultSetContainer(ResultSetContainer rs, CalculatedColumn cc) throws Exception {
+        this(rs, new CalculatedColumn[]{cc});
+    }
+
+    /**
+     * Build a container with extra calculated columns
+     * 
+     * @param rs container calculated be copied
+     * @param cf extra calculated columns 
+     * @throws Exception
+     */
+    public ResultSetContainer(ResultSetContainer rs, CalculatedColumn []cc) throws Exception {
+        this();
+        initializeMetaData(rs);
+
+        this.dataAfter = rs.croppedDataAfter(); 
+        this.dataBefore = rs.croppedDataBefore(); 
+
+        // Add the extra columns
+        ResultColumn tempColumns[] = new ResultColumn[columns.length + cc.length];
+        System.arraycopy(columns, 0, tempColumns, 0, columns.length);
+        
+        for (int i = 0; i < cc.length; i++) { 
+            tempColumns[columns.length + i] = cc[i]; 
+            columnNameMap.put(cc[i].getName(), columns.length + i);
+        }
+        
+        columns = tempColumns;
+
+        for (ResultSetRow rsr : rs) {
+            TCResultItem[] items = rsr.getItems();
+            
+            TCResultItem[] allItems = new TCResultItem[items.length + cc.length];
+            System.arraycopy(items, 0, allItems, 0, items.length);
+
+            for (int i = 0; i < cc.length; i++) { 
+                allItems[items.length + i] = cc[i].calculate(rsr);
+            }
+            
+            data.add(new ResultSetRow(allItems));
+        }
+    }
 
     // Data item retrieval
     private TCResultItem getItem(ResultSet rs, int i) throws Exception {
@@ -991,6 +1055,8 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
      * It provides methods for getting specific elements out.
      */
     public class ResultSetRow implements Cloneable, Serializable {
+        private static final long serialVersionUID = 1242749104807930817L;
+
         private TCResultItem[] mtcItems;
         private Map<String, Object> itemMap;
 
@@ -1201,6 +1267,12 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
         public Map<String, Object> getMap() {
             return Collections.unmodifiableMap(itemMap);
         }
+        
+        public TCResultItem[] getItems() {
+            TCResultItem[] items = new TCResultItem[mtcItems.length];
+            System.arraycopy(mtcItems, 0, items, 0, mtcItems.length);
+            return items;
+        }
 
     }
 
@@ -1278,6 +1350,10 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
      */
     public boolean containsAll(Collection<?> c) {
         return data.containsAll(c);
+    }
+
+    public Map<String, Integer> getColumnNameMap() {
+        return Collections.unmodifiableMap(columnNameMap);
     }
 
     /**

@@ -1204,6 +1204,7 @@ public class TCLoadRound extends TCLoad {
         int count = 0;
         PreparedStatement psSel = null;
         PreparedStatement psSel2 = null;
+        PreparedStatement psSelRatingOrder = null;
         PreparedStatement psIns = null;
         PreparedStatement psUpd = null;
         ResultSet rs = null;
@@ -1237,6 +1238,22 @@ public class TCLoadRound extends TCLoad {
             query.append("   AND rs.segment_id = " + CODING_SEGMENT_ID);
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
+            query = new StringBuffer(100);
+            query.append(" SELECT max(r1.rating_order)  ");
+            query.append("         from round r1, round r2 ");
+            query.append("         , round_type_lu rt1 ");
+            query.append("         , round_type_lu rt2 ");
+            query.append("         where  r2.round_id = ? ");
+            query.append("         AND r1.rated_ind = 1 ");
+            query.append("         AND r2.rated_ind = 1 ");
+            query.append("         AND r1.round_type_id = rt1.round_type_id ");
+            query.append("         AND r2.round_type_id = rt2.round_type_id ");
+            query.append("         AND rt1.algo_rating_type_id = rt2.algo_rating_type_id ");
+            query.append("         AND ((r1.calendar_id < r2.calendar_id) ");
+            query.append("         OR (r1.calendar_id = r2.calendar_id AND r1.time_id < r2.time_id) ");
+            query.append("         OR  (r1.calendar_id = r2.calendar_id AND r1.time_id = r2.time_id AND r1.round_id < r2.round_id)) ");
+            psSelRatingOrder = prepareStatement(query.toString(), TARGET_DB);
+
             // We have 8 values in the insert as opposed to 7 in the select
             // because we want to provide a default value for failed. We
             // don't have a place to select failed from in the transactional
@@ -1257,10 +1274,12 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,short_name ");       // 12
             query.append("       ,forum_id ");         // 13
             query.append("       ,rated_ind ");        // 14
-            query.append("       ,region_id) ");       // 15
+            query.append("       ,region_id ");           // 15
+            query.append("       ,time_id ");         // 16
+            query.append("       ,rating_order) ");         // 17
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");
-            query.append("?,?,?,?,?)");
+            query.append("?,?,?,?,?,?,?)");
 
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
@@ -1280,7 +1299,9 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,forum_id = ? ");        // 12
             query.append("       ,rated_ind = ? ");       // 13
             query.append("       ,region_id = ? ");       // 14
-            query.append(" WHERE round_id = ? ");         // 15
+            query.append("       ,time_id = ? ");         // 15
+            query.append("       ,rating_order = ? ");         // 16
+            query.append(" WHERE round_id = ? ");         // 17
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
@@ -1292,6 +1313,14 @@ public class TCLoadRound extends TCLoad {
             rs = psSel.executeQuery();
             while (rs.next()) {
                 int round_id = rs.getInt(1);
+                
+                psSelRatingOrder.clearParameters();
+                psSelRatingOrder.setInt(1, round_id);
+                rs2 = psSelRatingOrder.executeQuery();
+                int ratingOrder = rs2.next() ? rs2.getInt(1) : 0;
+                if (rs.getInt("rated_ind")==1) ratingOrder++;
+                close(rs2);
+
                 psSel2.clearParameters();
                 psSel2.setInt(1, round_id);
                 rs2 = psSel2.executeQuery();
@@ -1299,6 +1328,7 @@ public class TCLoadRound extends TCLoad {
                 // Retrieve the calendar_id for the start_time of this round
                 java.sql.Timestamp stamp = rs.getTimestamp(6);
                 int calendar_id = lookupCalendarId(stamp, TARGET_DB);
+                int time_id = lookupTimeId(stamp, TARGET_DB);
 
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
@@ -1323,7 +1353,9 @@ public class TCLoadRound extends TCLoad {
                         psUpd.setNull(14, java.sql.Types.DECIMAL);  // region_id
                     }
 
-                    psUpd.setInt(15, rs.getInt(1));  // round_id
+                    psUpd.setInt(15, time_id);
+                    psUpd.setInt(16, ratingOrder);
+                    psUpd.setInt(17, rs.getInt(1));  // round_id
 
                     retVal = psUpd.executeUpdate();
                     count += retVal;
@@ -1353,6 +1385,8 @@ public class TCLoadRound extends TCLoad {
                     } else {
                         psIns.setNull(15, java.sql.Types.DECIMAL);  // region_id
                     }
+                    psIns.setInt(16, time_id);
+                    psIns.setInt(17, ratingOrder);
 
                     retVal = psIns.executeUpdate();
                     count += retVal;
@@ -1376,6 +1410,7 @@ public class TCLoadRound extends TCLoad {
             close(rs2);
             close(psSel);
             close(psSel2);
+            close(psSelRatingOrder);
             close(psIns);
             close(psUpd);
         }
