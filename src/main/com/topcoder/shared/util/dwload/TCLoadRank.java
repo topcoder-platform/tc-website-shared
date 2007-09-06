@@ -1119,6 +1119,7 @@ public class TCLoadRank extends TCLoad {
             query.append(" DELETE");
             query.append(" FROM school_coder_rank");
             query.append(" WHERE coder_rank_type_id = " + rankType);
+            query.append(" AND algo_rating_type_id = " + ratingType);
             psDel = prepareStatement(query.toString(), TARGET_DB);
 
             query = new StringBuffer(100);
