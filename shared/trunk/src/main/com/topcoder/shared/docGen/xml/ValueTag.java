@@ -254,10 +254,7 @@ public final class ValueTag extends Tag {
         retVal.append(this.name);
         retVal.append(">");
 
-        if (filterOn)
-            retVal.append(filterChars(this.value));
-        else
-            retVal.append(this.value);
+        retVal.append(filterChars(this.value, filterOn));
 
         retVal.append("</");
         retVal.append(this.name);
@@ -284,14 +281,16 @@ public final class ValueTag extends Tag {
     /**
      *
      * @param str
+     * @param filterOn 
      * @return
      */
-    private final String filterChars(String str) {
+    private final String filterChars(String str, boolean filterOn) {
         /*
         <       lt	        <		Less than sign
         >       gt	        >		Greater than sign
         &       amp	        &		Ampersand
         "       quot	"		Double quote sign
+        '       apos        '       apostrophe
         */
         if (str == null) {
             return "";
@@ -316,9 +315,13 @@ public final class ValueTag extends Tag {
                         buffer.replace(i, i + 1, "&quot;");
                         i += 5;
                         break;
+                    case '\'':
+                        buffer.replace(i, i + 1, "&apos;");
+                        i += 5;
+                        break;
                     default:
                         int thisCode = (int) thisChar;
-                        if (
+                        if (filterOn &&
                                 !(
                                 (thisCode > 31 && thisCode < 127)
                                 || thisCode == 9
