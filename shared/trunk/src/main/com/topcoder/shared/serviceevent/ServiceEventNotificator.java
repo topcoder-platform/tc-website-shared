@@ -48,6 +48,9 @@ public class ServiceEventNotificator {
     }
 
     public void notifyEvent(String eventType, Serializable object) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Notifying "+serviceName+"#"+eventType);
+        }
         HashMap props = new HashMap();
         props.put("serviceName", serviceName);
         props.put("eventType", eventType);

@@ -1,11 +1,12 @@
 package com.topcoder.shared.util;
 
-import com.topcoder.shared.util.logging.Logger;
-
-import javax.naming.Context;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+import javax.naming.Context;
+
+import com.topcoder.shared.util.logging.Logger;
 
 /**
  * A class to hold application wide constants
@@ -50,9 +51,8 @@ public class ApplicationServer {
     public final static int SESSION_ID_LENGTH = bundle.getIntProperty("SESSION_ID_LENGTH", 50);
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
-
     public final static int WEB_SERVER_ID = bundle.getIntProperty("WEB_SERVER_ID", 1);
-    
+
     public static void close(ResultSet rs) {
         if (rs != null) {
             try {

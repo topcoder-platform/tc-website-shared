@@ -1,13 +1,20 @@
 package com.topcoder.shared.messaging;
 
+import java.util.Hashtable;
+
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import com.topcoder.shared.util.TCContext;
 import com.topcoder.shared.util.logging.Logger;
-
-import javax.jms.*;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Hashtable;
 
 /**
  * @author mike lydon
@@ -49,6 +56,7 @@ public class ReceiverController extends Thread {
     boolean active;
     boolean initInProgress;
     boolean transacted;
+
     private static Logger log = Logger.getLogger(ReceiverController.class);
 
     /**
@@ -178,8 +186,6 @@ public class ReceiverController extends Thread {
      * @return
      */
     public synchronized ObjectMessage getMessage(int blockTime, boolean autoCommit) {
-
-        boolean retVal = false;
         ObjectMessage msg = null;
         boolean alreadyWaited = false;
 
@@ -364,4 +370,7 @@ public class ReceiverController extends Thread {
 
     }
 
+    public Queue getQueue() {
+        return queue;
+    }
 }

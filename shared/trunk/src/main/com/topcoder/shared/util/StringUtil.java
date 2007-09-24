@@ -85,4 +85,40 @@ public final class StringUtil {
     }
 
 
+    /**
+     * Takes the given string and converts it so that it will maintain it's
+     * format on an html page.
+     *
+     * @return String
+     */
+    public static String htmlEncode(String s) {
+        StringBuffer sb = new StringBuffer();
+        char ch = ' ';
+        if (s == null) return "";
+        for (int i = 0; i < s.length(); i++) {
+            if ((ch = s.charAt(i)) == '>') {
+                sb.append("&gt;");
+            } else if (ch == 9) {  //we'll go with 4 spaces for a tab
+                sb.append("&#160;&#160;&#160;&#160;");
+            } else if (ch == '<') {
+                sb.append("&lt;");
+            } else if (ch == '\"') {
+                sb.append("&quot;");
+            } else if (ch == '&') {
+                sb.append("&amp;");
+            } else if (ch == 13 && s.length() > (i + 1) && s.charAt(i + 1) == 10) {
+                sb.append("<br>");
+                i++;
+            } else if (ch == 10 || ch == 13) {
+                sb.append("<br>");
+            } else if (ch == '\'') {
+                sb.append("&#039;");
+            } else if (ch == '\\') {
+                sb.append("&#092;");
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
+    }
 }

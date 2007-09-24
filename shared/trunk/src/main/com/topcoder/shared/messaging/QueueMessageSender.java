@@ -1,14 +1,27 @@
 package com.topcoder.shared.messaging;
 
-import com.topcoder.shared.util.logging.Logger;
-
-import javax.jms.*;
-import javax.naming.*;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.Iterator;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import com.topcoder.shared.util.logging.Logger;
 
 /**
  * @author mike lydon
@@ -19,6 +32,9 @@ public class QueueMessageSender {
     private static Logger log = Logger.getLogger(QueueMessageSender.class);
     private static final int PRIMARY = 0;
     private static final int BACKUP = 1;
+    
+    private static final HashMap EMPTY_HASHMAP = new HashMap();
+    private static final Long DEFAULT_TIME_TO_LIVE = new Long(Message.DEFAULT_TIME_TO_LIVE);
 
     Context ctx;
     QueueConnectionFactory qconFactory;
@@ -102,7 +118,7 @@ public class QueueMessageSender {
     public synchronized void setMessObject(Object obj) {
         this.messObject = obj;
     }
-    private static final HashMap EMPTY_HASHMAP = new HashMap();
+
     public boolean send(Object o) {
         return sendMessage(EMPTY_HASHMAP, o);
     }
@@ -122,11 +138,15 @@ public class QueueMessageSender {
      * @param messObject
      * @return
      */
-    public synchronized boolean sendMessage(HashMap props, Object messObject) {
-        return sendMessageGetID(props,messObject)!=null;
+    public boolean sendMessage(HashMap props, Object messObject) {
+        return sendMessageGetID(props,messObject, DEFAULT_TIME_TO_LIVE)!=null;
     }
-    public synchronized String sendMessageGetID(HashMap props, Object messObject) {
-
+    
+    public String sendMessageGetID(HashMap props, Object messObject) {
+        return sendMessageGetID(props, messObject, DEFAULT_TIME_TO_LIVE);
+    }
+    
+    public synchronized String sendMessageGetID(HashMap props, Object messObject, Long timeToLive) {
         int activeQueue = PRIMARY;
         String retVal = null;
         boolean reInitPrimary = false;
@@ -151,7 +171,7 @@ public class QueueMessageSender {
                         }
                     }
                 }
-                if ((retVal = sendMessage(this.qsession, this.qsender, props, messObject))!=null) {
+                if ((retVal = sendMessage(this.qsession, this.qsender, props, messObject, timeToLive))!=null) {
                     // Message was sent successfully... let's break out.
                     break;
                 } else {
@@ -185,7 +205,7 @@ public class QueueMessageSender {
                         break;
                     }
                 }
-                if ((retVal = sendMessage(this.qsession_BKP, this.qsender_BKP, props, messObject))!=null) {
+                if ((retVal = sendMessage(this.qsession_BKP, this.qsender_BKP, props, messObject, timeToLive))!=null) {
                     // Got the message to go on the backup queue... let's break out.
                     break;
                 } else {
@@ -223,12 +243,10 @@ public class QueueMessageSender {
      * @param messObject
      * @return
      */
-    private String sendMessage(QueueSession qSess, QueueSender qSend, HashMap props, Object messObject) {
+    private String sendMessage(QueueSession qSess, QueueSender qSend, HashMap props, Object messObject, Long timeToLive) {
         try {
-
             ObjectMessage msg = qSess.createObjectMessage();
             //msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-
             if (!props.isEmpty()) {
                 Set keys = props.keySet();
                 Iterator iter = keys.iterator();
@@ -260,7 +278,9 @@ public class QueueMessageSender {
                     } else if (value instanceof Float) {
                         Float holder = (Float) value;
                         msg.setFloatProperty(key, holder.floatValue());
-                    }
+                    } else if ("JMSReplyTo".equals(key) && value instanceof Destination) {
+                        msg.setJMSReplyTo((Destination) value);
+                    } 
                 }
             }
 
@@ -268,13 +288,14 @@ public class QueueMessageSender {
                 msg.setObject((Serializable) messObject);
             }
 
+            int mode;
             if (this.dbPersistent) {
-                msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+                mode = DeliveryMode.PERSISTENT;
             } else {
-                msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
+                mode = DeliveryMode.NON_PERSISTENT;
             }
 
-            qSend.send(msg);
+            qSend.send(msg, mode, Message.DEFAULT_PRIORITY, timeToLive.longValue());
             return msg.getJMSMessageID();
 
         } catch (JMSException e) {

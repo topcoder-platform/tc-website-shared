@@ -1,22 +1,21 @@
 package com.topcoder.shared.messaging;
 
-import com.topcoder.shared.util.TCContext;
-import com.topcoder.shared.util.logging.Logger;
-
 import java.io.Serializable;
+
 import javax.jms.ObjectMessage;
+import javax.jms.Queue;
 import javax.naming.Context;
 import javax.naming.NamingException;
+
+import com.topcoder.shared.util.TCContext;
+import com.topcoder.shared.util.logging.Logger;
 
 /**
  * @author mike lydon
  * @version $Revision$
  */
 public class QueueMessageReceiver {
-
     private static Logger log = Logger.getLogger(QueueMessageReceiver.class);
-    private static final int PRIMARY = 0;
-    private static final int BACKUP = 1;
 
     Context ctx;
 
@@ -39,7 +38,7 @@ public class QueueMessageReceiver {
     private boolean transacted;
 
     private boolean alive = true;
-
+    private boolean honorBlockTime;
     private int pollTime;
     private int errorTime;
     private int consoleMessageTime;
@@ -62,6 +61,7 @@ public class QueueMessageReceiver {
         this.ctxCreated = true;
         initObject(factoryName, queueName, "");
     }
+    
 
     /**
      *
@@ -166,19 +166,9 @@ public class QueueMessageReceiver {
      * @return
      */
     public ObjectMessage getMessage(int time) {
-
-        int activeQueue = PRIMARY;
-        boolean reInitPrimary = false;
-        boolean reInitBackup = false;
         ObjectMessage retVal = null;
 
-        if (!primaryReady) {
-            setPrimaryController();
-        }
-
-        if (faultTolerant && !backupReady) {
-            setBackupController();
-        }
+        initIfNecessary();
 
         while (isAlive()) {
             retVal = controller.getMessage(time, this.autoCommit);
@@ -193,6 +183,9 @@ public class QueueMessageReceiver {
                     break;
                 }
             }
+            if (honorBlockTime) {
+                break;
+            }
         }
 
         // Close the queue resources unless they are set to persist.
@@ -202,6 +195,17 @@ public class QueueMessageReceiver {
 
         return retVal;
 
+    }
+
+
+    public void initIfNecessary() {
+        if (!primaryReady) {
+            setPrimaryController();
+        }
+
+        if (faultTolerant && !backupReady) {
+            setBackupController();
+        }
     }
 
     /**
@@ -350,5 +354,17 @@ public class QueueMessageReceiver {
      */
     public void deactivate() {
         this.alive = false;
+    }
+    
+    public Queue getQueue() {
+        if (controller != null) {
+            return controller.getQueue();
+        }
+        return null;
+    }
+
+
+    public void setHonorBlockTime(boolean honorBlockTime) {
+        this.honorBlockTime = honorBlockTime;
     }
 }

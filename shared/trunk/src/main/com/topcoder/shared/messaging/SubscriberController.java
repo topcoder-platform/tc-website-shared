@@ -30,7 +30,7 @@ public class SubscriberController extends Thread {
     long timeStamp;
 
     boolean subscriberReady;
-    boolean active;
+    volatile boolean active;
     boolean initInProgress;
     private static Logger log = Logger.getLogger(SubscriberController.class);
 
@@ -155,7 +155,7 @@ public class SubscriberController extends Thread {
     /**
      *
      */
-    public synchronized void deactivate() {
+    public void deactivate() {
         if (this.active = false) {
             return;
         }
@@ -277,7 +277,7 @@ public class SubscriberController extends Thread {
     /**
      *
      */
-    public synchronized void close() {
+    public void close() {
         this.subscriberReady = false;
 
         try {
