@@ -17,6 +17,7 @@ package com.topcoder.shared.common;
 public interface ServicesNames {
     public final static String EMAIL_QUEUE = "eMailQueue";
     public final static String TEST_SERVICES = "jma.TestServicesHome";
+    public final static String LONG_CONTEST_SERVICES = "jma.TestServicesHome";
     public final static String DB_SERVICES = "jma.DBServicesHome";
     public final static String TRACKING_SERVICES = "jma.TrackingServicesHome";
     public final static String MPSQAS_SERVICES = "jma.MPSQASServicesHome";

@@ -1,8 +1,12 @@
 package com.topcoder.shared.messaging.messages;
 
 public class LongCompileRequest extends BaseLongContestRequest {
-    private long coderID, componentID, roundID, contestID;
-    private int languageID, serverID;
+    private long coderID;
+    private long componentID;
+    private long roundID;
+    private long contestID;
+    private int serverID;
+    private int languageID;
     private String code;
     private boolean example;
 

@@ -46,6 +46,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     private static final byte DOUBLE_ARRAY = 16;
     private static final byte CLASS = 17;
     private static final byte DOUBLE_ARRAY_ARRAY = 18;
+    private static final byte LONG_ARRAY = 19;
 
     // collections
     private static final byte ARRAY_LIST = 33;
@@ -343,6 +344,15 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return intArray;
     }
+    
+    private long[] readJustLongArray() throws IOException {
+        int size = readShort();
+        long[] longArray = new long[size];
+        for (int i = 0; i < size; i++) {
+            longArray[i] = readLong();
+        }
+        return longArray;
+    }
 
     private void writeIntArray(int[] intArray) throws IOException {
         if (intArray == null) {
@@ -360,6 +370,23 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
     }
 
+    private void writeLongArray(long[] longArray) throws IOException {
+        if (longArray == null) {
+            writeNull();
+            return;
+        }
+        int size = longArray.length;
+        if (size > Short.MAX_VALUE) {
+            throw new RuntimeException("int array big size: " + size);
+        }
+        writeByte(LONG_ARRAY);
+        writeShort((short) size);
+        for (int i = 0; i < size; i++) {
+            writeLong(longArray[i]);
+        }
+    }
+
+    
     private double[] readJustDoubleArray() throws IOException {
         int size = readShort();
         double[] doubleArray = new double[size];
@@ -791,6 +818,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeCharArray((char[]) object);
         } else if (object instanceof int[]) {
             writeIntArray((int[]) object);
+        } else if (object instanceof long[]) {
+            writeLongArray((long[]) object);
         } else if (object instanceof double[]) {
             writeDoubleArray((double[]) object);
         } else if (object instanceof double[][]) {
@@ -866,6 +895,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             return readJustCharArray();
         case INT_ARRAY:
             return readJustIntArray();
+        case LONG_ARRAY:
+            return readJustLongArray();
         case DOUBLE_ARRAY:
             return readJustDoubleArray();
         case DOUBLE_ARRAY_ARRAY:

@@ -2,15 +2,25 @@ package com.topcoder.shared.util;
 
 //import com.topcoder.web.common.BaseProcessor;
 
-import com.topcoder.shared.util.logging.Logger;
-import com.topcoder.shared.util.sql.InformixSimpleDataSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
-import java.io.*;
-import java.sql.*;
+
+import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.shared.util.sql.InformixSimpleDataSource;
 
 /**
  * A class to hold constants related to the database, and some convenience methods.
@@ -88,8 +98,6 @@ public class DBMS {
     public final static String REFERENCE_TESTING_QUEUE = getProperty("REFERENCE_TESTING_QUEUE", "referenceTestingQueue");
     public final static String TOPIC = getProperty("TOPIC", "contestTopic");
     public final static String WEB_SERVICE_QUEUE = getProperty("WEB_SERVICE_QUEUE", "webServiceGeneratorQueue");
-    public final static String LONG_RESPONSE_QUEUE = getProperty("LONG_RESPONSE_QUEUE", "queue/longResponseQueue");
-    public final static String LONG_TEST_QUEUE = getProperty("LONG_TEST_QUEUE", "queue/longTestQueue");
     public final static String RESPONSE_QUEUE = getProperty("RESPONSE_QUEUE", "queue/screeningResponseQueue");
     public final static String REQUEST_QUEUE = getProperty("REQUEST_QUEUE", "queue/screeningRequestQueue");
 
@@ -143,6 +151,7 @@ public class DBMS {
     public final static String MPSQAS_TOPIC = getProperty("MPSQAS_TOPIC", "mpsqasTopic");
     public final static String RESTART_TOPIC = getProperty("RESTART_TOPIC", "restartTopic");
     public final static String EVENT_QUEUE = getProperty("EVENT_QUEUE", "eventQueue");
+    public final static String LONG_CONTEST_SVC_EVENT_TOPIC = getProperty("LONG_CONTEST_SVC_EVENT_TOPIC", "servicesEventTopic");
     public final static String LONG_TEST_SVC_EVENT_TOPIC = getProperty("LONG_TEST_SVC_EVENT_TOPIC", "servicesEventTopic");
     public final static String MPSQAS_SVC_EVENT_TOPIC = getProperty("MPSQAS_SVC_EVENT_TOPIC", "servicesEventTopic");
 
@@ -626,21 +635,39 @@ public class DBMS {
     }
 
     public static void close(Connection conn, PreparedStatement ps, ResultSet rs) {
-        try {
-            close(rs);
-        } finally {
-            try {
-                close(ps);
-            } finally {
-                close(conn);
-            }
-        }
+        close(rs);
+        close(ps);
+        close(conn);
+    }
+    
+    public static void close(PreparedStatement ps, ResultSet rs) {
+        close(rs);
+        close(ps);
+    }
+    
+    public static void closeAndResetAC(Connection conn, PreparedStatement ps, ResultSet rs) {
+        close(rs);
+        close(ps);
+        closeAndResetAC(conn);
     }
 
     public static void close(Connection conn) {
         if (conn == null) return;
         try {
             conn.close();
+        } catch (Exception e) {
+            printException(e);
+        }
+    }
+    
+    public static void closeAndResetAC(Connection conn) {
+        if (conn == null) return;
+        try {
+            try {
+                conn.setAutoCommit(true);
+            } finally {
+                conn.close();
+            }
         } catch (Exception e) {
             printException(e);
         }
