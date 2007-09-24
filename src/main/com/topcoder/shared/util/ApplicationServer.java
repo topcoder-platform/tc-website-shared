@@ -1,12 +1,11 @@
 package com.topcoder.shared.util;
 
+import com.topcoder.shared.util.logging.Logger;
+
+import javax.naming.Context;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
-import javax.naming.Context;
-
-import com.topcoder.shared.util.logging.Logger;
 
 /**
  * A class to hold application wide constants
@@ -40,6 +39,7 @@ public class ApplicationServer {
     public static String FILE_CONVERSION_PROVIDER_URL = bundle.getProperty("FILE_CONVERSION_PROVIDER_URL", "172.16.210.53:1099");
     public static String DISTRIBUTED_UI_SERVER_NAME = bundle.getProperty("DISTRIBUTED_UI_SERVER_NAME", "63.118.154.181:9380");
     public static String OR_WEBSERVICES_SERVER_NAME = bundle.getProperty("OR_WEBSERVICES_SERVER_NAME", "63.118.154.186:8080");
+    public static String WIKI_SERVER_NAME = bundle.getProperty("WIKI_SERVER_NAME", "www.dev.topcoder.com/wiki");
 
 
     public final static String JNDI_FACTORY = bundle.getProperty("JNDI_FACTORY", "weblogic.jndi.WLInitialContextFactory");
