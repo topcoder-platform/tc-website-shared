@@ -4,6 +4,7 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.web.common.IdGeneratorClient;
 
 import javax.ejb.EJBException;
 import java.util.Date;
@@ -173,12 +174,6 @@ public class EmailJobBean extends BaseEJB {
             conn = DBMS.getTransConnection();
             conn.setAutoCommit(false);
 
-            // create ps1
-            sqlStmt.setLength(0);
-            sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
-            ps1 = conn.prepareStatement(sqlStmt.toString());
-            ps1.setInt(1, JOB_SEQUENCE_ID);
-
             // create ps2
             sqlStmt.setLength(0);
             sqlStmt.append(" INSERT INTO");
@@ -215,12 +210,7 @@ public class EmailJobBean extends BaseEJB {
             sqlStmt.append(") VALUES (?,?,?,?,?,?,?)");
             ps3 = conn.prepareStatement(sqlStmt.toString());
 
-            // run ps1
-            rs = ps1.executeQuery();
-            rs.next();
-            jobId = rs.getInt(1);
-            DBMS.close(rs);
-            conn.commit();
+            jobId = (int)IdGeneratorClient.getSeqId("SCHED_JOB_SEQ");
 
             // run ps2
             ps2.setInt(1, jobId);
@@ -322,13 +312,7 @@ public class EmailJobBean extends BaseEJB {
         try {
             conn = DBMS.getConnection();
 
-            sqlStmt.setLength(0);
-            sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
-            ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setInt(1, EmailJobBean.JOB_DETAIL_SEQUENCE_ID);
-            rs = ps.executeQuery();
-            rs.next();
-            id = rs.getInt(1);
+            id = (int)IdGeneratorClient.getSeqId("SCHED_JOB_DETAIL_SEQ");
             String data = "" + sourceJobId;
 
             sqlStmt.setLength(0);

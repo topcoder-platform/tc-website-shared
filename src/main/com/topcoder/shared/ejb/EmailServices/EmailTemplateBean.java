@@ -4,6 +4,7 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.web.common.IdGeneratorClient;
 
 import javax.ejb.EJBException;
 import java.util.HashMap;
@@ -47,13 +48,8 @@ public class EmailTemplateBean extends BaseEJB {
         try {
             conn = DBMS.getConnection();
 
-            sqlStmt.setLength(0);
-            sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
-            ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setInt(1, EmailJobBean.EMAIL_TEMPLATE_SEQUENCE_ID);
-            rs = ps.executeQuery();
-            rs.next();
-            id = rs.getInt(1);
+            id = (int)IdGeneratorClient.getSeqId("EMAIL_TEMPLATE_SEQ");
+
 
             sqlStmt.setLength(0);
             sqlStmt.append(" INSERT INTO");

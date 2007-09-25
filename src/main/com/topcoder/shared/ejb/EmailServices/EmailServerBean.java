@@ -4,6 +4,7 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
+import com.topcoder.web.common.IdGeneratorClient;
 
 import javax.ejb.EJBException;
 import java.util.Date;
@@ -270,26 +271,8 @@ public class EmailServerBean extends BaseEJB {
         log.debug("addDetailRecord (jobId " + jobId + ")");
 
         try {
-            try {
-                conn = DBMS.getConnection();
 
-
-                sqlStmt.setLength(0);
-
-                sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
-
-                ps = conn.prepareStatement(sqlStmt.toString());
-                ps.setInt(1, EmailJobBean.JOB_DETAIL_SEQUENCE_ID);
-
-                rs = ps.executeQuery();
-                rs.next();
-
-                id = rs.getInt(1);
-            } finally {
-                DBMS.close(rs);
-                DBMS.close(ps);
-            }
-
+            id = (int) IdGeneratorClient.getSeqId("SCHED_JOB_DETAIL_SEQ");
             try {
 
                 sqlStmt.setLength(0);
@@ -512,54 +495,13 @@ public class EmailServerBean extends BaseEJB {
      * @throws EJBException
      */
     public long getSchedulerId() throws EJBException {
-        javax.naming.Context ctx = null;
-        javax.sql.DataSource ds = null;
-        java.sql.Connection conn = null;
-        java.sql.PreparedStatement ps = null;
-        java.sql.ResultSet rs = null;
-        StringBuffer sqlStmt = new StringBuffer(500);
-
-        //log.debug("getSchedulerId requested");
 
         try {
-            conn = DBMS.getConnection();
-
-            sqlStmt.setLength(0);
-            sqlStmt.append(" EXECUTE PROCEDURE nextval(?)");
-            ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setInt(1, SCHEDULER_SEQUENCE_ID);
-            rs = ps.executeQuery();
-            rs.next();
-            long ret = rs.getLong(1);
-            if (ret > 0L)
-                return ret;
-            sqlStmt.setLength(0);
-            sqlStmt.append(" INSERT INTO");
-            sqlStmt.append(" sequence_object (");
-            sqlStmt.append(" id");
-            sqlStmt.append(",");
-            sqlStmt.append(" current_value");
-            sqlStmt.append(",");
-            sqlStmt.append(" name");
-            sqlStmt.append(") VALUES (?,?,?)");
-            ps = conn.prepareStatement(sqlStmt.toString());
-            ps.setInt(1, SCHEDULER_SEQUENCE_ID);
-            ps.setInt(2, 2);
-            ps.setString(3, "SCHEDULER_ID_SEQ");
-            int rows = ps.executeUpdate();
-            if (rows != 1) {
-                throw new Exception("insert command affected " + rows + " rows.");
-            }
-            return 1;
+            return IdGeneratorClient.getSeqId("SCHEDULER_SEQ");
         } catch (Exception dberr) {
             log.error("Failed to get schedulerId", dberr);
             throw new EJBException("Failed to get schedulerId", dberr);
-        } finally {
-            DBMS.close(rs);
-            DBMS.close(ps);
-            DBMS.close(conn);
-            ApplicationServer.close(ctx);
-        }
+        } 
     }
 
     /**
