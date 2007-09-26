@@ -4,7 +4,6 @@ import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
-import com.topcoder.web.common.IdGeneratorClient;
 
 import javax.ejb.EJBException;
 import java.util.Date;
