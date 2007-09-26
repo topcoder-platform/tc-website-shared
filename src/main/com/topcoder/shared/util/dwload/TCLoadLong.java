@@ -1723,7 +1723,7 @@ public class TCLoadLong extends TCLoadRank {
 
         Integer previous = null;
         try {
-            ps = prepareStatement(query.toString(), SOURCE_DB);
+            ps = prepareStatement(query.toString(), TARGET_DB);
             ps.setInt(1, roundId);
             rs = ps.executeQuery();
             if (rs.next()) {
