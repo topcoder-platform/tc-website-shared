@@ -1,5 +1,8 @@
 package com.topcoder.shared.util.dwload;
 
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,9 +15,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 
 /**
  * @author dok
@@ -1714,31 +1714,26 @@ public class TCLoadLong extends TCLoadRank {
         ResultSet rs = null;
         
         StringBuffer query = new StringBuffer(100);
-        query.append("SELECT r.round_id ");
-        query.append("FROM round r, round_type_lu rt, round_segment rs "); 
-        query.append("WHERE r.round_type_id = rt.round_type_id "); 
-        query.append("AND rs.round_id = r.round_id ");
-        query.append("AND rs.segment_id = 2 ");
-        query.append("AND algo_rating_type_id = 3 ");
-        query.append("AND rated_ind = 1 ");
-        query.append("ORDER BY rs.start_time "); 
+        query.append("select r1.round_id from round r1, round_type_lu rt1, round r2 ");
+        query.append("where r1.rating_order = r2.rating_order - 1  ");
+        query.append("and rt1.round_type_id = r1.round_type_id ");
+        query.append("and rt1.algo_rating_type_id = 3 ");
+        query.append("and r2.round_id = ? ");
+
 
         Integer previous = null;
         try {
             ps = prepareStatement(query.toString(), SOURCE_DB);
+            ps.setInt(1, roundId);
             rs = ps.executeQuery();
-            while(rs.next()) {
-                if (rs.getInt("round_id") == roundId) {
-                    return previous;
-                }
+            if (rs.next()) {
                 previous = rs.getInt("round_id");
             }
-            return null;
-            //throw new Exception("Round " + roundId + " not found or is not rated");
         } finally {
             close(rs);
             close (ps);
         }
+        return previous;
         
     }
     /**
