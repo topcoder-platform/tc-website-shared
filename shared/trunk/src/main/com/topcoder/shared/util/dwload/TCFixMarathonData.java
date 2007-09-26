@@ -1,13 +1,13 @@
 package com.topcoder.shared.util.dwload;
 
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-
-import com.topcoder.shared.util.logging.Logger;
 
 /**
  * Fix some missing data for marathon matches:
@@ -409,7 +409,7 @@ public class TCFixMarathonData extends TCLoadRank {
         StringBuffer query = new StringBuffer(100);
         query.append("select round_id from round ");
         query.append("where round_type_id in (13,15,19) ");
-        query.append("order by calendar_id, time_id ");
+        query.append("order by rating_order");
         
         try {
             ps = prepareStatement(query.toString(), TARGET_DB);
