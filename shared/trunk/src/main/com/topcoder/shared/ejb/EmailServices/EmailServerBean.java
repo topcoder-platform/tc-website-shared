@@ -273,6 +273,7 @@ public class EmailServerBean extends BaseEJB {
 
             id = (int) IdGeneratorClient.getSeqId("SCHED_JOB_DETAIL_SEQ");
             try {
+                conn = DBMS.getConnection();
 
                 sqlStmt.setLength(0);
                 sqlStmt.append(" INSERT INTO");
