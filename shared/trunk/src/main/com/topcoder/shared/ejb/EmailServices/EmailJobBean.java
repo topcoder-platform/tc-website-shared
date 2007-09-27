@@ -3,6 +3,7 @@ package com.topcoder.shared.ejb.EmailServices;
 import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.IdGeneratorClient;
 import com.topcoder.shared.util.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -311,7 +312,7 @@ public class EmailJobBean extends BaseEJB {
         try {
             conn = DBMS.getConnection();
 
-            id = (int)IdGeneratorClient.getSeqId("SCHED_JOB_DETAIL_SEQ");
+            id = (int) IdGeneratorClient.getSeqId("SCHED_JOB_DETAIL_SEQ");
             String data = "" + sourceJobId;
 
             sqlStmt.setLength(0);
