@@ -13,13 +13,21 @@ package com.topcoder.shared.util.dwload;
  *****************************************************************************/
 
 import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.sql.InformixSimpleDataSource;
+import com.topcoder.shared.util.IdGeneratorClient;
 import com.topcoder.shared.util.logging.Logger;
-import com.topcoder.util.idgenerator.IdGenerator;
-import com.topcoder.util.idgenerator.sql.SimpleDB;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 public class TCLoadRequests extends TCLoad {
     private static Logger log = Logger.getLogger(TCLoadRequests.class);
@@ -374,20 +382,7 @@ public class TCLoadRequests extends TCLoad {
             ret = ((Long) sessionMap.get(sessionId)).longValue();
         } else {
             //look it up and see if it's in the db
-
-            if (!IdGenerator.isInitialized()) {
-                IdGenerator.init(
-                        new SimpleDB(),
-                        new InformixSimpleDataSource(DBMS.INFORMIX_CONNECT_STRING),
-                        "sequence_object",
-                        "name",
-                        "current_value",
-                        9999999999L,
-                        1,
-                        false
-                );
-            }
-            ret = IdGenerator.nextId("HTTP_SESSION_SEQ");
+            ret = IdGeneratorClient.getSeqId("HTTP_SESSION_SEQ");
             sessionMap.put(sessionId, new Long(ret));
         }
         return ret;
