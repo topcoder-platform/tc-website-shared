@@ -1,6 +1,5 @@
-package com.topcoder.shared.ejb.EmailServices;
+package com.topcoder.shared.util;
 
-import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.util.idgenerator.IDGenerationException;
 import com.topcoder.util.idgenerator.IDGenerator;

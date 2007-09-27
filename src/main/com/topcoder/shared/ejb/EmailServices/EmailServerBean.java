@@ -3,6 +3,7 @@ package com.topcoder.shared.ejb.EmailServices;
 import com.topcoder.shared.ejb.BaseEJB;
 import com.topcoder.shared.util.ApplicationServer;
 import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.IdGeneratorClient;
 import com.topcoder.shared.util.logging.Logger;
 
 import javax.ejb.EJBException;
