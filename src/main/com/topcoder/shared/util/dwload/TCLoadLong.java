@@ -4,17 +4,8 @@ import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 /**
  * @author dok
@@ -83,7 +74,7 @@ public class TCLoadLong extends TCLoadRank {
      * This method performs the load for the round information tables
      */
     public void performLoad() throws Exception {
-        try {                       
+        try {
             log.info("Loading round: " + roundId);
 
             fStartTime = new java.sql.Timestamp(System.currentTimeMillis());
@@ -110,7 +101,16 @@ public class TCLoadLong extends TCLoadRank {
 
             loadRating();
 
-            // Load ranks
+            // Load algo_rating_history
+            clearHistory(roundId);
+
+            Integer prevRoundId = getPreviousRound(roundId);
+            if (prevRoundId != null) {
+                copyHistory(prevRoundId, roundId);
+            }
+            loadHistory(roundId);
+
+            // Load ranks, history has to come first because the rank loads depend on it.
             List l = getCurrentRatings(MARATHON_RATING_TYPE_ID);
 
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
@@ -127,18 +127,10 @@ public class TCLoadLong extends TCLoadRank {
 
             loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
             loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-            
+
             loadStreaks();
-            
-            // Load algo_rating_history
-            clearHistory(roundId);
-            
-            Integer prevRoundId = getPreviousRound(roundId);
-            if (prevRoundId != null) {
-                copyHistory(prevRoundId, roundId);
-            }
-            loadHistory(roundId);
-            
+
+
             setLastUpdateTime();
 
             log.info("SUCCESS: Round " + roundId +
@@ -551,7 +543,7 @@ public class TCLoadLong extends TCLoadRank {
                 psIns.setBytes(9, rs.getBytes("fatal_errors"));
                 psIns.setDouble(10, rs.getDouble("score"));
                 psIns.setInt(11, rs.getInt("test_action"));
-                psIns.setInt(12, rs.getBytes("fatal_errors") == null? 0 : 1);
+                psIns.setInt(12, rs.getBytes("fatal_errors") == null ? 0 : 1);
 
                 retVal = psIns.executeUpdate();
                 count += retVal;
@@ -992,9 +984,9 @@ public class TCLoadLong extends TCLoadRank {
                 psSelRatingOrder.setInt(1, round_id);
                 rs2 = psSelRatingOrder.executeQuery();
                 int ratingOrder = rs2.next() ? rs2.getInt(1) : 0;
-                if (rs.getInt("rated_ind")==1) ratingOrder++;
+                if (rs.getInt("rated_ind") == 1) ratingOrder++;
                 close(rs2);
-                
+
                 psSel2.clearParameters();
                 psSel2.setInt(1, round_id);
                 rs2 = psSel2.executeQuery();
@@ -1002,7 +994,7 @@ public class TCLoadLong extends TCLoadRank {
                 // Retrieve the calendar_id for the start_time of this round
                 java.sql.Timestamp stamp = rs.getTimestamp("start_time");
                 int calendar_id = lookupCalendarId(stamp, TARGET_DB);
-                int time_id = lookupTimeId(stamp,TARGET_DB);
+                int time_id = lookupTimeId(stamp, TARGET_DB);
 
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
@@ -1050,7 +1042,7 @@ public class TCLoadLong extends TCLoadRank {
                     psIns.setString(11, rs.getString("short_name"));  // short name
                     psIns.setString(12, rs.getString("forum_id"));  // forum_id
                     psIns.setInt(13, rs.getInt("rated_ind")); //rating ind
-                    psIns.setInt(14, time_id); 
+                    psIns.setInt(14, time_id);
                     psIns.setInt(15, ratingOrder);
 
                     retVal = psIns.executeUpdate();
@@ -1135,7 +1127,7 @@ public class TCLoadLong extends TCLoadRank {
 
             // Create a map with the number of ratings that each coder has previous to the round being loaded
             Map<Integer, Integer> numRatings = new HashMap<Integer, Integer>();
-            query = new StringBuffer(100);            
+            query = new StringBuffer(100);
             query.append(" select  lcr.coder_id, max(num_ratings) as num");
             query.append(" from round r1 ");
             query.append(" , round r2 ");
@@ -1150,15 +1142,15 @@ public class TCLoadLong extends TCLoadRank {
             query.append(" and rt1.algo_rating_type_id = rt2.algo_rating_type_id ");
             query.append(" group by coder_id ");
             psNumRatings = prepareStatement(query.toString(), TARGET_DB);
-            psNumRatings.setInt(1, roundId);            
+            psNumRatings.setInt(1, roundId);
             rs = psNumRatings.executeQuery();
-            
+
             while (rs.next()) {
                 numRatings.put(rs.getInt("coder_id"), rs.getInt("num"));
             }
-            
+
             close(rs);
-            
+
             query = new StringBuffer(100);
             query.append("INSERT INTO long_comp_result ");
             query.append("      (round_id ");                         // 1
@@ -1182,12 +1174,11 @@ public class TCLoadLong extends TCLoadRank {
             query.append("VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
-            
             // provisional rank
             int provRank = 0;
             int provRankNoTie = 0;
             double provScore = -1;
-            
+
             // On to the load
             psSel.setInt(1, roundId);
             rs = psSel.executeQuery();
@@ -1197,7 +1188,6 @@ public class TCLoadLong extends TCLoadRank {
                 coder_id = rs.getInt("coder_id");
 
 
-                
                 psIns.clearParameters();
                 psIns.setLong(1, round_id);
                 psIns.setLong(2, coder_id);
@@ -1216,22 +1206,22 @@ public class TCLoadLong extends TCLoadRank {
                 psIns.setInt(14, rs.getInt("old_rating") == 0 ? -2 : rs.getInt("old_rating"));
                 psIns.setInt(15, rs.getInt("new_rating") == 0 ? -2 : rs.getInt("new_rating"));
 
-                if ( "Y".equalsIgnoreCase(rs.getString("attended"))) {
+                if ("Y".equalsIgnoreCase(rs.getString("attended"))) {
                     provRankNoTie++;
                     if (provScore != rs.getDouble("point_total")) {
                         provRank = provRankNoTie;
                     }
                     provScore = rs.getDouble("point_total");
-                    
+
                     psIns.setInt(16, provRank);
                 } else {
                     psIns.setNull(16, Types.INTEGER);
                 }
-                
-                int nr =  numRatings.get(coder_id) == null? 0 : numRatings.get(coder_id);
+
+                int nr = numRatings.get(coder_id) == null ? 0 : numRatings.get(coder_id);
                 if (rs.getInt("rated_ind") == 1) nr++;
                 psIns.setInt(17, nr);
-                
+
                 retVal = psIns.executeUpdate();
                 count += retVal;
                 if (retVal != 1) {
@@ -1386,7 +1376,7 @@ public class TCLoadLong extends TCLoadRank {
             query.append("          FROM group_user gu ");
             query.append("         WHERE gu.user_id = lcr.coder_id ");
             query.append("           AND gu.group_id = 13)");
-            
+
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             // Select min and max ratings
@@ -1529,22 +1519,22 @@ public class TCLoadLong extends TCLoadRank {
         }
     }
 
-    private Date getRoundStart(int roundId)    throws SQLException {
+    private Date getRoundStart(int roundId) throws SQLException {
         Integer iRoundId = new Integer(roundId);
         StringBuffer query = null;
         if (fRoundStartHT.get(iRoundId) != null)
             return fRoundStartHT.get(iRoundId);
-        
+
         query = new StringBuffer(100);
         query.append("SELECT rs.start_time ");
         query.append("  FROM round_segment rs ");
         query.append(" WHERE rs.round_id = ? ");
         query.append("   AND rs.segment_id = " + CODING_SEGMENT_ID);
         PreparedStatement pSel = prepareStatement(query.toString(), SOURCE_DB);
-        
+
         pSel.setInt(1, roundId);
         ResultSet rs = pSel.executeQuery();
-        
+
         if (rs.next()) {
             java.sql.Date date = rs.getDate(1);
             fRoundStartHT.put(roundId, date);
@@ -1593,7 +1583,7 @@ public class TCLoadLong extends TCLoadRank {
 
     /**
      * Load algo_rating_history using the ratings in long_comp_result table for the specified round.
-     * 
+     *
      * @param roundId
      * @throws SQLException
      */
@@ -1611,56 +1601,56 @@ public class TCLoadLong extends TCLoadRank {
         query.append("AND rated_ind=1 ");
         psSel = prepareStatement(query.toString(), TARGET_DB);
         psSel.setInt(1, roundId);
-        
+
         query = new StringBuffer(100);
         query.append("UPDATE algo_rating_history SET rating=?, vol=?, num_ratings=num_ratings+1 ");
         query.append("WHERE round_id = ? AND coder_id=?");
         psUpd = prepareStatement(query.toString(), TARGET_DB);
-        
+
         query = new StringBuffer(100);
         query.append("INSERT INTO algo_rating_history(coder_id, round_id, algo_rating_type_id, rating,vol, num_ratings) ");
         query.append("VALUES (?,?,3,?,?,1)");
         psIns = prepareStatement(query.toString(), TARGET_DB);
-        
+
         int count = 0;
         try {
             rs = psSel.executeQuery();
-            
-            while(rs.next()) {
+
+            while (rs.next()) {
                 psUpd.clearParameters();
                 psUpd.setInt(1, rs.getInt("new_rating"));
                 psUpd.setInt(2, rs.getInt("new_vol"));
                 psUpd.setInt(3, roundId);
                 psUpd.setInt(4, rs.getInt("coder_id"));
                 int retVal = psUpd.executeUpdate();
-                
+
                 if (retVal == 0) {
                     psIns.clearParameters();
                     psIns.setInt(1, rs.getInt("coder_id"));
                     psIns.setInt(2, roundId);
                     psIns.setInt(3, rs.getInt("new_rating"));
                     psIns.setInt(4, rs.getInt("new_vol"));
-                    psIns.executeUpdate();                    
+                    psIns.executeUpdate();
                 }
-                
+
                 count++;
-                printLoadProgress(count, " ratings inserted");                
+                printLoadProgress(count, " ratings inserted");
             }
-            
+
             log.info("algo_history_rating inserted from long_comp_result: " + count);
-            
+
         } finally {
             close(rs);
-            close (psSel);
-            close (psIns);
-            close (psUpd);
+            close(psSel);
+            close(psIns);
+            close(psUpd);
         }
 
     }
 
     /**
      * Copy the algo_rating_history rows from a previous round to the actual one.
-     * 
+     *
      * @param prevRoundId
      * @param roundId
      * @throws SQLException
@@ -1670,23 +1660,23 @@ public class TCLoadLong extends TCLoadRank {
         PreparedStatement psSel = null;
         PreparedStatement psIns = null;
         ResultSet rs = null;
-        
+
         StringBuffer query = new StringBuffer(100);
         query.append("SELECT coder_id, algo_rating_type_id, rating,vol, num_ratings ");
         query.append(" from algo_rating_history where round_id = ?");
         psSel = prepareStatement(query.toString(), TARGET_DB);
         psSel.setInt(1, prevRoundId);
-        
+
         query = new StringBuffer(100);
         query.append("INSERT INTO algo_rating_history(coder_id, round_id, algo_rating_type_id, rating,vol, num_ratings) ");
         query.append("VALUES (?,?,?,?,?,?)");
         psIns = prepareStatement(query.toString(), TARGET_DB);
-               
+
         int count = 0;
         try {
             rs = psSel.executeQuery();
-            
-            while(rs.next()) {
+
+            while (rs.next()) {
                 psIns.clearParameters();
                 psIns.setInt(1, rs.getInt("coder_id"));
                 psIns.setInt(2, roundId);
@@ -1695,24 +1685,24 @@ public class TCLoadLong extends TCLoadRank {
                 psIns.setInt(5, rs.getInt("vol"));
                 psIns.setInt(6, rs.getInt("num_ratings"));
                 psIns.executeUpdate();
-                
+
                 count++;
-                printLoadProgress(count, " ratings copied");                
+                printLoadProgress(count, " ratings copied");
             }
 
             log.info("algo_history_rating copied from " + prevRoundId + " to " + roundId + ": " + count);
-            
+
         } finally {
             close(rs);
-            close (psSel);
-            close (psIns);
+            close(psSel);
+            close(psIns);
         }
     }
 
     private Integer getPreviousRound(int roundId) throws Exception {
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         StringBuffer query = new StringBuffer(100);
         query.append("select r1.round_id from round r1, round_type_lu rt1, round r2 ");
         query.append("where r1.rating_order = r2.rating_order - 1  ");
@@ -1731,19 +1721,20 @@ public class TCLoadLong extends TCLoadRank {
             }
         } finally {
             close(rs);
-            close (ps);
+            close(ps);
         }
         return previous;
-        
+
     }
+
     /**
      * Clear algo_rating_history for the specified round
-     * 
+     *
      * @throws Exception
      */
     private void clearHistory(int roundId) throws Exception {
         PreparedStatement psDel = null;
-        
+
         psDel = prepareStatement("delete from algo_rating_history where round_id=?", TARGET_DB);
         psDel.setInt(1, roundId);
         psDel.executeUpdate();
@@ -1751,6 +1742,7 @@ public class TCLoadLong extends TCLoadRank {
 
     /**
      * Load streaks for consecutive rating increase (all and non tournament) and top 5 and top 10 consecutive.
+     *
      * @throws Exception
      */
     protected void loadStreaks() throws Exception {
@@ -1796,25 +1788,25 @@ public class TCLoadLong extends TCLoadRank {
             AlgoStreak streaks[] = new AlgoStreak[]{
                     new RatingIncrease(),
                     new RatingIncreaseAll(),
-                    new Top5Streak(), 
+                    new Top5Streak(),
                     new Top10Streak()};
-            
+
             int roundId = 0;
             int coderId = 0;
             int placed = 0;
             int newRating = 0;
             int roundTypeId = 0;
-            
+
             boolean hasNext = true;
             while (hasNext) {
                 hasNext = rs.next();
 
                 if (hasNext) {
-                    roundId = rs.getInt("round_id");    
+                    roundId = rs.getInt("round_id");
                     coderId = rs.getInt("coder_id");
                     placed = rs.getInt("placed");
                     newRating = rs.getInt("new_rating");
-                    roundTypeId = rs.getInt("round_type_id");                
+                    roundTypeId = rs.getInt("round_type_id");
                 }
 
                 for (int k = 0; k < streaks.length; k++) {
@@ -1826,14 +1818,14 @@ public class TCLoadLong extends TCLoadRank {
                         psIns.setInt(3, sr.getStartRoundId());
                         psIns.setInt(4, sr.getEndRoundId());
                         psIns.setInt(5, sr.getLength());
-                        psIns.setInt(6, sr.isCurrent()? 1 : 0);
-                        
+                        psIns.setInt(6, sr.isCurrent() ? 1 : 0);
+
                         psIns.executeUpdate();
                         count++;
                         printLoadProgress(count, "streak");
                     }
                 }
-                
+
             }
 
             log.info("loaded " + count + " records for streaks");
@@ -1846,12 +1838,12 @@ public class TCLoadLong extends TCLoadRank {
             close(psIns);
             close(psDel);
         }
-        
+
     }
 
     /**
      * Streak of rating increases for any kind of round.
-     * 
+     *
      * @author Cucu
      */
     private static class RatingIncreaseAll extends AlgoStreak {
@@ -1860,17 +1852,17 @@ public class TCLoadLong extends TCLoadRank {
         protected RatingIncreaseAll(int streakTypeId) {
             super(streakTypeId);
         }
-        
+
         public RatingIncreaseAll() {
             super(MARATHON_RATING_INCREASE_ALL);
         }
-        
+
         @Override
         protected boolean addToStreak(int placed, int rating) {
             boolean accept = currentRating < 0 ? false : rating > currentRating;
             currentRating = rating;
             return accept;
-        }        
+        }
 
         protected void reset() {
             currentRating = -1;
@@ -1880,15 +1872,14 @@ public class TCLoadLong extends TCLoadRank {
 
     /**
      * Streak of rating increases for non tournament rounds.
-     * 
-     * @author Cucu
      *
+     * @author Cucu
      */
     private static class RatingIncrease extends RatingIncreaseAll {
         public RatingIncrease() {
             super(MARATHON_RATING_INCREASE);
         }
-        
+
         /**
          * Skip tournament rounds
          */
@@ -1896,37 +1887,37 @@ public class TCLoadLong extends TCLoadRank {
             return roundTypeId == TCLoad.ROUND_TYPE_MARATHON_TOURNAMENT;
         }
     }
-    
+
     /**
      * Streak of top 5 placements.
-     * 
+     *
      * @author Cucu
      */
     private static class Top5Streak extends AlgoStreak {
         public Top5Streak() {
             super(MARATHON_CONSECUTIVE_TOP_5);
         }
-        
+
         @Override
         protected boolean addToStreak(int placed, int rating) {
             return placed > 0 && placed <= 5;
-        }        
+        }
     }
 
     /**
      * Streak of top 10 placements.
-     * 
+     *
      * @author Cucu
      */
     private static class Top10Streak extends AlgoStreak {
         public Top10Streak() {
             super(MARATHON_CONSECUTIVE_TOP_10);
         }
-        
+
         @Override
         protected boolean addToStreak(int placed, int rating) {
             return placed > 0 && placed <= 10;
-        }        
+        }
     }
 
 }
