@@ -2,7 +2,6 @@ package com.topcoder.shared.util;
 
 import com.topcoder.shared.util.logging.Logger;
 import com.topcoder.util.idgenerator.IDGenerationException;
-import com.topcoder.util.idgenerator.IDGenerator;
 import com.topcoder.util.idgenerator.IDGeneratorFactory;
 
 /**
@@ -29,24 +28,23 @@ public class IdGeneratorClient {
         if (log.isDebugEnabled()) {
             log.debug("getSeqId(" + seqName + ") called");
         }
-        long ret = getSeqId(seqName, DBMS.COMMON_OLTP_DATASOURCE_NAME);
+        long ret = IDGeneratorFactory.getIDGenerator(seqName).getNextID();
         if (log.isDebugEnabled()) {
             log.debug("returning " + ret);
         }
         return ret;
     }
-
-    private static long getSeqId(String seqName, String dataSourceName) throws IDGenerationException {
-/*
-        if (log.isDebugEnabled()) {
-            log.debug("getSeqId(" + seqName + ", " + dataSourceName + ") called");
-        }
-*/
-        long retVal;
-        IDGenerator gen = IDGeneratorFactory.getIDGenerator(seqName);
-        retVal = gen.getNextID();
-        //System.out.println("retVal = " + retVal);
-        return retVal;
+    
+    /**
+     * Uses the IdGenerator class to retrieve a sequence value for the
+     * sequence name given. Will initialize the IdGenerator if not initialized
+     * yet.
+     *
+     * @param seqName
+     * @return The next sequence value.
+     */
+    public static int getSeqIdAsInt(String seqName) throws IDGenerationException {
+        return (int) getSeqId(seqName);
     }
 
 }

@@ -7,8 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public final class DateUtil {
-
-    //FIXME SimpleDateFormat is not thread safe
     private static final DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     private DateUtil() {
@@ -26,15 +24,21 @@ public final class DateUtil {
     }
 
     public static Timestamp toTimestamp(String source) throws ParseException {
-        return toTimestamp(source, DEFAULT_DATE_FORMAT);
+        synchronized (DEFAULT_DATE_FORMAT) {
+            return toTimestamp(source, DEFAULT_DATE_FORMAT);
+        }
     }
 
     public static String toString(Timestamp timestamp) {
-        return DEFAULT_DATE_FORMAT.format(timestamp);
+        synchronized (DEFAULT_DATE_FORMAT) {
+            return DEFAULT_DATE_FORMAT.format(timestamp);
+        }
     }
 
     public static String toString(Date date) {
-    	return DEFAULT_DATE_FORMAT.format(date);
+        synchronized (DEFAULT_DATE_FORMAT) {
+            return DEFAULT_DATE_FORMAT.format(date);
+        }
     }
     
     public static String toString(Date date, DateFormat format) {

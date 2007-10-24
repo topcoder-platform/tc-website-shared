@@ -3,6 +3,7 @@ package com.topcoder.shared.netCommon;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,6 +192,17 @@ public interface CSReader {
      * @throws  java.io.IOException             if an I/O error has occurred.
      */ 
     List readList(List listInstance) throws IOException;
+    
+    /**
+     * Reads in the contents of a collection into the given <code>java.util.Collection</code> instance. 
+     * This method is suitable for reading the bytes written by the <code>writeCollection</code> method
+     * of interface <code>CSWriter</code>.
+     * 
+     * @param collection the Collection instance to fill with contents
+     * @return  the <code>collection</code> filled in. 
+     * @throws  java.io.IOException             if an I/O error has occurred.
+     */ 
+    Collection readCollection(Collection collection) throws IOException;
     
     /**
      * Reads in a <code>java.util.HashMap</code> instance. 

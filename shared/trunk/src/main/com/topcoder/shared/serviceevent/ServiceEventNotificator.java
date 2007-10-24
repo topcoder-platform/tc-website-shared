@@ -16,7 +16,7 @@ public class ServiceEventNotificator {
     private Logger logger = Logger.getLogger(ServiceEventNotificator.class);
 
     /**
-     * Event notifications are sended through this published
+     * Event notifications are sent through this publisher
      */
     private TopicMessagePublisher publisher;
     
@@ -41,7 +41,7 @@ public class ServiceEventNotificator {
             publisher.setFaultTolerant(false);
         } catch (Exception e) {
             throw (IllegalStateException) new IllegalStateException(
-                    "Failed to initialize LongTestServiceNotificator for topic=" + topicName + " service=" + serviceName)
+                    "Failed to initialize ServiceEventNotificator for topic=" + topicName + " service=" + serviceName)
                     .initCause(e);
         }
         logger.info("Initialized ServiceEventNotificator");

@@ -3,6 +3,7 @@ package com.topcoder.shared.netCommon;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +167,18 @@ public interface CSWriter {
      * @throws  java.io.IOException     if an I/O error has occurred.
      */ 
     void writeList(List list) throws IOException;
+    
+    /**
+     * Writes a <code>java.util.Collection</code> instance to the output stream.
+     * The bytes written by this method may be read by the <code>readCollection</code> method 
+     * of interface <code>CSReader</code>. 
+     * 
+     * @param   collection    the <code>Collection</code> instance to be written. 
+     * @throws  java.io.IOException     if an I/O error has occurred.
+     */ 
+    void writeCollection(Collection collection) throws IOException;
+    
+    
     
     /**
      * Writes a <code>java.util.HashMap</code> instance to the output stream.
