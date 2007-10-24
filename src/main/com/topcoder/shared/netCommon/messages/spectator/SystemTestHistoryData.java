@@ -9,10 +9,11 @@
 
 package com.topcoder.shared.netCommon.messages.spectator;
 
-import com.topcoder.shared.netCommon.CSReader;
-import com.topcoder.shared.netCommon.CSWriter;
 import java.io.IOException;
 import java.io.ObjectStreamException;
+
+import com.topcoder.shared.netCommon.CSReader;
+import com.topcoder.shared.netCommon.CSWriter;
 
 /**
  *
@@ -27,13 +28,14 @@ public class SystemTestHistoryData extends RoomMessage {
     private String problemVal;
     private String args;
     private String results;
+    private boolean succeeded;
     
     /** Creates a new instance of SystemTestHistoryData */
     public SystemTestHistoryData() {
     }
     
     public SystemTestHistoryData(RoomData room, int problemID, String coder, String timestamp, int deductAmt, String problemVal,
-                String args, String results) {
+                String args, String results, boolean succeeded) {
         super(room);
         this.problemID = problemID;
         this.coder = coder;
@@ -42,6 +44,7 @@ public class SystemTestHistoryData extends RoomMessage {
         this.problemVal = problemVal;
         this.args = args;
         this.results = results;
+        this.succeeded = succeeded;
     }
     
     public void setProblemID(int problemID) {
@@ -80,6 +83,9 @@ public class SystemTestHistoryData extends RoomMessage {
         return results;
     }
     
+    public boolean isSucceeded() {
+        return succeeded;
+    }
     
     public void customWriteObject(CSWriter writer) throws IOException {
         super.customWriteObject(writer);
@@ -90,6 +96,7 @@ public class SystemTestHistoryData extends RoomMessage {
         writer.writeString(problemVal);
         writer.writeString(args);
         writer.writeString(results);
+        writer.writeBoolean(succeeded);
     }
 
     public void customReadObject(CSReader reader) throws IOException, ObjectStreamException {
@@ -101,6 +108,7 @@ public class SystemTestHistoryData extends RoomMessage {
         problemVal = reader.readString();
         args = reader.readString();
         results = reader.readString();
+        succeeded = reader.readBoolean();
     }
     
 }

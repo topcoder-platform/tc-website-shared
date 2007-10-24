@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -334,6 +335,10 @@ public class MessageUtil {
         public void writeUTF(String s) throws IOException {
             throw new UnsupportedOperationException();
         }
+        
+        public void writeCollection(Collection collection) throws IOException {
+            throw new UnsupportedOperationException();            
+        }
 	}
 	
 	private static class QueryReader implements CSReader
@@ -442,6 +447,9 @@ public class MessageUtil {
         }
 
         public String readUTF() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+        public Collection readCollection(Collection collection) throws IOException {
             throw new UnsupportedOperationException();
         }
 	}

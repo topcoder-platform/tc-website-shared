@@ -39,7 +39,7 @@ public class PythonLanguage extends CStyleLanguage {
         int len = returns.length() + methodName.length() + 3; // 3 = ' ' + '(' + ')'
 
         for (int i = 0; i < params.length; i++) {
-            String type = paramTypes[i].getDescriptor(this);
+            paramTypes[i].getDescriptor(this);
             params[i] = paramNames[i];
             len += params[i].length();
         }

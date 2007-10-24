@@ -1,90 +1,184 @@
-<project name="topcoder" default="main" basedir=".">
-    <property name="Name" value="TopCoder"/>
-    <property name="build" value="build"/>
-    <property name="classes" value="${build}/classes"/>
-    <property name="testclasses" value="${build}/testcases"/>
-    <property name="lib.dir" value="lib"/>
-    <property name="jars.dir" value="${lib.dir}/jars"/>
-    <property name="bin" value="lib/bin"/>
-    <property name="src.dir" value="src"/>
-    <property name="java" value="${src.dir}/main"/>
-    <property name="shared" value="../shared/src/main"/>
-    <property name="shared.jar" value="${bin}/shared.jar"/>
-    <property environment="env"/>
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="shared" basedir="." default="jar">
 
-    <property name="deprecation" value="true"/>
-    <property name="debug" value="true"/>
-    <property name="junitsummary" value="on"/>
+    <property name="rootdir" location="${basedir}/.." />
+    <property name="dist" location="${basedir}/dist" />
+    <property name="src.main" location="${basedir}/src/main" />
+    <property name="src.test" location="${basedir}/src/test" />
 
-    <target name="main" depends="compile">
+    <property name="external.jars.path" location="${rootdir}/external-artifacts" />
+    <property name="global-dist.artifacts" location="${rootdir}/dist/artifacts" />
+    <property name="project.jars.path" location="${global-dist.artifacts}" />
+
+    <property name="dist.artifacts" location="${dist}/artifacts" />
+    <property name="dist.doc" location="${dist}/doc" />
+    <property name="build" value="${dist}/classes" />
+
+    <!-- - - - - - - - - - - - - - - - - -
+          target: default-version
+         - - - - - - - - - - - - - - - - - -->
+    <target name="default-app.version" unless="app.version">
+        <property name="app.version" value="SNAPSHOT" />
+        <echo message="app.version: ${app.version}" />
     </target>
 
+    <!-- - - - - - - - - - - - - - - - - -
+          target: init
+         - - - - - - - - - - - - - - - - - -->
+    <target name="init" depends="default-app.version">
+    	<mkdir dir="${global-dist.artifacts}" />
+        <property file="build.properties" />
 
-    <path id="class.path">
-        <pathelement location="${classes}"/>
-        <pathelement location="${testclasses}"/>
-        <pathelement location="${jars.dir}/log4j-1.2.7.jar"/>
-        <pathelement location="${jars.dir}/tcs/id_generator/3.0/id_generator.jar"/>
-        <pathelement location="${jars.dir}/jboss/jbossall-client.jar"/>
-                <pathelement location="${jars.dir}/jboss/mail.jar"/>
-        <pathelement location="${jars.dir}/tcs/base_exception.jar"/>
-        <pathelement location="${jars.dir}/jboss/xalan.jar"/>
-        <pathelement location="${jars.dir}/jboss/xercesImpl.jar"/>
-        <pathelement location="${jars.dir}/jboss/xml-apis.jar"/>
+        <fileset id="external.jars.compile.fileset" dir="${external.jars.path}" includes="${external.jars.compile}" />
+        <fileset id="project.jars.compile.fileset" dir="${project.jars.path}" includes="${project.jars.compile}" />
+        <fileset id="project.jars.deploy.fileset" dir="${project.jars.path}" includes="${project.jars.compile}" />
+        <fileset id="external.jars.deploy.fileset" dir="${external.jars.path}" includes="${external.jars.deploy}" />
 
+        <property name="dist.zip" location="${dist}/${ant.project.name}-${app.version}.zip" />
 
-    </path>
-    <!-- adding this here because i can't figure out how to use the above path element in other path elements-->
-    <property name="class.path" refid="class.path"/>
+        <path id="classpath.lib">
+            <fileset refid="external.jars.compile.fileset" />
+            <fileset refid="project.jars.compile.fileset" />
+        </path>
 
-    <target name="init">
-        <mkdir dir="${classes}"/>
-        <mkdir dir="${testclasses}"/>
-        <mkdir dir="${bin}"/>
+        <path id="classpath.classes">
+            <fileset dir="${build}" />
+        </path>
     </target>
 
-    <target name="compile" depends="init" unless="compile_set">
-        <javac
-                srcdir="${shared}"
-                destdir="${classes}"
-                classpathref="class.path"
-                deprecation="${deprecation}"
-                debug="${debug}"
-                source="1.5"
-                target="1.5"
-                >
+	
+	<!-- - - - - - - - - - - - - - - - - -
+	          target: checkout
+	         - - - - - - - - - - - - - - - - - -->
+	<target name="checkout" depends="init" description="checkouts dependencies">
+		<mkdir dir="${external.jars.path}"/>
+		<cvs command="checkout" dest="${rootdir}" package="external-artifacts/nodelete.txt"/>
+		<cvs command="update" dest="${external.jars.path}" package="nofile ${external.jars.compile}"/>
+		<cvs command="update" dest="${external.jars.path}" package="nofile ${external.jars.deploy}"/>
+	</target>
+	
+    <!-- - - - - - - - - - - - - - - - - -
+          target: compile
+         - - - - - - - - - - - - - - - - - -->
+    <target name="compile.properties" depends="init">
+        <property name="compile.optimize" value="on" />
+        <property name="compile.source" value="1.5" />
+        <property name="compile.debug" value="on" />
+    </target>
+
+    <target name="compile" depends="compile.properties" unless="compile_set">
+        <mkdir dir="${build}" />
+        <property name="compile.source" value="1.5" />
+
+        <javac destdir="${build}" srcdir="${src.main}"
+                optimize="${compile.optimize}"
+                source="${compile.source}"
+                debug="${compile.debug}">
+
+            <classpath refid="classpath.lib" />
+            <include name="**/*.java" />
         </javac>
-        <rmic classname="com.topcoder.shared.distCache.CacheClientImpl" base="${classes}"/>
-        <rmic classname="com.topcoder.shared.distCache.CacheServerSyncImpl" base="${classes}"/>
-    <property name="compile_set" value="true"/>
-    </target>
+	<!-- This may be required by tcs -->
+	<!--rmic classname="com.topcoder.shared.distCache.CacheClientImpl" base="${build}"/>
+        <rmic classname="com.topcoder.shared.distCache.CacheServerSyncImpl" base="${build}"/-->
 
-    <target name="clean">
-        <delete dir="${build}"/>
-        <delete dir="${bin}"/>
-    </target>
-
-    <target name="jar_shared" depends="compile" unless="jar_shared_set">
-        <jar jarfile="${shared.jar}">
-            <fileset dir="${classes}">
-                <include name="com/topcoder/shared/**/*.class"/>
+        <copy todir="${build}">
+            <fileset dir="${src.main}">
+                <exclude name="**/*.java" />
             </fileset>
+        </copy>
+        <property name="compile_set" value="true"/>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - -
+             target: jar
+            - - - - - - - - - - - - - - - - - -->
+    <target name="jar-only" depends="compile" description="generates jar" unless="jar_shared_set">
+        <mkdir dir="${dist}" />
+        <mkdir dir="${dist.artifacts}" />
+        <property name="jar.name" value="${dist.artifacts}/${ant.project.name}-${app.version}.jar" />
+        <jar destfile="${jar.name}" duplicate="fail">
+            <fileset dir="${build}" />
         </jar>
-    <property name="jar_shared_set" value="true"/>
+        <property name="jar_shared_set" value="true"/>
     </target>
 
 
+    <!-- =================================
+          target: zip
+         ================================= -->
+    <target name="zip-doc" depends="javadoc" unless="nodoc">
+        <zip destfile="${dist.artifacts}/${ant.project.name}-doc-${app.version}.zip">
+            <zipfileset dir="${dist.doc}" />
+        </zip>
+    </target>
+
+    <target name="zip" depends="jar,zip-doc" description="Generates the jar, doc and the deployment properties. The generates a jar with all required files">
+        <propertyfile file="${dist}/deployment.properties">
+            <entry key="version" value="${app.version}" />
+            <entry key="jars" value="${ant.project.name}-${app.version}.jar,${project.jars.deploy},${external.jars.deploy}" />
+        </propertyfile>
+        <zip destfile="${dist.zip}" duplicate="preserve">
+            <zipfileset file="${dist.artifacts}/${ant.project.name}-doc-${app.version}.zip" />
+            <zipfileset prefix="jars" refid="external.jars.deploy.fileset" />
+            <zipfileset prefix="jars" file="${dist.artifacts}/${ant.project.name}-${app.version}.jar" />
+            <zipfileset prefix="jars" refid="project.jars.deploy.fileset" />
+            <zipfileset prefix="deployment" file="${dist}/deployment.properties" />
+        </zip>
+    </target>
+
+    <!-- =================================
+          target: dist
+         ================================= -->
+    <target name="dist" depends="zip,global" description="--> Generates all, and moves the jar to global dist"/>
+
+    <target name="global" description="--> Move jars to global dist folder ">
+        <mkdir dir="${global-dist.artifacts}" />
+        <copy todir="${global-dist.artifacts}" flatten="true">
+            <fileset file="${dist.artifacts}/${ant.project.name}-${app.version}.jar" />
+        </copy>
+    </target>
 
 
+    <target name="jar" depends="jar-only,global" description="Generates jars and move it to global folder"/> 
+    <!-- - - - - - - - - - - - - - - - - -
+          target: clean
+         - - - - - - - - - - - - - - - - - -->
+    <target name="clean">
+        <delete dir="${dist}"/>
+    </target>
+
+    <!-- =================================
+          target: all
+         ================================= -->
+    <target name="all" depends="clean, dist" description="--> clean, dist"/>
+
+    <!-- =================================
+              target: javadoc
+             ================================= -->
+    <target name="javadoc" description="generate JavaDoc" unless="nodoc">
+        <mkdir dir="${dist.doc}" />
+        <javadoc
+                access="public"
+                author="true"
+                classpathref="classpath.lib"
+                destdir="${dist.doc}"
+                nodeprecated="false"
+                nodeprecatedlist="false"
+                noindex="false"
+                nonavbar="false"
+                notree="false"
+                packagenames="com.topcoder.*"
+                source="1.5"
+                sourcepath="src/main"
+                splitindex="true"
+                use="true"
+                version="true">
+
+            <link href="http://logging.apache.org/log4j/docs/api/" />
+            <link href="http://java.sun.com/j2se/1.5/docs/api/" />
+            <doctitle><![CDATA[<h1>Project Name</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright TopCoder Inc. 2006. All Rights Reserved.</i>]]></bottom>
+        </javadoc>
+    </target>
 </project>
-
-
-
-
-
-
-
-
-
-
-

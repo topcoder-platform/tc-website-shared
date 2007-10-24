@@ -21,12 +21,12 @@ import com.topcoder.shared.util.logging.Logger;
  * and using specific formatters for different message arguments.<p>
  * 
  * When keys are not found on the given bundle, the text message returned is
- * a converted version of the string key. Undercores are translated into spaces.<p>
+ * a converted version of the string key. Underscores are translated into spaces.<p>
  * 
  * In addition a {@link MessageFormat} can be obtained that allows complex message 
  * localization.  A helper method is provided to localize {@link Message} objects 
  * using the {@link MessageFormat} class defined for each {@link Message}.<p>
- * To provide a more flexible way for formatting  messages custom formaters can be defined
+ * To provide a more flexible way for formatting  messages custom formatters can be defined
  * in addition to the ones provided by the {@link MessageFormat} class.
  * 
  * The bundle format follows the standard bundle formats but special keys can be 

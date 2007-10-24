@@ -9,8 +9,11 @@ import java.text.FieldPosition;
 import java.util.ArrayList;
 import java.util.Locale;
 
-//FIXME mural doc
 /**
+ * Elapsed Time format<p>
+ * 
+ * Formats a long  value and formats it as 'h hours, m minutes, s seconds and ms milliseconds'  
+ *
  * @author Diego Belfer (mural)
  * @version $Id$
  */
@@ -70,25 +73,5 @@ public class ElapsedTimeFormat extends BaseFormat {
             toAppendTo.append(list.get(i));
         }
         return toAppendTo;
-    }
-    
-    public static void main(String[] args) {
-        ElapsedTimeFormat format = new ElapsedTimeFormat(Locale.getDefault());
-        System.out.println(format.format(new Long(1)));
-        System.out.println(format.format(new Long(2)));
-        
-        System.out.println(format.format(new Long(1000)));
-        System.out.println(format.format(new Long(2000)));
-        System.out.println(format.format(new Long(1001)));
-        
-        System.out.println(format.format(new Long(60000)));
-        System.out.println(format.format(new Long(120000)));
-        System.out.println(format.format(new Long(61000)));
-
-        
-        System.out.println(format.format(new Long(60*60000)));
-        System.out.println(format.format(new Long(60*120000)));
-        System.out.println(format.format(new Long(60*60000+122010)));
-
     }
 }

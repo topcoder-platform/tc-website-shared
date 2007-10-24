@@ -14,7 +14,7 @@ public class Formatters {
      * @param d
      * @return
      */
-    public static Double getDouble(double d) {
+    public static synchronized Double getDouble(double d) {
         return new Double(s_doubleFormatter.format(d));
     }
 
@@ -23,7 +23,7 @@ public class Formatters {
      * @param d
      * @return
      */
-    public static String getDoubleString(double d) {
+    public static synchronized String getDoubleString(double d) {
         return s_doubleFormatter.format(d);
     }
 }

@@ -8,6 +8,7 @@ import java.io.StreamCorruptedException;
 import java.io.UTFDataFormatException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
     private static final byte HASH_MAP = 34;
     private static final byte LIST = 35;
     private static final byte MAP = 36;
+    private static final byte COLLECTION = 37;
 
     private static final byte CUSTOM_SERIALIZABLE = 65;
     private static final byte CUSTOM_SERIALIZER = 64;
@@ -109,7 +111,18 @@ public abstract class CSHandler implements CSReader, CSWriter {
             return true;
         }
         if (b != expected1 && b != expected2) {
-            throw new RuntimeException("unexpected, b=" + b + ", expected=" + LIST + " or "+ARRAY_LIST);
+            throw new RuntimeException("unexpected, b=" + b + ", expected=" + expected1 + " or "+expected2);
+        }
+        return false;
+    }
+
+    private boolean isNull(byte expected1, byte expected2, byte expected3) throws IOException {
+        byte b = readByte();
+        if (b == NULL) {
+            return true;
+        }
+        if (b != expected1 && b != expected2 && b != expected3) {
+            throw new RuntimeException("unexpected, b=" + b + ", expected=" + expected1 + " or "+expected2+ " or "+expected3);
         }
         return false;
     }
@@ -161,7 +174,7 @@ public abstract class CSHandler implements CSReader, CSWriter {
         if (isNull(ARRAY_LIST, LIST)) {
             return null;
         }
-        return readJustList(list);
+        return (List) readJustCollection(list);
     }
 
     private ArrayList readJustArrayList() throws IOException {
@@ -172,8 +185,19 @@ public abstract class CSHandler implements CSReader, CSWriter {
         }
         return list;
     }
+    
+    public final Collection readCollection(Collection collection) throws IOException {
+        if (isNull(COLLECTION, LIST, ARRAY_LIST)) {
+            return null;
+        }
+        return readJustCollection(collection);
+    }
 
-    private List readJustList(List list) throws IOException {
+    public final void writeCollection(Collection collection) throws IOException {
+        writeCollection(collection, COLLECTION);
+    }
+
+    private Collection readJustCollection(Collection list) throws IOException {
         int size = readShort();
         for (int i = 0; i < size; i++) {
             list.add(readObject());
@@ -183,14 +207,14 @@ public abstract class CSHandler implements CSReader, CSWriter {
 
 
     public final void writeArrayList(ArrayList list) throws IOException {
-        writeList(list, ARRAY_LIST);
+        writeCollection(list, ARRAY_LIST);
     }
 
     public void writeList(List list) throws IOException {
-        writeList(list, LIST);
+        writeCollection(list, LIST);
     }
 
-    public void writeList(List list, byte type) throws IOException {
+    public void writeCollection(Collection list, byte type) throws IOException {
         if (list == null) {
             writeNull();
             return;
@@ -745,6 +769,10 @@ public abstract class CSHandler implements CSReader, CSWriter {
         if (isNull(CLASS)) {
             return null;
         }
+        return readJustClass();
+    }
+
+    private Class readJustClass() throws IOException {
         String className = readUTF();
         try {
             return ClassCache.findClass(className);
@@ -840,6 +868,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeList((List) object);
         } else if (object instanceof Map) {
             writeMap((Map) object);
+        } else if (object instanceof Collection) {
+            writeCollection((Collection) object);
         } else {
             writeUnhandledObject(object);
         }
@@ -913,11 +943,13 @@ public abstract class CSHandler implements CSReader, CSWriter {
         case OBJECT_ARRAY:
             return readJustObjectArray();
         case CLASS:
-            return readClass();
+            return readJustClass();
         case LIST:
-            return readArrayList();
+            return readJustArrayList();
         case MAP:
-            return readHashMap();
+            return readJustHashMap();
+        case COLLECTION:
+            return readJustArrayList();
         case CUSTOM_SERIALIZER:
             clazz = findClassGuarded(readUTF());
             CustomSerializer serializer = customSerializer.getSerializer(clazz);

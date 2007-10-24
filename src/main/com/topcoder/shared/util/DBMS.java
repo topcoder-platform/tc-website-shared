@@ -1,13 +1,9 @@
 package com.topcoder.shared.util;
 
-//import com.topcoder.web.common.BaseProcessor;
-
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -106,45 +102,29 @@ public class DBMS {
     public final static String INFORMIX_DATETIME_FORMAT = bundle.getProperty("INFORMIX_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss.SSS");
 
     // Sequence Ids
-    public static final int JMA_SEQ = getIntProperty("MAIN_SEQ", 200);
-    //    public static final int JMA_SEQ = getIntProperty("JMA_SEQ", 1);
-    public static final int SCHOOL_SEQ = getIntProperty("SCHOOL_SEQ", 3);
-    public static final int PROBLEM_SEQ = getIntProperty("PROBLEM_SEQ", 4);
-    public static final int CHALLENGE_SEQ = getIntProperty("CHALLENGE_SEQ", 5);
-    public static final int EXPERIENCE_SEQ = getIntProperty("EXPERIENCE_SEQ", 7);
-    public static final int EDUCATION_SEQ = getIntProperty("EDUCATION_SEQ", 8);
-    public static final int RESPONSE_SEQ = getIntProperty("RESPONSE_SEQ", 9);
-    public static final int COMPONENT_STATE_SEQ = getIntProperty("COMPONENT_STATE_SEQ", 11);
-    public static final int SURVEY_SEQ = getIntProperty("SURVEY_SEQ", 12);
-    public static final int SECTOR_SEQ = getIntProperty("SECTOR_SEQ", 13);
-    public static final int ROOM_SEQ = getIntProperty("ROOM_SEQ", 14);
-    public static final int SERVER_SEQ = getIntProperty("SERVER_SEQ", 15);
-    public static final int REQUEST_SEQ = getIntProperty("REQUEST_SEQ", 16);
-    public static final int BROADCAST_SEQ = getIntProperty("BROADCAST_SEQ", 17);
-    public static final int CODER_SEQ = getIntProperty("CODER_SEQ", 18);
-    public static final int PARAMETER_SEQ = getIntProperty("PARAMETER_SEQ", 30);
-    public static final int COMPONENT_SEQ = getIntProperty("COMPONENT_SEQ", 31);
-    public static final int WEB_SERVICE_SEQ = getIntProperty("WEB_SERVICE_SEQ", 40);
-    public static final int WEB_SERVICE_SOURCE_FILE_SEQ = getIntProperty("WEB_SERVICE_SOURCE_FILE_SEQ", 41);
-    public static final int AFFIDAVIT_SEQ = getIntProperty("AFFIDAVIT_SEQ", 50);
-    public static final int CONTRACT_SEQ = getIntProperty("CONTRACT_SEQ", 51);
-    public static final int NOTE_SEQ = getIntProperty("NOTE_SEQ", 52);
-    public static final int PAYMENT_SEQ = getIntProperty("PAYMENT_SEQ", 53);//TODO This was 20 before?
-    public static final int PAYMENT_ADDRESS_SEQ = getIntProperty("PAYMENT_ADDRESS_SEQ", 54);
-    public static final int PAYMENT_DETAIL_SEQ = getIntProperty("PAYMENT_DETAIL_SEQ", 55);
-    public static final int TAX_FORM_SEQ = getIntProperty("TAX_FORM_SEQ", 56);
-    public static final int INPUT_SEQ = getIntProperty("INPUT_SEQ", 82);
-    public static final int QUERY_SEQ = getIntProperty("QUERY_SEQ", 83);
-    public static final int COMMAND_SEQ = getIntProperty("COMMAND_SEQ", 84);
-    public static final int COMMAND_GROUP_SEQ = getIntProperty("COMMAND_GROUP_SEQ", 85);
-    public static final int WEB_SERVICE_JAVA_DOC_SEQ = getIntProperty("WEB_SERVICE_JAVA_DOC_SEQ", 90);
-    public static final int ROUND_SEQ = getIntProperty("ROUND_SEQ", 95);
-    public static final int CONTEST_SEQ = getIntProperty("CONTEST_SEQ", 96);
-    public static final int MESSAGE_SEQ = getIntProperty("MESSAGE_SEQ", 98);
-    public static final int BACKUP_SEQ = getIntProperty("BACKUP_SEQ", 97);
-    public static final int MAIN_SEQ = getIntProperty("MAIN_SEQ", 200);
-    public static final int LONG_TEST_GROUP_SEQ = getIntProperty("LONG_TEST_GROUP_SEQ", 102);
-    public static final int LONG_TEST_CASE_SEQ = getIntProperty("LONG_TEST_CASE_SEQ", 103);
+    public static final String JMA_SEQ = "JMA_SEQ";
+    public static final String PROBLEM_SEQ = "PROBLEM_SEQ";
+    public static final String CHALLENGE_SEQ = "CHALLENGE_SEQ";
+    public static final String COMPONENT_STATE_SEQ = "COMPONENT_STATE_SEQ";
+    public static final String SURVEY_SEQ = "SURVEY_SEQ";
+    public static final String ROOM_SEQ = "ROOM_SEQ";
+    public static final String SERVER_SEQ = "SERVER_SEQ";
+    public static final String REQUEST_SEQ = "REQUEST_SEQ";
+    public static final String BROADCAST_SEQ = "BROADCAST_ID_SEQ";
+    public static final String PARAMETER_SEQ = "PARAMETER_SEQ";
+    public static final String COMPONENT_SEQ = "COMPONENT_SEQ";
+    public static final String WEB_SERVICE_SEQ = "WEB_SERVICE_SEQ";
+    public static final String WEB_SERVICE_SOURCE_FILE_SEQ = "WEB_SERVICE_SOURCE_FILE_SEQ";
+    public static final String PAYMENT_SEQ = "PAYMENT_SEQ";
+    public static final String WEB_SERVICE_JAVA_DOC_SEQ = "WEB_SERVICE_JAVA_DOC_SEQ";
+    public static final String ROUND_SEQ = "ROUND_SEQ";
+    public static final String CONTEST_SEQ = "CONTEST_SEQ";
+    public static final String MESSAGE_SEQ = "MESSAGE_SEQ";
+    public static final String BACKUP_SEQ = "BACKUP_SEQ";
+    public static final String MAIN_SEQ = "MAIN_SEQ";
+    public static final String LONG_TEST_GROUP_SEQ = "LONG_TEST_GROUP_SEQ";
+    public static final String LONG_TEST_CASE_SEQ = "LONG_TEST_CASE_SEQ";
+    public static final String RESPONSE_SEQ = "RESPONSE_SEQ";
 
     public final static String INFORMIX_CONNECT_STRING = getProperty("INFORMIX_CONNECT_STRING", "");
     public final static String EVENT_TOPIC = getProperty("EVENT_TOPIC", "eventTopic");
@@ -154,6 +134,7 @@ public class DBMS {
     public final static String LONG_CONTEST_SVC_EVENT_TOPIC = getProperty("LONG_CONTEST_SVC_EVENT_TOPIC", "servicesEventTopic");
     public final static String LONG_TEST_SVC_EVENT_TOPIC = getProperty("LONG_TEST_SVC_EVENT_TOPIC", "servicesEventTopic");
     public final static String MPSQAS_SVC_EVENT_TOPIC = getProperty("MPSQAS_SVC_EVENT_TOPIC", "servicesEventTopic");
+    
 
     private static final String getProperty(String key, String defaultValue) {
         if (bundle == null) {
@@ -236,137 +217,6 @@ public class DBMS {
     }
 
     /**
-     * @param qconn
-     * @param sequence_name
-     * @return
-     * @throws SQLException
-     * @deprecated
-     */
-    public static final int getTransSeqId(java.sql.Connection qconn, int sequence_name)
-            throws SQLException {
-        //don't use the connection anymore, who cares about having the sequence in the transaction anyway?
-        return getSeqId(sequence_name);
-    }
-
-    /**
-     * @param sequence_name
-     * @return
-     * @throws SQLException
-     */
-    public static final int getSeqId(int sequence_name) throws SQLException {
-        Connection conn = null;
-        int result = 0;
-        try {
-            conn = getConnection();
-            result = getSeqId(conn, sequence_name);
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception ignore) {
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @param qconn
-     * @param sequence
-     * @return
-     * @throws SQLException
-     */
-    public static final int getSeqId(java.sql.Connection qconn, int sequence)
-            throws SQLException {
-        boolean getSeqId = true;
-        String query = "";
-        int result = 0;
-        //Why all this code?!
-        if (sequence == JMA_SEQ)
-            query = " execute procedure nextval(" + JMA_SEQ + ") ";
-        else if (sequence == SCHOOL_SEQ)
-            query = " execute procedure nextval(" + SCHOOL_SEQ + ") ";
-        else if (sequence == PROBLEM_SEQ)
-            query = " execute procedure nextval(" + PROBLEM_SEQ + ") ";
-        else if (sequence == CHALLENGE_SEQ)
-            query = " execute procedure nextval(" + CHALLENGE_SEQ + ") ";
-        else if (sequence == EXPERIENCE_SEQ)
-            query = " execute procedure nextval(" + EXPERIENCE_SEQ + ") ";
-        else if (sequence == EDUCATION_SEQ)
-            query = " execute procedure nextval(" + EDUCATION_SEQ + ") ";
-        else if (sequence == RESPONSE_SEQ)
-            query = " execute procedure nextval(" + RESPONSE_SEQ + ") ";
-        else if (sequence == COMPONENT_STATE_SEQ)
-            query = " execute procedure nextval(" + COMPONENT_STATE_SEQ + ") ";
-        else if (sequence == SECTOR_SEQ)
-            query = " execute procedure nextval(" + SECTOR_SEQ + ") ";
-        else if (sequence == AFFIDAVIT_SEQ)
-            query = " execute procedure nextval(" + AFFIDAVIT_SEQ + ") ";
-        else if (sequence == CONTRACT_SEQ)
-            query = " execute procedure nextval(" + CONTRACT_SEQ + ") ";
-        else if (sequence == NOTE_SEQ)
-            query = " execute procedure nextval(" + NOTE_SEQ + ") ";
-        else if (sequence == PAYMENT_SEQ)
-            query = " execute procedure nextval(" + PAYMENT_SEQ + ") ";
-        else if (sequence == PAYMENT_ADDRESS_SEQ)
-            query = " execute procedure nextval(" + PAYMENT_ADDRESS_SEQ + ") ";
-        else if (sequence == PAYMENT_DETAIL_SEQ)
-            query = " execute procedure nextval(" + PAYMENT_DETAIL_SEQ + ") ";
-        else if (sequence == TAX_FORM_SEQ)
-            query = " execute procedure nextval(" + TAX_FORM_SEQ + ") ";
-        else
-            query = " execute procedure nextval(" + sequence + ") ";
-        //getSeqId = false;
-
-        if (getSeqId)
-            return retVal(qconn, query);
-        else
-            return -1;
-    }
-
-    /**
-     * @param qconn
-     * @param query
-     * @return
-     * @throws SQLException
-     */
-    private static int retVal(java.sql.Connection qconn, String query)
-            throws SQLException {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        int result = 0;
-        try {
-            ps = qconn.prepareStatement(query);
-            ps.executeQuery();
-
-            rs = ps.getResultSet();
-            if (rs.next()) {
-                result = (rs.getInt(1));
-            }
-        } catch (SQLException sqe) {
-            sqe.printStackTrace();
-            throw sqe;
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (Exception ignore) {
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (Exception ignore) {
-                }
-            }
-        }
-        return result;
-    }
-
-
-    /**
      * This generic method deserializes a Blob from the ResultSet and returns the
      * deserialized object.
      *
@@ -380,9 +230,6 @@ public class DBMS {
             throws SQLException {
         Object retVal = null;
         ObjectInputStream ois = null;
-        Blob bl = null;
-        ByteArrayInputStream bs = null;
-
         try {
 
             InputStream is = rs.getBinaryStream(column);
@@ -756,13 +603,4 @@ public class DBMS {
         }
         return dbName;
     }
-/*
-    public static void loadJdbcDriver() {
-        try {
-            Class.forName(JDBC_DRIVER);
-        } catch (ClassNotFoundException e) {
-            error(e);
-        }
-    }
-*/
 }
