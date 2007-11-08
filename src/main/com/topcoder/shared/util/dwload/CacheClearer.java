@@ -22,7 +22,12 @@ import com.topcoder.shared.util.TCResourceBundle;
 import com.topcoder.shared.util.logging.Logger;
 
 /**
- * @author rfairfax
+ * This class provides cache clearing services for clients. 
+ * 
+ * Note: The process no longer run locally but instead the CacheAdmin mbean 
+ * located in the cache server is used.
+ * 
+ * @author rfairfax, pulky
  */
 public class CacheClearer {
     private static final Logger log = Logger.getLogger(CacheClearer.class);
@@ -33,17 +38,46 @@ public class CacheClearer {
     public CacheClearer() {
     }
 
-
+    /**
+     * Removes entries from the cache "like" the specified argument  
+     * 
+     * @param s the string compare and remove items
+     */
     public static void removelike(String s) {
         InitialContext ctx = null;
         TCResourceBundle b = new TCResourceBundle("cache");
         try {
             ctx = TCContext.getInitial(b.getProperty("host_url"));
-            //using reflection so that we don't a lot of nasty dependencies when using the class.
-            Object o = ctx.lookup(b.getProperty("jndi_name"));
-            new CacheClearer().removelike(s, "/", o);
-            log.info("removed " + s);
 
+            // This method no longer does the job, it calls the cache admin mbean to speed up the process (all the tree lookup will be made locally on the cache server)            
+            // Object o = ctx.lookup(b.getProperty("jndi_name"));
+            // new CacheClearer().removelike(s, "/", o);
+
+            log.debug("Performing a single call to remove like : " + s);
+            Object o = ctx.lookup(b.getProperty("cache_admin_jndi_name"));
+            
+            //using reflection so that we don't a lot of nasty dependencies when using the class.
+            Method removeLikeMethod=null;
+            Method[] methods = o.getClass().getDeclaredMethods();
+            for (Method m : methods) {
+//                log.debug("method " + m.getName() + " params: ");
+//                for (Class<?> c : m.getParameterTypes()) {
+//                    log.debug(" - " + c.getName());
+//                }
+                if ("removelike".equals(m.getName()) &&
+                      m.getParameterTypes().length == 1 &&
+                      m.getParameterTypes()[0].equals(String.class)) {
+                    removeLikeMethod = m;
+                    break;
+                }
+            }
+            if (removeLikeMethod==null) {
+                throw new RuntimeException("Couldn't find removeLike(String) method");
+            } else {
+                removeLikeMethod.invoke(o, s);
+            }
+
+            log.info("removed " + s);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -56,16 +90,48 @@ public class CacheClearer {
 
     }
 
+    /**
+     * Removes entries from the cache "like" any of the the specified strings in the argument
+     * 
+     * @param s the set of strings to compare and remove items
+     */
     public static void removelike(Set<String> s) {
         InitialContext ctx = null;
         TCResourceBundle b = new TCResourceBundle("cache");
         try {
             ctx = TCContext.getInitial(b.getProperty("host_url"));
-            //using reflection so that we don't a lot of nasty dependencies when using the class.
-            Object o = ctx.lookup(b.getProperty("jndi_name"));
-            new CacheClearer().removelike(s, "/", o);
-            log.info("removed " + s);
+            // This method no longer does the job, it calls the cache admin mbean to speed up the process (all the tree lookup will be made locally on the cache server)            
+            // Object o = ctx.lookup(b.getProperty("jndi_name"));
+            // new CacheClearer().removelike(s, "/", o);
 
+            for (String st : s) {
+                log.debug("Performing a single call to remove like (set) : " + st);
+            }
+
+            Object o = ctx.lookup(b.getProperty("cache_admin_jndi_name"));
+            
+            //using reflection so that we don't a lot of nasty dependencies when using the class.
+            Method removeLikeMethod=null;
+            Method[] methods = o.getClass().getDeclaredMethods();
+            for (Method m : methods) {
+//                log.debug("method " + m.getName() + " params: ");
+//                for (Class<?> c : m.getParameterTypes()) {
+//                    log.debug(" - " + c.getName());
+//                }
+                if ("removelike".equals(m.getName()) &&
+                      m.getParameterTypes().length == 1 &&
+                      m.getParameterTypes()[0].equals(Set.class)) {
+                    removeLikeMethod = m;
+                    break;
+                }
+            }
+            if (removeLikeMethod==null) {
+                throw new RuntimeException("Couldn't find removelikeSet(set) method");
+            } else {
+                removeLikeMethod.invoke(o, s);
+            }
+            
+            log.info("removed " + s);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -75,92 +141,7 @@ public class CacheClearer {
         } finally {
             TCContext.close(ctx);
         }
-
     }
-
-
-    private Method getChildrenNames=null;
-    private Set getChildrenNames(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
-        if (getChildrenNames==null) {
-            Method[] methods = cache.getClass().getDeclaredMethods();
-            for (Method m : methods) {
-                //log.debug("method " + m.getName() + " params " + m.getParameterTypes());
-                if ("getChildrenNames".equals(m.getName()) &&
-                        m.getParameterTypes().length == 1 &&
-                        m.getParameterTypes()[0].equals(String.class)) {
-                    getChildrenNames = m;
-                    break;
-                }
-            }
-        }
-        if (getChildrenNames==null) {
-            throw new RuntimeException("Couldn't find getChildrenNames(String) method");
-        } else {
-            return (Set) getChildrenNames.invoke(cache, s);
-        }
-
-    }
-
-    private Method remove = null;
-    private void remove(String s, Object cache) throws IllegalAccessException, InvocationTargetException {
-        if (remove==null) {
-            Method[] methods = cache.getClass().getDeclaredMethods();
-            for (Method m : methods) {
-                if ("remove".equals(m.getName()) &&
-                        m.getParameterTypes().length == 1 &&
-                        m.getParameterTypes()[0].equals(String.class)) {
-                    remove = m;
-                    break;
-                }
-            }
-        }
-        if (remove==null) {
-            throw new RuntimeException("Couldn't find getChildrenNames(String) method");
-        } else {
-            remove.invoke(cache, s);
-        }
-    }
-    private void removelike(Set<String> s, String parent, Object cache) throws IllegalAccessException, InvocationTargetException {
-        String kid;
-        String fqn;
-        for (Object child : getChildrenNames(parent, cache)) {
-            kid = (String) child;
-            fqn = parent + "/" + kid;
-            boolean found = false;
-            for (String key : s) {
-                if (kid.indexOf(key) >= 0) {
-                    remove(fqn, cache);
-                    found = true;
-                }
-            }
-            if (!found) {
-                Set kids = getChildrenNames(fqn, cache);
-                if (kids != null && !kids.isEmpty()) {
-                    removelike(s, fqn, cache);
-                }
-
-            }
-        }
-    }
-
-
-    private void removelike(String key, String parent, Object cache) throws IllegalAccessException, InvocationTargetException {
-        String kid;
-        String fqn;
-        for (Object child : getChildrenNames(parent, cache)) {
-            kid = (String) child;
-            fqn = parent + "/" + kid;
-            if (kid.indexOf(key) >= 0) {
-                remove(fqn, cache);
-            } else {
-                Set kids = getChildrenNames(fqn, cache);
-                if (kids != null && !kids.isEmpty()) {
-                    removelike(key, fqn, cache);
-                }
-            }
-        }
-    }
-
 }
 
 
