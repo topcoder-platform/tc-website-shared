@@ -878,11 +878,13 @@ public class TCLoadLong extends TCLoadRank {
         int count = 0;
         PreparedStatement psSel = null;
         PreparedStatement psSelRatingOrder = null;
+        PreparedStatement psSelRatingOrderNewRound = null;
         PreparedStatement psSel2 = null;
         PreparedStatement psIns = null;
         PreparedStatement psUpd = null;
         ResultSet rs = null;
         ResultSet rs2 = null;
+        ResultSet rsRatings = null;
         StringBuffer query = null;
 
         try {
@@ -924,6 +926,15 @@ public class TCLoadLong extends TCLoadRank {
             query.append("         OR  (r1.calendar_id = r2.calendar_id AND r1.time_id = r2.time_id AND r1.round_id < r2.round_id)) ");
             psSelRatingOrder = prepareStatement(query.toString(), TARGET_DB);
 
+            query = new StringBuffer(100);
+            query.append(" SELECT max(r.rating_order)  ");
+            query.append("         from round r ");
+            query.append("         , round_type_lu rt ");
+            query.append("         where r.rated_ind = 1 ");
+            query.append("         AND r.round_type_id = rt.round_type_id ");
+            query.append("         AND rt.algo_rating_type_id = " + MARATHON_RATING_TYPE_ID);
+            psSelRatingOrderNewRound = prepareStatement(query.toString(), TARGET_DB);
+            
             // We have 8 values in the insert as opposed to 7 in the select
             // because we want to provide a default value for failed. We
             // don't have a place to select failed from in the transactional
@@ -977,19 +988,35 @@ public class TCLoadLong extends TCLoadRank {
             // On to the load
             psSel.setInt(1, roundId);
             rs = psSel.executeQuery();
+            boolean newRound = false;
             while (rs.next()) {
                 int round_id = rs.getInt("round_id");
-
-                psSelRatingOrder.clearParameters();
-                psSelRatingOrder.setInt(1, round_id);
-                rs2 = psSelRatingOrder.executeQuery();
-                int ratingOrder = rs2.next() ? rs2.getInt(1) : 0;
-                if (rs.getInt("rated_ind") == 1) ratingOrder++;
-                close(rs2);
 
                 psSel2.clearParameters();
                 psSel2.setInt(1, round_id);
                 rs2 = psSel2.executeQuery();
+                
+                newRound = !rs2.next();
+                
+                int ratingOrder = 0;
+                
+                // if the load is saving the round for the first time, we can't
+                // get the latest round before the current because it simply
+                // doesn't exist yet in the database,
+                // so we get the latest marathon type rating order. 
+                if (newRound) {
+                    psSelRatingOrderNewRound.clearParameters();
+                    rsRatings = psSelRatingOrderNewRound.executeQuery();
+                    ratingOrder = rsRatings.next() ? rsRatings.getInt(1) : 0;
+                    if (rs.getInt("rated_ind") == 1) ratingOrder++;
+                } else {
+                    psSelRatingOrder.clearParameters();
+                    psSelRatingOrder.setInt(1, round_id);
+                    rsRatings = psSelRatingOrder.executeQuery();
+                    ratingOrder = rsRatings.next() ? rsRatings.getInt(1) : 0;
+                    if (rs.getInt("rated_ind") == 1) ratingOrder++;
+                }
+                close(rsRatings);
 
                 // Retrieve the calendar_id for the start_time of this round
                 java.sql.Timestamp stamp = rs.getTimestamp("start_time");
@@ -998,7 +1025,7 @@ public class TCLoadLong extends TCLoadRank {
 
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
-                if (rs2.next()) {
+                if (!newRound) {
                     psUpd.clearParameters();
                     psUpd.setInt(1, rs.getInt("contest_id"));  // contest_id
                     psUpd.setString(2, rs.getString("name"));  // name
