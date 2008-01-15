@@ -30,6 +30,8 @@ public class ProblemResult extends ProblemEvent {
     /** failed  */
     public final static int FAILED = 2;
 
+    /** marathon problem is done being processed  */
+    public final static int PROCESSED = 3;
 
     /**
      * No-arg constructor needed by customserialization
@@ -65,10 +67,11 @@ public class ProblemResult extends ProblemEvent {
         this.args = args;
     }
     
-    public ProblemResult(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, int result, double resultValue, String text, int language) {
+    public ProblemResult(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, int result, double resultValue, String text, int language, int submissionNumber) {
         this(room, problemEventType, problemID, problemWriter, sourceCoder, timeLeft,result, resultValue);
         this.language = language;
         this.programText = text;
+        this.submissionNumber = submissionNumber;
     }
     
     public Object[] getArgs() {

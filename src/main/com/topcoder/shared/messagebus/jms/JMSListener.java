@@ -80,10 +80,10 @@ public class JMSListener implements BusListener {
     }
 
     private void bareClose() {
-        try { consumer.close(); } catch (Exception e) { log.error(e, e); };
-        try { session.close();  } catch (Exception e) { log.error(e, e); };
+        try { consumer.close(); } catch (Exception e) { log.debug(e, e); };
+        try { session.close();  } catch (Exception e) { log.debug(e, e); };
         if (!sharedConnection) {
-            try { cnn.close();  } catch (Exception e) { log.error(e, e); };
+            try { cnn.close();  } catch (Exception e) { log.debug(e, e); };
         }
     }
     

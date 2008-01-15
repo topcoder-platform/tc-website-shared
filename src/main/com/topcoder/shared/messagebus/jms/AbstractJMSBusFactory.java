@@ -16,16 +16,22 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 
+import com.topcoder.shared.messagebus.BusException;
 import com.topcoder.shared.messagebus.BusFactory;
 import com.topcoder.shared.messagebus.BusFactoryException;
 import com.topcoder.shared.messagebus.BusListener;
 import com.topcoder.shared.messagebus.BusPollListener;
 import com.topcoder.shared.messagebus.BusPublisher;
 import com.topcoder.shared.messagebus.BusRequestListener;
+import com.topcoder.shared.messagebus.BusRequestListenerImpl;
 import com.topcoder.shared.messagebus.BusRequestPublisher;
+import com.topcoder.shared.messagebus.BusRequestPublisherImpl;
 import com.topcoder.shared.messagebus.jms.mapper.MessageMapperProvider;
 
 /**
+ * Base class for Bus factory implementation using JMS as an underlying provider
+ * for the Bus services.
+ * 
  * @author Diego Belfer (mural)
  * @version $Id$
  */
@@ -180,21 +186,15 @@ public abstract class AbstractJMSBusFactory extends BusFactory {
     }
 
     public BusListener createListener(String configurationKey, String moduleName) throws BusFactoryException {
-        JMSChannelConfiguration cfg;
         try {
-            cfg = resolveListenerConfiguration(configurationKey, moduleName);
+            JMSChannelConfiguration cfg = resolveListenerConfiguration(configurationKey, moduleName);
+            return (BusListener) createMessageListenerImpl(cfg, true);
         } catch (ConfigurationNotFoundException e) {
            throw new BusFactoryException("Failed to create listener", e);
         }
-        return (BusListener) createMessageListenerImpl(cfg, true);
     }
 
     public BusPollListener createPollListener(String configurationKey, String moduleName) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public BusRequestPublisher createRequestPublisher(String configurationKey, String moduleName) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -207,9 +207,24 @@ public abstract class AbstractJMSBusFactory extends BusFactory {
         return configuration.getChannelForConnector("listener", configurationKey, moduleName);
     }
 
-    public BusRequestListener createRequestListener(String configurationKey, String moduleName) {
-        // TODO Auto-generated method stub
-        return null;
+    public BusRequestPublisher createRequestPublisher(String configurationKey, String moduleName) throws BusFactoryException {
+        BusListener listener = createListener(configurationKey, moduleName);
+        BusPublisher publisher = createPublisher(configurationKey, moduleName);
+        try {
+            return new BusRequestPublisherImpl(publisher, listener);
+        } catch (BusException e) {
+            throw new BusFactoryException("Could not create Request Publisher", e);
+        }
+    }
+    
+    public BusRequestListener createRequestListener(String configurationKey, String moduleName) throws BusFactoryException {
+        BusListener listener = createListener(configurationKey, moduleName);
+        BusPublisher publisher = createPublisher(configurationKey, moduleName);
+        try {
+            return new BusRequestListenerImpl(listener, publisher);
+        } catch (BusException e) {
+            throw new BusFactoryException("Could not create Request Listener", e);
+        }
     }
 
     public void release() {
@@ -217,9 +232,7 @@ public abstract class AbstractJMSBusFactory extends BusFactory {
             for (JMSConnection cnn : connections.values()) {
                 try {
                     cnn.close();
-                } catch (Exception e) {
-                    //Continue with the rest of them
-                }
+                } catch (Exception e) { /*Continue with the rest of them*/ }
             }
             connections.clear();
         }

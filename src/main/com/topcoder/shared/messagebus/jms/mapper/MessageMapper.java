@@ -52,6 +52,7 @@ public abstract class MessageMapper {
     private static final String BM_VERSION = "BMVersion";
 
     protected void fillMessage(BusMessage src, Message message) throws JMSException, IOException {
+        message.setJMSCorrelationID(src.getMessageCorrelationId());
         message.setStringProperty(BM_VERSION, src.getMessageVersion());
         message.setStringProperty(BM_ORIGIN_VM, src.getMessageOriginVM());
         message.setStringProperty(BM_ORIGIN_MODULE, src.getMessageOriginModule());
@@ -64,6 +65,8 @@ public abstract class MessageMapper {
 
 
     protected void fillMessage(Message src, BusMessage message) throws JMSException, IOException {
+        message.setMessageId(src.getJMSMessageID());
+        message.setMessageCorrelationId(src.getJMSCorrelationID());
         message.setMessageVersion(src.getStringProperty(BM_VERSION));
         message.setMessageOriginVM(src.getStringProperty(BM_ORIGIN_VM));
         message.setMessageOriginModule(src.getStringProperty(BM_ORIGIN_MODULE));

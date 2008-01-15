@@ -114,6 +114,8 @@ public class ServicesConstants {
 
     public static final int FAILURE_INCORRECT_RESULT = 1;
     public static final int FAILURE_TIMEOUT = 2;
+    public static final int FAILURE_SYSTEM_ERROR = -1;
+    public static final int FAILURE_EXCEPTION = 3;
 
     public static final int MARATHON_PORT_NUMBER = System.getProperty("MARATHON_PORT_NUMBER") == null ? 8000 : Integer.parseInt(System.getProperty("MARATHON_PORT_NUMBER"));
 

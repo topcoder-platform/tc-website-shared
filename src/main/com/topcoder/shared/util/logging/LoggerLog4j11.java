@@ -50,4 +50,20 @@ final class LoggerLog4j11 extends Logger {
         return category.isDebugEnabled();
     }
 
+    public boolean isInfoEnabled() {
+        return category.isDebugEnabled();
+    }
+
+    public boolean isTraceEnabled() {
+        return category.isDebugEnabled();
+    }
+
+    public void trace(Object message, Throwable t) {
+        category.debug(message, t);
+    }
+
+    public void trace(Object message) {
+        category.debug(message);
+    }
+
 }

@@ -13,8 +13,7 @@ package com.topcoder.shared.round.events;
  * 
  * Users of this class must release the publisher after finishing its work.
  * 
- * RoundEventPublisher are not synchronized,external synchronization should be used or
- * different instances should be created.
+ * {@link RoundEventPublisher#publishEvent(RoundEvent)} can be invoked concurrently from multiple threads.
  * 
  * @author Diego Belfer (mural)
  * @version $Id$
