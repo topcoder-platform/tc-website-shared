@@ -6,6 +6,7 @@
 package com.topcoder.shared.messagebus.jms;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.digester.BeanPropertySetterRule;
 import org.apache.commons.digester.Digester;
@@ -20,7 +21,13 @@ import com.topcoder.shared.messagebus.jms.mapper.MessageMapperConfiguration;
  */
 public class JMSConfigurationParser {
 
-    public JMSBusConfiguration getConfiguration() throws IOException, SAXException {
+    public JMSBusConfiguration getConfiguration(String resourcePath) throws IOException, SAXException {
+        InputStream resource = JMSConfigurationParser.class.getResourceAsStream(resourcePath);
+        return getConfiguration(resource);
+        
+    }
+
+    public JMSBusConfiguration getConfiguration(InputStream resource) throws IOException, SAXException {
         Digester digester = new Digester();
         digester.setRules(new ExtendedBaseRules());
         digester.setValidating(false);
@@ -47,8 +54,11 @@ public class JMSConfigurationParser {
         digester.addSetProperties("bus/mappers/mapper");
         digester.addSetNestedProperties("bus/mappers/mapper");
         digester.addSetNext("bus/mappers/mapper", "addMapper", MessageMapperConfiguration.class.getName());
-        //FIXME make file name configurable
-        JMSBusConfiguration cfg = (JMSBusConfiguration) digester.parse(JMSConfigurationParser.class.getResourceAsStream("/messagebus.xml"));
+        JMSBusConfiguration cfg = (JMSBusConfiguration) digester.parse(resource);
         return cfg;
+    }
+    
+    public JMSBusConfiguration getConfiguration() throws IOException, SAXException {
+        return getConfiguration("/messagebus.xml");
     }
 }

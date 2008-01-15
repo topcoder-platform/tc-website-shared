@@ -10,6 +10,17 @@ import java.util.Date;
 import com.topcoder.shared.util.VMUtil;
 
 /**
+ * Sample message generated:
+ * BusMessage
+ *      version = 1.0  -  CURRENT_VERSIOn
+ *      originVM = WEB_SEVER1  - (VM ID configured)
+ *      originModule = EDU_CRUD  - moduleName in constructor
+ *      messageType  = RoundEvent - messageType in constructor
+ *      date = now
+ *      bodyType = namespaces:simpleClassNameOfObj
+ *      body = Obj
+ * 
+ * 
  * @author Diego Belfer (mural)
  * @version $Id$
  */
@@ -34,19 +45,23 @@ public abstract class BaseMessageConverter<T> implements MessageConverter<T> {
         }
     }
 
-    public BusMessage toMessage(T event) {
+    public BusMessage toMessage(T object) {
         BusMessage message = newMessage();
         message.setMessageOriginVM(VMUtil.getVMInstanceId());
-        message.setMessageOriginModule(moduleName);
-        message.setMessageType(messageType);
+        message.setMessageOriginModule(getModuleName());
+        message.setMessageType(getMessageType());
         message.setMessageDate(new Date());
-        message.setMessageBodyType(resolveMessageBodyType(event));
-        message.setMessageBody(event);
+        message.setMessageBodyType(resolveMessageBodyType(object));
+        message.setMessageBody(object);
         return message;
     }
 
-    protected String resolveMessageBodyType(T event) {
-        return namespacePrefix + event.getClass().getSimpleName();
+    protected String resolveMessageBodyType(T object) {
+        return buildBodyType(object.getClass().getSimpleName());
+    }
+    
+    protected String buildBodyType(String simpleName) {
+        return namespacePrefix + simpleName;
     }
 
     protected BusMessage newMessage() {

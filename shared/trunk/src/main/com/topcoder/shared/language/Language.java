@@ -1,12 +1,9 @@
 package com.topcoder.shared.language;
 
-import com.topcoder.shared.problem.DataType;
+import java.io.Serializable;
 
 import com.topcoder.shared.netCommon.CustomSerializable;
-import com.topcoder.shared.netCommon.CSReader;
-import com.topcoder.shared.netCommon.CSWriter;
-
-import java.io.*;
+import com.topcoder.shared.problem.DataType;
 
 
 /**
@@ -29,11 +26,6 @@ public interface Language
     /** Two languages are equal if they have the same id */
     boolean equals(Object o);
       
-
-    void customWriteObject(CSWriter writer) throws IOException;
-
-    void customReadObject(CSReader reader) throws IOException, ObjectStreamException;
-
     String getMethodSignature(String methodName, DataType returnType,
                                               DataType[] paramTypes, String[] paramNames);
     

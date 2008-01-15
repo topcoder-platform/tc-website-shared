@@ -2,6 +2,7 @@ package com.topcoder.shared.util;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.util.MissingResourceException;
 
 public final class SimpleResourceBundle {
 
@@ -24,10 +25,6 @@ public final class SimpleResourceBundle {
         SimpleResourceBundle bundle = getBundle(variationsBaseName);
         String variationName = bundle.getString(baseName);
         return getBundle(baseName + "_" + variationName);
-    }
-
-    private String quote(String s) {
-        return StringUtil.doubleQuote(s);
     }
 
     public String getString(String key) {
@@ -56,6 +53,15 @@ public final class SimpleResourceBundle {
         return Boolean.valueOf(s).booleanValue();
     }
 
+    public boolean getBoolean(String key, boolean defaultValue) {
+        try {
+            String s = getTrimmedString(key);
+            return Boolean.valueOf(s).booleanValue();
+        } catch (MissingResourceException e) {
+            return defaultValue;
+        }
+    }
+
     public void setBoolean(String key, boolean value) {
         setString(key, Boolean.toString(value));
     }
@@ -63,6 +69,15 @@ public final class SimpleResourceBundle {
     public int getInt(String key) {
         String s = getTrimmedString(key);
         return Integer.parseInt(s);
+    }
+
+    public int getInt(String key, int defaultValue) {
+        try { 
+        String s = getTrimmedString(key);
+        return Integer.parseInt(s);
+        } catch (MissingResourceException e) {
+            return defaultValue;
+    }
     }
 
     public void setInt(String key, int value) {
@@ -74,6 +89,15 @@ public final class SimpleResourceBundle {
         return Long.parseLong(s);
     }
 
+    public long getLong(String key, long defaultValue) {
+        try {
+            String s = getTrimmedString(key);
+            return Long.parseLong(s);
+        } catch (MissingResourceException e) {
+            return defaultValue;
+        }
+    }
+
     public void setLong(String key, long value) {
         setString(key, Long.toString(value));
     }
@@ -81,6 +105,15 @@ public final class SimpleResourceBundle {
     public double getDouble(String key) {
         String s = getString(key);
         return Double.parseDouble(s);
+    }
+
+    public double getDouble(String key, double defaultValue) {
+        try {
+            String s = getString(key);
+            return Double.parseDouble(s);
+        } catch (MissingResourceException e) {
+            return defaultValue;
+        } 
     }
 
     public void setDouble(String key, double value) {

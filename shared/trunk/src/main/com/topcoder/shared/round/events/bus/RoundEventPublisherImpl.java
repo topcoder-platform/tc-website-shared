@@ -46,7 +46,7 @@ public class RoundEventPublisherImpl implements RoundEventPublisher {
         return mapper;
     }
 
-    private BusPublisher getDataBusPublisher() throws BusFactoryException {
+    private synchronized BusPublisher getDataBusPublisher() throws BusFactoryException {
         if (publisher == null) {
             publisher = BusFactory.getFactory().createPublisher(RoundEventConstants.DATA_BUS_CONFIG_KEY, moduleName);
         }

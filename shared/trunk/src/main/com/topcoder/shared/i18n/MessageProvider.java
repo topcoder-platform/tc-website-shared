@@ -102,7 +102,7 @@ public class MessageProvider {
             }
         }
         if (value == null) {
-            value = generateMessasgeFromKey(key);
+            value = generateMessageFromKey(key);
         }
         return value;
     }
@@ -178,7 +178,7 @@ public class MessageProvider {
     }
 
 
-    private static String generateMessasgeFromKey(String key) {
+    private static String generateMessageFromKey(String key) {
         boolean spcs = key.indexOf(' ') > -1;
         if (spcs) {
             log.info("Invalid message key, it contains spaces: "+key);

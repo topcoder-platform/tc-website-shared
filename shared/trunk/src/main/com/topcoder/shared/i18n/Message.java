@@ -5,7 +5,13 @@
  */
 package com.topcoder.shared.i18n;
 
+import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
+
+import com.topcoder.shared.netCommon.CSReader;
+import com.topcoder.shared.netCommon.CSWriter;
+import com.topcoder.shared.netCommon.CustomSerializable;
 
 /**
  * The Message class represents a self contained message.
@@ -16,7 +22,7 @@ import java.io.Serializable;
  * @author Diego Belfer (mural)
  * @version $Id$
  */
-public class Message implements Serializable {
+public class Message implements Serializable, CustomSerializable {
     /**
      * The bundle name where they key must be searched
      */
@@ -30,6 +36,12 @@ public class Message implements Serializable {
      */
     private Object[] values;
     
+    public Message() {
+    }
+    
+    public Message(String key) {
+        this("default", key);
+    }
     
     public Message(String bundleName, String key) {
         this.bundleName = bundleName;
@@ -52,5 +64,21 @@ public class Message implements Serializable {
 
     public String getBundleName() {
         return bundleName;
+    }
+    
+    public void customReadObject(CSReader reader) throws IOException, ObjectStreamException {
+        this.bundleName = reader.readString();
+        this.key = reader.readString();
+        this.values = reader.readObjectArray();
+    }
+    
+    public void customWriteObject(CSWriter writer) throws IOException {
+        writer.writeString(bundleName);
+        writer.writeString(key);
+        writer.writeObjectArray(values);
+    }
+    
+    public String toString() {
+        return "bundle=" + bundleName + ", key=" + key + ", values=[" + (values == null ? "null" : String.valueOf(values.length)) + "]";
     }
 }

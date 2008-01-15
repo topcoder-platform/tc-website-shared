@@ -5,6 +5,7 @@ import java.io.ObjectStreamException;
 
 import com.topcoder.shared.netCommon.CSReader;
 import com.topcoder.shared.netCommon.CSWriter;
+import com.topcoder.shared.netCommon.ResolvedCustomSerializable;
 import com.topcoder.shared.problem.DataType;
 
 
@@ -18,54 +19,52 @@ import com.topcoder.shared.problem.DataType;
  * @author  Logan Hanks
  * @see     DataType
  */
-abstract public class BaseLanguage
-    implements Language {
+abstract public class BaseLanguage implements Language, ResolvedCustomSerializable {
 
     private int id;
-    private String name;
+    private transient String name;
 
-    public BaseLanguage()
-    {
+    public BaseLanguage() {
     }
 
-    public BaseLanguage(int id, String name)
-    {
+    protected BaseLanguage(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public int getId()
-    {
+    public int getId() {
         return id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     /** Two languages are equal if they have the same id */
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
       return (o != null) && (o instanceof Language) 
               && (((Language)o).getId() == id);
     }
-      
+    
+    public int hashCode() {
+        return id;
+    }
 
-    public void customWriteObject(CSWriter writer)
-        throws IOException
-    {
+    public void customWriteObject(CSWriter writer) throws IOException  {
         writer.writeInt(id);
-        writer.writeString(name);
     }
 
-    public void customReadObject(CSReader reader)
-        throws IOException, ObjectStreamException
-    {
+    public void customReadObject(CSReader reader) throws IOException, ObjectStreamException {
         id = reader.readInt();
-        name = reader.readString();
     }
 
+    /**
+     * This method provides uniquessness during serialization
+     */
+    public Object readResolve () {
+        return getLanguage(id);
+    }
+    
     abstract public String getMethodSignature(String methodName, DataType returnType,
                                               DataType[] paramTypes, String[] paramNames);
 

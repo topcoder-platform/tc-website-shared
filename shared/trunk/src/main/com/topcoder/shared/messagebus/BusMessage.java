@@ -38,8 +38,15 @@ public class BusMessage {
      * The message body
      */
     private Object messageBody;
-    
-    
+    /**
+     * The id given to the message by the service
+     */
+    private String messageId;
+    /**
+     * The id of the message who this message is in response of
+     */
+    private String messageCorrelationId;
+
     public String getMessageVersion() {
         return messageVersion;
     }
@@ -82,7 +89,19 @@ public class BusMessage {
     public void setMessageBody(Object messageBody) {
         this.messageBody = messageBody;
     }
+    public String getMessageId() {
+        return messageId;
+    }
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
     
+    public String getMessageCorrelationId() {
+        return messageCorrelationId;
+    }
+    public void setMessageCorrelationId(String messageCorrelationId) {
+        this.messageCorrelationId = messageCorrelationId;
+    }
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
         sb.append(this.getClass().getSimpleName()).append("[")
@@ -96,4 +115,5 @@ public class BusMessage {
             .append("]");
         return sb.toString();
     }
+
 }

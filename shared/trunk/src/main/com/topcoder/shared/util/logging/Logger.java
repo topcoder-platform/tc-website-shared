@@ -86,4 +86,11 @@ public abstract class Logger {
      */
     public abstract boolean isDebugEnabled();
 
+    public abstract boolean isInfoEnabled();
+
+    public abstract boolean isTraceEnabled();
+
+    public abstract void trace(Object message, Throwable t);
+
+    public abstract void trace(Object message);
 }

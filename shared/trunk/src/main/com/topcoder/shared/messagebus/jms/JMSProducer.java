@@ -26,6 +26,7 @@ import com.topcoder.shared.util.logging.Logger;
  */
 public class JMSProducer {
     private Logger log = Logger.getLogger(getClass());
+    private Object sendMutex = new Object();
     private MessageMapperProvider mapperProvider;
     private Session session;
     private MessageProducer producer;
@@ -43,13 +44,17 @@ public class JMSProducer {
         log.debug("Created "+this+" destination="+this.destination);
     }
 
-    protected void send(BusMessage message) throws JMSException, IOException, MapperNotFoundException, MapperProviderException {
+    protected Message send(BusMessage message) throws JMSException, IOException, MapperNotFoundException, MapperProviderException {
         if (log.isDebugEnabled()) {
             log.debug("Sending : "+message);
         }
         Message jmsMsg = convertToJMS(message);
         cnn.assertConnected();
-        producer.send(jmsMsg);
+        synchronized (sendMutex) {
+            producer.send(jmsMsg);
+        }
+        message.setMessageId(jmsMsg.getJMSMessageID());
+        return jmsMsg;
     }
 
     private Message convertToJMS(BusMessage message) throws JMSException, IOException, MapperNotFoundException, MapperProviderException {

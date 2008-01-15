@@ -48,4 +48,21 @@ final class LoggerLog4j127 extends com.topcoder.shared.util.logging.Logger {
         return logger.isDebugEnabled();
     }
 
+    public boolean isInfoEnabled() {
+        return logger.isInfoEnabled();
+    }
+
+    public boolean isTraceEnabled() {
+        return logger.isTraceEnabled();
+    }
+
+    public void trace(Object message, Throwable t) {
+        logger.trace(message, t);
+    }
+
+    public void trace(Object message) {
+        logger.trace(message);
+    }
+    
+
 }

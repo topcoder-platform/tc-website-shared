@@ -36,6 +36,8 @@ public class ProblemEvent extends RoomMessage {
     /** language used */
     protected int language;
 
+    protected int submissionNumber;
+
     /** Problem being opened */
     public final static int OPENED = 1;
 
@@ -89,10 +91,11 @@ public class ProblemEvent extends RoomMessage {
         this.programText = "";
     }
     
-    public ProblemEvent(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, String programText, int language) {
+    public ProblemEvent(RoomData room, int problemEventType, int problemID, String problemWriter, String sourceCoder, int timeLeft, String programText, int language, int submissionNumber) {
         this(room, problemEventType, problemID, problemWriter, sourceCoder, timeLeft);
         this.programText = programText;
         this.language = language;
+        this.submissionNumber = submissionNumber;
     }
     
     public int getLanguage() {
@@ -101,6 +104,10 @@ public class ProblemEvent extends RoomMessage {
     
     public String getProgramText() {
         return programText;
+    }
+
+    public int getSubmissionNumber() {
+        return submissionNumber;
     }
 
     /**
@@ -161,6 +168,7 @@ public class ProblemEvent extends RoomMessage {
         writer.writeInt(timeLeft);
         writer.writeString(programText);
         writer.writeInt(language);
+        writer.writeInt(submissionNumber);
     }
 
     /**
@@ -183,6 +191,7 @@ public class ProblemEvent extends RoomMessage {
         timeLeft = reader.readInt();
         programText = reader.readString();
         language = reader.readInt();
+        submissionNumber = reader.readInt();
     }
 
     /**

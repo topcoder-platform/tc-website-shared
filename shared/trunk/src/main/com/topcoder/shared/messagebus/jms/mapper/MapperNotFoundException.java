@@ -13,22 +13,18 @@ public class MapperNotFoundException extends Exception {
 
     public MapperNotFoundException() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     public MapperNotFoundException(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
 
     public MapperNotFoundException(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     public MapperNotFoundException(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
 }
