@@ -25,7 +25,7 @@ import com.topcoder.shared.util.logging.Logger;
  * Support class for Service Locators. </p>
  *
  * It returns a proxy for the service and recreate the service in case any RemoteException
- * is thrown while calling to one of the service methods. <p>
+ * is thrown while calling one of the service methods. <p>
  *
  * Only one instance of the service is held by this Locator, and it is used for every call.<p>
  *
@@ -112,32 +112,36 @@ public class ServiceLocatorSupport {
     }
 
     private void checkServiceLoaded() throws NamingException, CreateException, RemoteException {
-        if (mustReload) {
+        if (mustReload || services == null) {
             createServiceInstance();
         }
     }
 
     private synchronized void createServiceInstance() throws NamingException, RemoteException, CreateException {
-        if (mustReload) {
-            mustReload = false;
+        if (mustReload || services == null) {
             Object h = home;
             if (h != null) {
                 try {
                     services = callCreate(h);
+                    mustReload = false;
+                    return;
                 } catch (Exception e) {
-                    //Let's create a new home
+                    log.info("Home was not null, but service creation failed. Generating new home", e);
                 }
             }
             h = getHome();
             services = callCreate(h);
             home = h;
+            mustReload = false;
         }
     }
 
     private Object callCreate(Object h) throws CreateException, RemoteException {
         try {
             log.info("Creating new instance using home "+ homeInterfaceClass.getName());
-            return homeCreateMethod.invoke(h, new Object[]{});
+            Object serviceObject = homeCreateMethod.invoke(h, new Object[]{});
+            log.info("Creation succeeded");
+            return serviceObject;
         } catch (IllegalArgumentException e) {
             //Cannot happen
             throw e;
@@ -170,7 +174,7 @@ public class ServiceLocatorSupport {
     }
 
     /**
-     * Returns the intial context to use for finding the Home
+     * Returns the initial context to use for finding the Home
      *
      * @return The context
      *
