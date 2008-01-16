@@ -303,6 +303,10 @@ public abstract class CSHandler implements CSReader, CSWriter {
         if (isNull(OBJECT_ARRAY_ARRAY)) {
             return null;
         }
+        return readJustObjectArrayArray();
+    }
+
+    private Object[][] readJustObjectArrayArray() throws IOException {
         int size = readShort();
         Object[][] r = new Object[size][];
         for (int i = 0; i < size; i++) {
@@ -860,6 +864,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             writeByte(CUSTOM_SERIALIZABLE);
             writeUTF(object.getClass().getName());
             customWriteObject(object);
+        } else if (object instanceof Object[][]) {
+            writeObjectArrayArray((Object[][]) object);
         } else if (object instanceof Object[]) {
             writeObjectArray((Object[]) object);
         } else if (object instanceof Class) {
@@ -942,6 +948,8 @@ public abstract class CSHandler implements CSReader, CSWriter {
             return readJustHashMap();
         case OBJECT_ARRAY:
             return readJustObjectArray();
+        case OBJECT_ARRAY_ARRAY:
+            return readJustObjectArrayArray();
         case CLASS:
             return readJustClass();
         case LIST:

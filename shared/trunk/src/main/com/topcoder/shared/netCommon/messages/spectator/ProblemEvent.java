@@ -35,7 +35,7 @@ public class ProblemEvent extends RoomMessage {
     
     /** language used */
     protected int language;
-
+    
     protected int submissionNumber;
 
     /** Problem being opened */
@@ -105,7 +105,7 @@ public class ProblemEvent extends RoomMessage {
     public String getProgramText() {
         return programText;
     }
-
+    
     public int getSubmissionNumber() {
         return submissionNumber;
     }
