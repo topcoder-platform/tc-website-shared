@@ -52,7 +52,7 @@ public final class SimpleResourceBundle {
         String s = getTrimmedString(key);
         return Boolean.valueOf(s).booleanValue();
     }
-
+    
     public boolean getBoolean(String key, boolean defaultValue) {
         try {
             String s = getTrimmedString(key);
@@ -73,13 +73,13 @@ public final class SimpleResourceBundle {
 
     public int getInt(String key, int defaultValue) {
         try { 
-        String s = getTrimmedString(key);
-        return Integer.parseInt(s);
+            String s = getTrimmedString(key);
+            return Integer.parseInt(s);
         } catch (MissingResourceException e) {
             return defaultValue;
+        }
     }
-    }
-
+    
     public void setInt(String key, int value) {
         setString(key, Integer.toString(value));
     }
@@ -88,7 +88,7 @@ public final class SimpleResourceBundle {
         String s = getTrimmedString(key);
         return Long.parseLong(s);
     }
-
+    
     public long getLong(String key, long defaultValue) {
         try {
             String s = getTrimmedString(key);
@@ -106,7 +106,7 @@ public final class SimpleResourceBundle {
         String s = getString(key);
         return Double.parseDouble(s);
     }
-
+    
     public double getDouble(String key, double defaultValue) {
         try {
             String s = getString(key);
@@ -128,5 +128,4 @@ public final class SimpleResourceBundle {
     public void setTimestamp(String key, Timestamp value) {
         setString(key, DateUtil.toString(value));
     }
-
 }

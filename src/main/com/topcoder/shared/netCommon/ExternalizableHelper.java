@@ -38,12 +38,14 @@ public class ExternalizableHelper {
          CSHandler handler = getInstance();
          handler.setDataOutput(out);
          obj.customWriteObject(handler);
+         handler.setDataOutput(null);
      }
 
      public static void readExternal(ObjectInput in, CustomSerializable obj) throws IOException {
          CSHandler handler = getInstance();
          handler.setDataInput(in);
          obj.customReadObject(handler);
+         handler.setDataInput(null);
      }
 
      public static CSHandler getInstance() {
