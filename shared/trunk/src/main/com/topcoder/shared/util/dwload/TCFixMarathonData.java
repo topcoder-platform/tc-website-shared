@@ -42,7 +42,7 @@ public class TCFixMarathonData extends TCLoadRank {
             }
             loadHistory(roundId);
 
-            l = getCurrentRatings(MARATHON_RATING_TYPE_ID);
+            l = getRatingsForRound(MARATHON_RATING_TYPE_ID);
             loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
             loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
 
