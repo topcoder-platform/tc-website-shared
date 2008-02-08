@@ -14,7 +14,12 @@ package com.topcoder.shared.util.dwload;
 import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
@@ -177,6 +182,9 @@ public abstract class TCLoad {
 
         String urlstr = (String) fDatabaseURLs.get(index);
         Connection conn = DriverManager.getConnection(urlstr);
+        PreparedStatement ps = conn.prepareStatement("set lock mode to wait 5");
+        ps.execute();
+        ps.close();
         if(index == SOURCE_DB) {
             setSourceConnection(conn);
         } else if(index == TARGET_DB) {

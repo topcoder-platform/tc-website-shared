@@ -13,25 +13,24 @@ package com.topcoder.shared.util.dwload;
  *
  */
 
-import java.io.FileInputStream;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.FileInputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 public class TCLoadUtilityAllRounds { 
     private static Logger log = Logger.getLogger(TCLoadUtilityAllRounds.class);
@@ -251,11 +250,19 @@ public class TCLoadUtilityAllRounds {
     
     public static void doLoad(TCLoad tcload, String sourceDB, String targetDB) throws Exception {
         log.info("Creating source database connection...");
-        tcload.setSourceConnection(DBMS.getConnection(sourceDB));
+        Connection conn = DBMS.getConnection(sourceDB);
+        PreparedStatement ps = conn.prepareStatement("set lock mode to wait 5");
+        ps.execute();
+        ps.close();
+        tcload.setSourceConnection(conn);
         log.info("Success!");
 
         log.info("Creating target database connection...");
-        tcload.setTargetConnection(DBMS.getConnection(targetDB));
+        Connection conn1 = DBMS.getConnection(targetDB);
+        PreparedStatement ps1 = conn1.prepareStatement("set lock mode to wait 5");
+        ps1.execute();
+        ps1.close();
+        tcload.setTargetConnection(conn1);
         log.info("Success!");
     
         try {
