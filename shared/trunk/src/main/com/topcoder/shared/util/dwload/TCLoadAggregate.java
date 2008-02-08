@@ -253,7 +253,7 @@ public class TCLoadAggregate extends TCLoad {
 
         try {
             // Get all the coders that participated in this round
-            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel = prepareStatement(MOST_RECENT, SOURCE_DB);
             psSel.setLong(1, algoType);
 
             rs = psSel.executeQuery();
