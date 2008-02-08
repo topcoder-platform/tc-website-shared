@@ -4,8 +4,17 @@ import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.Date;
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author dok
@@ -111,7 +120,7 @@ public class TCLoadLong extends TCLoadRank {
             loadHistory(roundId);
 
             // Load ranks, history has to come first because the rank loads depend on it.
-            List l = getCurrentRatings(MARATHON_RATING_TYPE_ID);
+            List l = getRatingsForRound(MARATHON_RATING_TYPE_ID);
 
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
             loadRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);

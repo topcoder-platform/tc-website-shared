@@ -115,7 +115,7 @@ public class TCLoadRank extends TCLoad {
             int algoType = getRoundType(roundId);
             log.info("Round type=" + algoType);
 
-            List l = getCurrentRatings(algoType);
+            List l = getRatingsForRound(algoType);
             log.info("got " + l.size() + " records in " + (System.currentTimeMillis() - start) + " milliseconds");
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
 
@@ -150,7 +150,7 @@ public class TCLoadRank extends TCLoad {
             int seasonId = getSeasonId(roundId);
 
             if (seasonId >= 0) {
-                List ratings = getCurrentSeasonRatings(seasonId);
+                List ratings = getSeasonRatingsForRound(seasonId);
 
                 Collections.sort(ratings);
 
@@ -1209,7 +1209,7 @@ public class TCLoadRank extends TCLoad {
     }
 
 
-    protected List<CoderRating> getCurrentRatings(int algoType) throws Exception {
+    protected List<CoderRating> getRatingsForRound(int algoType) throws Exception {
         StringBuffer query = null;
         PreparedStatement psSel = null;
         ResultSet rs = null;
@@ -1306,7 +1306,7 @@ public class TCLoadRank extends TCLoad {
     }
 
 
-    private List getCurrentSeasonRatings(int seasonId) throws Exception {
+    private List getSeasonRatingsForRound(int seasonId) throws Exception {
         StringBuffer query = null;
         PreparedStatement psSel = null;
         ResultSet rs = null;
