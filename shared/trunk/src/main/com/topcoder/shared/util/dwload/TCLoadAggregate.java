@@ -221,8 +221,16 @@ public class TCLoadAggregate extends TCLoad {
                 loadSeasonRatingHistory();
             }
 
-            //if running for an old round, the rating history load can not be run
-            loadRatingHistory();
+            //if running for an old round, the rating history load can not be run.
+            //if historic ratings have changed, then
+            if (isMostRecentRound()) {
+                loadRatingHistory();
+            } else {
+                log.info("\n\n\n\n\n\nIMPORTANT MESSAGE");
+                log.info("You're running this load for a round that is not the most recent.  If the historic " +
+                        "rating information has changed, then you'll need to update the algo_rating_history table " +
+                        "by hand *BEFORE* you run the rank load.");
+            }
             log.info("SUCCESS: Aggregate load ran successfully.");
         } catch (Exception ex) {
             setReasonFailed(ex.getMessage());
@@ -230,6 +238,41 @@ public class TCLoadAggregate extends TCLoad {
         }
     }
 
+
+    private final static String MOST_RECENT = "select calendar_id, time_id, round_id\n" +
+            "from round r " +
+            ", round_type_lu rt " +
+            "where r.round_type_id = rt.round_type_id " +
+            "and rt.algo_rating_type_id = ?" +
+            "order by calendar_id desc, time_id desc, round_id desc";
+
+    private boolean isMostRecentRound() throws Exception {
+        PreparedStatement psSel = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+
+        try {
+            // Get all the coders that participated in this round
+            psSel = prepareStatement(query.toString(), SOURCE_DB);
+            psSel.setLong(1, algoType);
+
+            rs = psSel.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("round_id")==fRoundId;
+            } else {
+                throw new RuntimeException("no rounds in system");
+            }
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Load of 'algo_rating_history' table failed.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psSel);
+        }
+
+    }
 
     /**
      * This method CANNOT be run after the fact; meaning, if the
@@ -1654,7 +1697,7 @@ public class TCLoadAggregate extends TCLoad {
             query = new StringBuffer(100);
             query.append(" SELECT calendar_id, round_id FROM round r where round_type_id = " + SINGLE_ROUND_MATCH + " and rated_ind = 1");
             query.append("  and exists (select 1 from room_result rr where rr.round_id=r.round_id and rr.rated_flag = 1 and rr.division_id = ?) ");
-            query.append("  ORDER BY calendar_id ");
+            query.append("  ORDER BY calendar_id, time_id, round_id ");
             psSel2 = prepareStatement(query.toString(), SOURCE_DB);
 
             long div1LastRoundId = -1;

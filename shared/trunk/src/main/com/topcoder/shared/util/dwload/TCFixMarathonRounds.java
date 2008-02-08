@@ -1,14 +1,14 @@
 package com.topcoder.shared.util.dwload;
 
+import com.topcoder.shared.util.DBMS;
+import com.topcoder.shared.util.logging.Logger;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-
-import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.logging.Logger;
 
 /**
  * Fixes round data for marathon
@@ -121,7 +121,7 @@ public class TCFixMarathonRounds extends TCLoadLong {
         StringBuffer query = new StringBuffer(100);
         query.append("select round_id from round ");
         query.append("where round_type_id in (13,15,19) ");
-        query.append("order by calendar_id, time_id ");
+        query.append("order by calendar_id, time_id, round_id ");
         
         try {
             ps = prepareStatement(query.toString(), TARGET_DB);
