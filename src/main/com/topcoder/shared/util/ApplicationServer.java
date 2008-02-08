@@ -42,7 +42,7 @@ public class ApplicationServer {
     public static String OR_WEBSERVICES_SERVER_NAME = bundle.getProperty("OR_WEBSERVICES_SERVER_NAME", "63.118.154.186:8080");
     public static String WIKI_SERVER_NAME = bundle.getProperty("WIKI_SERVER_NAME", "www.dev.topcoder.com/wiki");
 
-    public static String SSO_DOMAIN = bundle.getProperty("SSO_DOMAIN", "topcoder.com");
+    public static String SSO_DOMAIN = bundle.getProperty("SSO_DOMAIN", ".topcoder.com");
 
     public final static String JNDI_FACTORY = bundle.getProperty("JNDI_FACTORY", "weblogic.jndi.WLInitialContextFactory");
     public final static String JMS_FACTORY = bundle.getProperty("JMS_FACTORY", "jms.connection.jmsFactory");
