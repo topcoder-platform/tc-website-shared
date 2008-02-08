@@ -26,7 +26,15 @@ import com.topcoder.shared.util.logging.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class TCLoadRank extends TCLoad {
     protected int roundId = 0;
@@ -111,9 +119,6 @@ public class TCLoadRank extends TCLoad {
             log.info("got " + l.size() + " records in " + (System.currentTimeMillis() - start) + " milliseconds");
             loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
 
-//            loadOverallRatingRankHistory(l);
-            //beware, this stuff can't be run be run on old rounds because of teh active flag.  you'll need to
-            //run the full backpopulate load to rebuild this stuff.
             loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, algoType, l);
             loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, algoType, l);
 
