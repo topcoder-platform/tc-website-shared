@@ -2,7 +2,10 @@ package com.topcoder.shared.dataAccess;
 
 import com.topcoder.shared.util.logging.Logger;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * This class is a generic request-bean.  It serves as a container for all
@@ -11,7 +14,6 @@ import java.util.*;
  *
  * @author tbone
  * @version $Revision$
- *
  */
 public class Request implements RequestInt {
     private static Logger log = Logger.getLogger(Request.class);
@@ -33,6 +35,7 @@ public class Request implements RequestInt {
     /**
      * Constructor that takes a map and sets this object's
      * properties using that map.
+     *
      * @param map
      * @throws Exception
      */
@@ -43,6 +46,7 @@ public class Request implements RequestInt {
 
     /**
      * Gets all the property-mappings for this request bean
+     *
      * @return java.util.Properties
      */
     public Map getProperties() {
@@ -51,7 +55,8 @@ public class Request implements RequestInt {
 
     /**
      * Sets the properties for the bean. Called in non-default
-     *  constructor
+     * constructor
+     *
      * @param map A set of mappings
      * @throws Exception
      */
@@ -70,7 +75,7 @@ public class Request implements RequestInt {
                 sValue = (String) me.getValue();
                 if (sKey.equals(DataAccessConstants.COMMAND))
                     setContentHandle(sValue);
-                else if (sValue!=null)
+                else if (sValue != null)
                     mProp.put(sKey, sValue);
             } else if (me.getValue().getClass().isArray()) {
                 arrayType = me.getValue().getClass().getComponentType().toString();
@@ -81,11 +86,11 @@ public class Request implements RequestInt {
                     if (sArray.length > 0) {
                         if (sKey.equals(DataAccessConstants.COMMAND))
                             setContentHandle(sArray[0]);
-                        else if (sArray[0]!=null)
+                        else if (sArray[0] != null)
                             mProp.put(sKey, sArray[0]);
                     }
                     for (int i = 1; i < sArray.length; i++) {
-                        if (sArray[i]!=null)
+                        if (sArray[i] != null)
                             mProp.put(sKey + i, sArray[i]);
                     }
                 }
@@ -97,6 +102,7 @@ public class Request implements RequestInt {
 
     /**
      * Gets the content handle for this request bean
+     *
      * @return String
      */
     public String getContentHandle() {
@@ -105,6 +111,7 @@ public class Request implements RequestInt {
 
     /**
      * Sets the content handle for this request bean
+     *
      * @param s
      */
     public void setContentHandle(String s) {
@@ -114,6 +121,7 @@ public class Request implements RequestInt {
 
     /**
      * Gets a specific property for this request bean
+     *
      * @param sKey the key for the property
      * @return the value of the property, or null if
      *         property is unassigned.
@@ -124,7 +132,8 @@ public class Request implements RequestInt {
 
     /**
      * Gets a specific property for this request bean
-     * @param sKey the key for the property
+     *
+     * @param sKey          the key for the property
      * @param sDefaultValue the default value if null
      * @return String the value of the property
      */
@@ -134,6 +143,7 @@ public class Request implements RequestInt {
 
     /**
      * Sets a specific property for this request bean
+     *
      * @param sKey The property key
      * @param sVal The property value
      */
@@ -147,25 +157,17 @@ public class Request implements RequestInt {
      * Implementation of toString, it includes each
      * of the key/value pairs from the properties
      * object of this object.
+     *
      * @return a string representation of this object
      */
     public String toString() {
-        Iterator it = mProp.entrySet().iterator();
-        Map.Entry me = null;
-        StringBuffer sb = new StringBuffer();
-
-        for (; it.hasNext();) {
-            me = (Map.Entry) it.next();
-            sb.append(me.getKey().toString());
-            sb.append('=');
-            sb.append(me.getValue().toString());
-        }
-        return sb.toString();
+        return getCacheKey();
     }
 
     /**
      * Generate a string from this object sutable for using
      * as a key for some key/value pair construct.
+     *
      * @return
      */
     public String getCacheKey() {
