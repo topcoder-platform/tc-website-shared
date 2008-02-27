@@ -57,6 +57,8 @@ public abstract class EJB3Locator<T> {
      */
     private boolean tryLocalFirst = false;
 
+    private String iName;
+
     /**
      * Creates a new Service locator.
      * <p/>
@@ -72,10 +74,9 @@ public abstract class EJB3Locator<T> {
      */
     public EJB3Locator(String contextURL, boolean tryLocalFirst) {
         Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        String name = clazz.getName();
-        name = name.substring(name.lastIndexOf('.') + 1);
-        this.localJNDIName = name + "Bean/local";
-        this.remoteJNDIName = name + "Bean/remote";
+        iName = clazz.getName();
+        this.localJNDIName = iName + "Bean/local";
+        this.remoteJNDIName = iName + "Bean/remote";
         this.contextURL = contextURL;
         this.tryLocalFirst = tryLocalFirst;
         this.proxiedServices = (T) Proxy.newProxyInstance(
@@ -116,7 +117,7 @@ public abstract class EJB3Locator<T> {
     private T getServices() throws NamingException {
         InitialContext ctx = null;
         try {
-            log.info("Creating new instance of " + services.getClass().getName());
+            log.info("Creating new instance of " + iName);
 
             T ret = null;
             ctx = getContext();
@@ -160,7 +161,7 @@ public abstract class EJB3Locator<T> {
                 return method.invoke(services, args);
             } catch (InvocationTargetException e) {
                 if (e.getTargetException() instanceof RemoteException) {
-                    log.warn(e.getTargetException().getClass().getName() + " when calling proxied method. home=" + services.getClass().getName());
+                    log.warn(e.getTargetException().getClass().getName() + " when calling proxied method. home=" + iName);
                     mustReload = true;
                 }
                 throw e.getTargetException();
