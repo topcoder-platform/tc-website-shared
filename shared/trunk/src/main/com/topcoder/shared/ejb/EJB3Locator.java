@@ -125,6 +125,7 @@ public abstract class EJB3Locator<T> {
                 log.debug("lookup local " + localJNDIName);
                 ret = (T) ctx.lookup(localJNDIName);
                 if (ret != null) {
+                    log.debug(ret);
                     log.debug("found locally");
                 }
             }
