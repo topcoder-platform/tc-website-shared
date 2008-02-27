@@ -18,7 +18,7 @@ import java.rmi.RemoteException;
  * @version $Id$
  *          Create Date: Feb 27, 2008
  */
-public class EJB3Locator<T> {
+public class EJB3Locator<T> implements ServiceLocator<T> {
 
     private final Logger log = Logger.getLogger(EJB3Locator.class);
 
