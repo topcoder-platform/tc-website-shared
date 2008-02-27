@@ -69,7 +69,7 @@ public class EJB3Locator<T> {
      * @param tryLocalFirst whether or not we should attempt to get the local bean before looking for the remote one
      */
     public EJB3Locator(String contextURL, boolean tryLocalFirst) {
-        Class clazz = ((Class) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
+        Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         String name = clazz.getName();
         name = name.substring(name.lastIndexOf('.') + 1);
         this.localJNDIName = name + "Bean/local";
