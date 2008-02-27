@@ -74,7 +74,7 @@ public abstract class EJB3Locator<T> {
      */
     public EJB3Locator(String contextURL, boolean tryLocalFirst) {
         Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        iName = clazz.getName();
+        iName = clazz.getName().substring(clazz.getName().lastIndexOf('.') + 1);
         this.localJNDIName = iName + "Bean/local";
         this.remoteJNDIName = iName + "Bean/remote";
         this.contextURL = contextURL;
