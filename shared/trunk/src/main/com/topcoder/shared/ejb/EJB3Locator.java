@@ -60,6 +60,8 @@ public class EJB3Locator<T> {
     /**
      * Creates a new Service locator.
      * <p/>
+     * <p/>
+     * <p/>
      * With this constructor, the jndiname is defaulted to use the EJB3 default.
      * interface+Bean+/local and interface+Bean+/remote
      * <p/>
