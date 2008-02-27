@@ -11,7 +11,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.rmi.RemoteException;
 
 /**
@@ -19,7 +18,7 @@ import java.rmi.RemoteException;
  * @version $Id$
  *          Create Date: Feb 27, 2008
  */
-public class EJB3Locator<T> implements ServiceLocator<T> {
+public abstract class EJB3Locator<T> {
 
     private final Logger log = Logger.getLogger(EJB3Locator.class);
 
@@ -72,9 +71,6 @@ public class EJB3Locator<T> implements ServiceLocator<T> {
      * @param tryLocalFirst whether or not we should attempt to get the local bean before looking for the remote one
      */
     public EJB3Locator(String contextURL, boolean tryLocalFirst) {
-        log.debug(getClass().getGenericSuperclass());
-        log.debug(((Type) getClass().getGenericSuperclass()));
-        log.debug(((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0].getClass().getName());
         Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         String name = clazz.getName();
         name = name.substring(name.lastIndexOf('.') + 1);
