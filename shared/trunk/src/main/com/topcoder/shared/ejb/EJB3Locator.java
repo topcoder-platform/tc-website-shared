@@ -14,6 +14,9 @@ import java.lang.reflect.Proxy;
 import java.rmi.RemoteException;
 
 /**
+ * First cut for a Generics based service locator.  What we're missing is the ability
+ * to do local calls.
+ *
  * @author dok
  * @version $Id$
  *          Create Date: Feb 27, 2008
@@ -21,12 +24,6 @@ import java.rmi.RemoteException;
 public abstract class EJB3Locator<T> {
 
     private final Logger log = Logger.getLogger(EJB3Locator.class);
-
-    /**
-     * The jndi name where the bean can be found for local calls
-     */
-    private final String localJNDIName;
-
     /**
      * The jndi name where the bean can be found for remote calls
      */
@@ -52,33 +49,23 @@ public abstract class EJB3Locator<T> {
      */
     private String contextURL;
 
-    /**
-     * whether or not we should attempt to get the local bean before looking for the remote one
-     */
-    private boolean tryLocalFirst = false;
 
     private String iName;
 
     /**
      * Creates a new Service locator.
      * <p/>
+     * With this constructor, the jndiname is defaulted to use the EJB3 default interface+Bean+/remote
      * <p/>
-     * <p/>
-     * With this constructor, the jndiname is defaulted to use the EJB3 default.
-     * interface+Bean+/local and interface+Bean+/remote
-     * <p/>
-     * So, if you pass in com.topcoder.myinterface, you'll be looking up myinterfaceBean/local and myinterfaceBean/remote
+     * So, if you pass in com.topcoder.myinterface, you'll be looking up myinterfaceBean/remote
      *
-     * @param contextURL    The initial context URL.
-     * @param tryLocalFirst whether or not we should attempt to get the local bean before looking for the remote one
+     * @param contextURL The initial context URL.
      */
-    public EJB3Locator(String contextURL, boolean tryLocalFirst) {
+    public EJB3Locator(String contextURL) {
         Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         iName = clazz.getName().substring(clazz.getName().lastIndexOf('.') + 1);
-        this.localJNDIName = iName + "Bean/local";
         this.remoteJNDIName = iName + "Bean/remote";
         this.contextURL = contextURL;
-        this.tryLocalFirst = tryLocalFirst;
         this.proxiedServices = (T) Proxy.newProxyInstance(
                 clazz.getClassLoader(),
                 new Class[]{clazz}, new ServiceFailureDetection());
@@ -121,20 +108,10 @@ public abstract class EJB3Locator<T> {
 
             T ret = null;
             ctx = getContext();
-            if (tryLocalFirst) {
-                log.debug("lookup local " + localJNDIName);
-                ret = (T) ctx.lookup(localJNDIName);
-                if (ret != null) {
-                    log.debug(ret);
-                    log.debug("found locally");
-                }
-            }
-            if (ret == null) {
-                log.debug("lookup remote " + localJNDIName);
-                ret = (T) ctx.lookup(remoteJNDIName);
-                if (ret != null) {
-                    log.debug("found remotely");
-                }
+            log.debug("lookup remote " + remoteJNDIName);
+            ret = (T) ctx.lookup(remoteJNDIName);
+            if (ret != null) {
+                log.debug("found remotely");
             }
             return ret;
         } catch (NamingException e) {
