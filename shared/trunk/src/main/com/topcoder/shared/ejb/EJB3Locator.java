@@ -9,6 +9,7 @@ import javax.naming.NamingException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.rmi.RemoteException;
 
@@ -61,22 +62,23 @@ public class EJB3Locator<T> {
      * <p/>
      * With this constructor, the jndiname is defaulted to use the EJB3 default.
      * interface+Bean+/local and interface+Bean+/remote
-     *
+     * <p/>
      * So, if you pass in com.topcoder.myinterface, you'll be looking up myinterfaceBean/local and myinterfaceBean/remote
      *
      * @param contextURL    The initial context URL.
      * @param tryLocalFirst whether or not we should attempt to get the local bean before looking for the remote one
      */
     public EJB3Locator(String contextURL, boolean tryLocalFirst) {
-        String name = services.getClass().getName();
+        Class<T> clazz = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
+        String name = clazz.getName();
         name = name.substring(name.lastIndexOf('.') + 1);
         this.localJNDIName = name + "Bean/local";
         this.remoteJNDIName = name + "Bean/remote";
         this.contextURL = contextURL;
         this.tryLocalFirst = tryLocalFirst;
         this.proxiedServices = (T) Proxy.newProxyInstance(
-                services.getClass().getClassLoader(),
-                new Class[]{services.getClass()}, new ServiceFailureDetection());
+                clazz.getClassLoader(),
+                new Class[]{clazz}, new ServiceFailureDetection());
     }
 
     /**
@@ -119,14 +121,14 @@ public class EJB3Locator<T> {
             if (tryLocalFirst) {
                 log.debug("lookup local " + localJNDIName);
                 ret = (T) ctx.lookup(localJNDIName);
-                if (ret!=null) {
+                if (ret != null) {
                     log.debug("found locally");
                 }
             }
             if (ret == null) {
                 log.debug("lookup remote " + localJNDIName);
                 ret = (T) ctx.lookup(remoteJNDIName);
-                if (ret!=null) {
+                if (ret != null) {
                     log.debug("found remotely");
                 }
             }
