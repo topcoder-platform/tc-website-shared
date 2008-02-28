@@ -7,9 +7,10 @@ package com.topcoder.shared.security;
  * @version $Id$
  */
 public class SimpleResource implements Resource {
-    private static final long serialVersionUID = 666L;
+
 
     private String name;
+    private static final long serialVersionUID = 6349144183436881853L;
 
     public SimpleResource(String name) {
         this.name = name;
