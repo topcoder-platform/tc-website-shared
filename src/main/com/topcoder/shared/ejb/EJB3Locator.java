@@ -79,7 +79,7 @@ public abstract class EJB3Locator<T> {
      * @throws java.rmi.RemoteException
      * @throws javax.ejb.CreateException
      */
-    public synchronized T getService() throws NamingException, CreateException, RemoteException {
+    public T getService() throws NamingException, CreateException, RemoteException {
         checkServiceLoaded();
         return proxiedServices;
     }
