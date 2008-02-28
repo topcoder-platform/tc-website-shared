@@ -4,9 +4,10 @@ package com.topcoder.shared.security;
  * Minimal implementation of Resource.
  *
  * @author Ambrose Feinstein,dok
- * @version $Revision$ $Date$
+ * @version $Id$
  */
 public class SimpleResource implements Resource {
+    private static final long serialVersionUID = 666L;
 
     private String name;
 

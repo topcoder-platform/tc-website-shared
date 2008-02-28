@@ -5,9 +5,11 @@ import com.topcoder.shared.util.logging.Logger;
 /**
  * Resource which represents the containing directory for a path.
  *
- * @author Ambrose Feinstein
+ * @author Ambrose Feinstein,dok
+ * @version $Id$
  */
 public class PathResource implements Resource {
+    private static final long serialVersionUID = 666L;
 
     private static Logger log = Logger.getLogger(PathResource.class);
 
