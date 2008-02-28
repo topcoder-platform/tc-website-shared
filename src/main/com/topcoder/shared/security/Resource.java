@@ -1,6 +1,7 @@
 package com.topcoder.shared.security;
 
-import org.jboss.cache.aop.annotation.Serializable;
+import java.io.Serializable;
+
 
 /**
  * interface for resources, they could be web pages, web applications

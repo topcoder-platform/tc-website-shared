@@ -9,11 +9,12 @@ import com.topcoder.shared.util.logging.Logger;
  * @version $Id$
  */
 public class PathResource implements Resource {
-    private static final long serialVersionUID = 666L;
+
 
     private static Logger log = Logger.getLogger(PathResource.class);
 
     private String name;
+    private static final long serialVersionUID = 790612079399426566L;
 
     public PathResource(String path) {
         int i = path.lastIndexOf('/');
