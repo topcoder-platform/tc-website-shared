@@ -51,6 +51,7 @@ public class DBMS {
     public final static String FORUMS_DATASOURCE_NAME = getProperty("FORUMS_DATASOURCE_NAME", "java:JiveDS");
     //public final static String STUDIO_FORUMS_DATASOURCE_NAME = getProperty("STUDIO_FORUMS_DATASOURCE_NAME", "java:StudioJiveDS");
     public final static String STUDIO_DATASOURCE_NAME = getProperty("STUDIO_DATASOURCE_NAME", "java:JTS_STUDIO_OLTP");
+    public final static String OPENAIM_DATASOURCE_NAME = getProperty("OPENAIM_DATASOURCE_NAME", "java:JTS_OPENAIM_OLTP");
     public final static String CSF_DATASOURCE_NAME = getProperty("CSF_DATASOURCE_NAME", "java:JTS_CSF_OLTP");
 
 
