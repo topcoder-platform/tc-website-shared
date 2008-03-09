@@ -66,12 +66,11 @@ public class ServicesConstants {
     public static final String PYTHON_WRAPPER = BASE + "/wrapper/srm/PythonUserWrapper.py";
 
     /** argparser.h C++ header file */
-    public static final String WRAPPER = BASE + "/cpp/wrapper.cc";
-    public static final String LONG_WRAPPER = BASE + "/cpp/long_wrapper.cc";
-    public static final String LONG_IO = BASE + "/cpp/long_io.cc";
+    public static final String CPP_INCLUDE_FOLDER = BASE + "/cpp/"; 
+    public static final String WRAPPER = "wrapper.cc";
+    public static final String LONG_IO = "long_io.cc";
 
     /** The directory path to the C++ sandbox application */
-    public static final String SANDBOX = BASE + "/cpp/sandbox/sandbox";
     public static final String SANDBOX2 = BASE + "/cpp/sandbox2/GNU-i386-Linux/sandbox2";
 
     public static final String SANDBOX2_SRM_CONFIG = BASE + "/cpp/sandbox2/config_files/sample.config";
@@ -83,8 +82,6 @@ public class ServicesConstants {
     public static final String SANDBOX2_LONG_PYTON_CONFIG = BASE + "/cpp/sandbox2/config_files/long_python.config";
 
     public static final String SANDBOX2_PYTHON_CONFIG = BASE + "/cpp/sandbox2/config_files/python.config";
-
-    public static final String LONG_SANDBOX = BASE + "/cpp/sandbox/long_sandbox";
 
     /** The directory path to the timeout application */
     public static final String ALARM = BASE + "/cpp/timeout/timeout";
