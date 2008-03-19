@@ -22,6 +22,7 @@ import java.util.Map;
  *          Create Date: Oct 31, 2005
  */
 public class TCLoadLong extends TCLoadRank {
+    private static final String ACTIVE_TEST_STATUS = "1";
     private static Logger log = Logger.getLogger(TCLoadLong.class);
     protected java.sql.Timestamp fStartTime = null;
     protected java.sql.Timestamp fLastLogTime = null;
@@ -383,6 +384,8 @@ public class TCLoadLong extends TCLoadRank {
             query.append("  FROM system_test_case stc, component comp ");
             query.append(" WHERE comp.component_id in (SELECT component_id FROM round_component WHERE round_id = ?)");
             query.append(" AND comp.component_id = stc.component_id");
+            // load only active tests
+            query.append(" AND stc.status = " + ACTIVE_TEST_STATUS);
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
