@@ -109,37 +109,41 @@ public class TCLoadLong extends TCLoadRank {
 
             loadResult();
 
-            loadRating();
-
-            // Load algo_rating_history
-            clearHistory(roundId);
-
-            Integer prevRoundId = getPreviousRound(roundId);
-            if (prevRoundId != null) {
-                copyHistory(prevRoundId, roundId);
+            // only load the following if the round is a rated round
+            if (isRated(roundId)) {
+                loadRating();
+    
+                // Load algo_rating_history
+                clearHistory(roundId);
+    
+                Integer prevRoundId = getPreviousRound(roundId);
+                if (prevRoundId != null) {
+                    copyHistory(prevRoundId, roundId);
+                }
+                loadHistory(roundId);
+    
+                // Load ranks, history has to come first because the rank loads depend on it.
+                List l = getRatingsForRound(MARATHON_RATING_TYPE_ID);
+    
+                loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+                loadRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+    
+                loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+                loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+    
+                loadCountryRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+                loadCountryRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+    
+                loadStateRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+                loadStateRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+    
+                loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+                loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
+    
+                loadStreaks();
+            } else {
+                log.info("*** Round is not rated, skipping rating related loads");
             }
-            loadHistory(roundId);
-
-            // Load ranks, history has to come first because the rank loads depend on it.
-            List l = getRatingsForRound(MARATHON_RATING_TYPE_ID);
-
-            loadRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-            loadRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-
-            loadRatingRankHistory(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-            loadRatingRankHistory(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-
-            loadCountryRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-            loadCountryRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-
-            loadStateRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-            loadStateRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-
-            loadSchoolRatingRank(OVERALL_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-            loadSchoolRatingRank(ACTIVE_RATING_RANK_TYPE_ID, MARATHON_RATING_TYPE_ID, l);
-
-            loadStreaks();
-
 
             setLastUpdateTime();
 
@@ -1368,7 +1372,7 @@ public class TCLoadLong extends TCLoadRank {
             close(psDel);
         }
     }
-
+    
     /**
      * Load algo_rating table.  It updates the aggregated fields
      */
@@ -1959,4 +1963,26 @@ public class TCLoadLong extends TCLoadRank {
         }
     }
 
+    private boolean isRated(long roundId) throws Exception {
+        PreparedStatement psRatedRound = null;
+        ResultSet rs = null;
+        StringBuffer query = null;
+        try {
+            query = new StringBuffer(100);
+            query.append(" SELECT 1 FROM round");
+            query.append(" WHERE round_id = " + roundId);
+            query.append(" AND rated_ind = 1");
+            psRatedRound = prepareStatement(query.toString(), SOURCE_DB);
+            rs = psRatedRound.executeQuery();
+
+            return rs.next(); 
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Could not check if round " + roundId + " was rated or not.\n" +
+                    sqle.getMessage());
+        } finally {
+            close(rs);
+            close(psRatedRound);
+        }        
+    }
 }
