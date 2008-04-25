@@ -24,4 +24,5 @@ public interface ServicesNames {
     public final static String PROBLEM_SERVICES = "jma.ProblemServicesHome";
     public final static String LOGIN_SERVICES = "security/Login";
     public final static String PACTS_CLIENT_SERVICES = "com.topcoder.web.ejb.pacts.PactsClientServicesHome";
+    public static final String ADMIN_SERVICES = "com.topcoder.server.ejb.AdminServicesHome";
 }
