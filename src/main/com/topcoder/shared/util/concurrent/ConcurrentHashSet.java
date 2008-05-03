@@ -5,6 +5,7 @@
  */
 package com.topcoder.shared.util.concurrent;
 
+import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @autor Diego Belfer (Mural)
  * @version $Id$
  */
-public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E> {
+public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>, Serializable {
     private final ConcurrentHashMap<E, Boolean> map;
     
     public ConcurrentHashSet() {
