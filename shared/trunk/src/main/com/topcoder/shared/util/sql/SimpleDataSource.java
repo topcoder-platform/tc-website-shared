@@ -26,6 +26,19 @@ public class SimpleDataSource implements DataSource {
         this.username = username;
         this.password = password;
     }
+    
+    ////////////////////////////////////////////////////
+    // methods added 22Apr08 by leadhyena_inran
+    // to quell compiler errors when compiling in Java 1.6
+    // TODO: Default isWrapperFor, does it need changing?
+    public boolean isWrapperFor(java.lang.Class<?> ignored){
+    	return true;
+    }
+
+    // TODO: Default unwrap, does it need changing?
+    public <T> T unwrap(java.lang.Class<T> ignored){
+    	return (T)null;
+    }
 
     public final Connection getConnection() throws SQLException {
         return getConnection(username, password);
