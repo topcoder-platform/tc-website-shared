@@ -5,9 +5,8 @@
  */
 package com.topcoder.shared.messagebus.invoker;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import com.topcoder.shared.exception.LocalizableException;
@@ -37,7 +36,7 @@ import com.topcoder.shared.util.logging.Logger;
  */
 public class BusRemoteInvocationListener {
     private Logger log = Logger.getLogger(getClass());
-    private Map<String, ActionProcessor> actionProcessors = Collections.synchronizedMap(new HashMap<String, ActionProcessor>());
+    private Map<String, ActionProcessor> actionProcessors = new ConcurrentHashMap<String, ActionProcessor>();
     private RequestConverter requestConverter;
     private ResponseConverter responseConverter;
     private BusRequestListener listener;
