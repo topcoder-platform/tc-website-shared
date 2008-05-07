@@ -59,7 +59,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>, Seri
     }
     
     public boolean contains(Object o) {
-        return map.contains(o);
+        return map.containsKey(o);
     }
     
     public Object[] toArray() {
