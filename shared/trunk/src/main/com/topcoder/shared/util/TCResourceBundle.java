@@ -2,14 +2,14 @@ package com.topcoder.shared.util;
 
 import com.topcoder.shared.util.logging.Logger;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Locale;
-import java.io.UnsupportedEncodingException;
 
 /**
  * @author unknown
- * @version  $Revision$
+ * @version $Revision$
  */
 public final class TCResourceBundle {
 
@@ -18,7 +18,6 @@ public final class TCResourceBundle {
     private ResourceBundle bundle;
 
     /**
-     *
      * @param baseName
      */
     public TCResourceBundle(String baseName) {
@@ -27,7 +26,9 @@ public final class TCResourceBundle {
 
     public TCResourceBundle(String baseName, Locale locale) {
         try {
-            bundle = ResourceBundle.getBundle(baseName, locale);
+            //passing the classloader so that i can load resources from a web app in an ear such that ejb's
+            //in the ear can also access the bundle
+            bundle = ResourceBundle.getBundle(baseName, locale, Thread.currentThread().getContextClassLoader());
         } catch (MissingResourceException e) {
             log.error(e);
         }
@@ -35,10 +36,9 @@ public final class TCResourceBundle {
     }
 
     /**
-     *
      * @param key
      * @param defaultValue
-     * @return  String
+     * @return String
      */
     public String getProperty(String key, String defaultValue) {
         String ret = null;
@@ -53,7 +53,6 @@ public final class TCResourceBundle {
     }
 
     /**
-     *
      * @param key
      * @param defaultValue
      * @return String
@@ -61,7 +60,7 @@ public final class TCResourceBundle {
     public int getIntProperty(String key, int defaultValue) {
         String str = getProperty(key, Integer.toString(defaultValue));
         if (str == null) {
-        	return defaultValue;
+            return defaultValue;
         }
         return Integer.parseInt(str.trim());
     }
@@ -69,31 +68,30 @@ public final class TCResourceBundle {
     /**
      * Type-safe getter for double properties, with default value.
      *
-     * @param key The property's key.
+     * @param key          The property's key.
      * @param defaultValue Value to use if the key isn't found.
      * @return The property's value as a double.
      */
     public double getDoubleProperty(String key, double defaultValue) {
         String str = getProperty(key, Double.toString(defaultValue));
         if (str == null) {
-        	return defaultValue;
+            return defaultValue;
         }
         return Double.parseDouble(str.trim());
     }
 
     /**
-     *
      * @param key
      * @return
      * @throws MissingResourceException
      */
     public String getProperty(String key) throws MissingResourceException {
-    	if (bundle == null) {
-    		return null;
-    	}
+        if (bundle == null) {
+            return null;
+        }
         String ret = bundle.getString(key);
         if (ret == null) {
-        	return null;
+            return null;
         }
         ret = ret.trim();
         try {
@@ -106,7 +104,6 @@ public final class TCResourceBundle {
     }
 
     /**
-     *
      * @param key
      * @return
      * @throws MissingResourceException
@@ -121,7 +118,8 @@ public final class TCResourceBundle {
      *
      * @param key The property's key.
      * @return The property's value as a double.
-     * @throws java.util.MissingResourceException If the key isn't found.
+     * @throws java.util.MissingResourceException
+     *          If the key isn't found.
      */
     public double getDoubleProperty(String key) throws MissingResourceException {
         String str = getProperty(key);
