@@ -26,6 +26,9 @@ public class ServicesConstants {
     /** base directory of the services package */
     private static final String BASE = bundle.getString("BASE");
 
+    /** The maximum allowed result length for strings and vectors. */
+    public static final int MAX_RESULT_LENGTH = bundle.getInt("MAX_RESULT_LENGTH", Short.MAX_VALUE);
+
     /** base directory of c++ problem solutions, and boundary checkers */
     public static final String SOLUTIONS = BASE + "/solutions/";
 
@@ -115,8 +118,4 @@ public class ServicesConstants {
     public static final int FAILURE_EXCEPTION = 3;
 
     public static final int MARATHON_PORT_NUMBER = System.getProperty("MARATHON_PORT_NUMBER") == null ? 8000 : Integer.parseInt(System.getProperty("MARATHON_PORT_NUMBER"));
-
-    protected static SimpleResourceBundle getBundle() {
-        return bundle;
-    }
 }
