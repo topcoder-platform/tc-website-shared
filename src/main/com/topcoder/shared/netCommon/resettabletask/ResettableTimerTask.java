@@ -5,6 +5,8 @@
  */
 package com.topcoder.shared.netCommon.resettabletask;
 
+import com.topcoder.shared.util.concurrent.Waiter;
+
 
 /**
  * Abstract Timer task that executes its abstract method doAction every <code>waitTime</code> 
@@ -59,7 +61,10 @@ public abstract class ResettableTimerTask implements Runnable {
             try {
                 synchronized (this) {
                     reset = false;
-                    wait(waitTime);
+                    Waiter waiter = new Waiter(waitTime, this);
+                    while (!stopped && !reset && !waiter.elapsed()) {
+                        waiter.await();
+                    }
                 }
                 if (!stopped && !reset) {
                     boolean value = doAction();

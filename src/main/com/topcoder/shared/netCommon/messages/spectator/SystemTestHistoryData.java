@@ -11,6 +11,7 @@ package com.topcoder.shared.netCommon.messages.spectator;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.util.Date;
 
 import com.topcoder.shared.netCommon.CSReader;
 import com.topcoder.shared.netCommon.CSWriter;
@@ -23,7 +24,7 @@ public class SystemTestHistoryData extends RoomMessage {
     
     private int problemID;
     private String coder;
-    private String timestamp;
+    private Date timestamp;
     private int deductAmt;
     private String problemVal;
     private String args;
@@ -34,7 +35,7 @@ public class SystemTestHistoryData extends RoomMessage {
     public SystemTestHistoryData() {
     }
     
-    public SystemTestHistoryData(RoomData room, int problemID, String coder, String timestamp, int deductAmt, String problemVal,
+    public SystemTestHistoryData(RoomData room, int problemID, String coder, Date timestamp, int deductAmt, String problemVal,
                 String args, String results, boolean succeeded) {
         super(room);
         this.problemID = problemID;
@@ -63,7 +64,7 @@ public class SystemTestHistoryData extends RoomMessage {
         return coder;
     }
     
-    public String getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
     
@@ -91,7 +92,7 @@ public class SystemTestHistoryData extends RoomMessage {
         super.customWriteObject(writer);
         writer.writeInt(problemID);
         writer.writeString(coder);
-        writer.writeString(timestamp);
+        writer.writeLong(timestamp.getTime());
         writer.writeInt(deductAmt);
         writer.writeString(problemVal);
         writer.writeString(args);
@@ -103,7 +104,7 @@ public class SystemTestHistoryData extends RoomMessage {
         super.customReadObject(reader);
         problemID = reader.readInt();
         coder = reader.readString();
-        timestamp = reader.readString();
+        timestamp = new Date(reader.readLong());
         deductAmt = reader.readInt();
         problemVal = reader.readString();
         args = reader.readString();

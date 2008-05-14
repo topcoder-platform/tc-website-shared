@@ -123,6 +123,13 @@ abstract public class DataValue extends BaseElement implements Element {
                             .longValue();
                 }
                 object = arrayI;
+            } else if (desc.equals("long[]")) {
+                Object[] arrayO = (Object[]) value.getValue();
+                long[] arrayI = new long[arrayO.length];
+                for (int j = 0; j < arrayO.length; ++j) {
+                    arrayI[j] = ((Long) ((DataValue) arrayO[j]).getValue()).longValue();
+                }
+                object = arrayI;
             } else if (desc.equals("double[]")) {
                 Object[] arrayO = (Object[]) value.getValue();
                 double[] arrayI = new double[arrayO.length];
@@ -198,6 +205,12 @@ abstract public class DataValue extends BaseElement implements Element {
                 int[] ints = (int[]) obj;
                 for (int i = 0; i < ints.length; i++)
                     values.add(new IntegralValue((long) ints[i]));
+                dataValue = new ArrayValue(values);
+            } else if (desc.equals("long[]")) {
+                ArrayList values = new ArrayList();
+                long[] longs = (long[]) obj;
+                for (int i = 0; i < longs.length; i++)
+                    values.add(new IntegralValue(longs[i]));
                 dataValue = new ArrayValue(values);
             } else if (desc.equals("double[]")) {
                 ArrayList values = new ArrayList();
