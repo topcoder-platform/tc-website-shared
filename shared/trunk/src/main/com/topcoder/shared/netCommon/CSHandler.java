@@ -742,22 +742,12 @@ public abstract class CSHandler implements CSReader, CSWriter {
         writeUTF(new String(charArray));
     }
 
-    public final double readDouble() throws IOException {
-        String s = readUTF();
-        if (s.equals("NaN")) {
-            return Double.NaN;
-        }
-        if (s.equals("-Infinity")) {
-            return Double.NEGATIVE_INFINITY;
-        }
-        if (s.equals("Infinity")) {
-            return Double.POSITIVE_INFINITY;
-        }
-        return Double.parseDouble(s);
+    public double readDouble() throws IOException {
+        return input.readDouble();
     }
 
-    public final void writeDouble(double v) throws IOException {
-        writeUTF("" + v);
+    public void writeDouble(double v) throws IOException {
+        output.writeDouble(v);
     }
 
     public void writeClass(Class clazz) throws IOException {
