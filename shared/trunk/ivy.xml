@@ -28,7 +28,7 @@
         <dependency org="javax.mail" name="mail" rev="1.4.0" transitive="false"/>
         <!-- dependency org="javax.mail" name="mail" rev="1.4"/-->
         <dependency org="org.apache.activemq" name="activemq-core" rev="4.1.1" transitive="false" />
-        <dependency org="org.apache.activemq" name="activeio-core" rev="3.0.0" transitive="false" />
+        <dependency org="org.apache.activemq" name="activeio-core" rev="3.0.0-incubator" transitive="false" />
         <dependency org="backport-util-concurrent" name="backport-util-concurrent" rev="2.1" transitive="false" />
         <dependency org="junit" name="junit" rev="3.8.2"/>
         
