@@ -1,5 +1,7 @@
 package com.topcoder.shared.util;
 
+import com.topcoder.shared.util.logging.Logger;
+
 /**
  * This class represents a thread that could be safely stopped.
  *
@@ -7,7 +9,8 @@ package com.topcoder.shared.util;
  * @version  $Revision$
  */
 public final class StoppableThread {
-
+    private static final Logger logger = Logger.getLogger(StoppableThread.class);
+    
     private final Client client;
     private final Thread thread;
 
@@ -98,7 +101,7 @@ public final class StoppableThread {
                     } catch (InterruptedException e) {
                         throw e;
                     } catch (Throwable t) {
-                        t.printStackTrace();
+                        logger.error("", t);
                     }
                 }
             } catch (InterruptedException e) {
