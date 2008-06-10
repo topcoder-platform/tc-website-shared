@@ -1,11 +1,11 @@
 package com.topcoder.shared.problem;
 
-import java.util.Collection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.HashMap;
 
 import com.topcoder.shared.util.DBMS;
-
-import java.sql.*;
 /**
  * This class implements a global database of known data types.  Ideally it would be populated
  * at some appropriate initialization time with the set of valid data types.  Construction of
@@ -14,15 +14,9 @@ import java.sql.*;
  * @author Logan Hanks
  * @see DataType
  */
-public class DataTypeFactory {
-    static private HashMap types = new HashMap();
-    
-    static private boolean initialized = false;
-    
-    static public void initialize() {
-        if(initialized)
-            return;
-               
+public class DataTypeFactory extends SimpleDataTypeFactory {
+
+    protected static void initializeFromDB() {
         Connection conn = null;
         PreparedStatement s = null;
         ResultSet rs = null;
@@ -65,46 +59,11 @@ public class DataTypeFactory {
         }
     }
     
-    /**
-     * Obtain a <code>DataType</code> object with the given description.
-     *
-     * @param description A type description (e.g. <code>"String[]"</code>)
-     * @throws InvalidTypeException
-     */
-    static public DataType getDataType(String description)
-            throws InvalidTypeException {
-        DataTypeFactory.initialize();
-        
-        DataType type = (DataType) types.get(description);
-
-        if (type == null)
-            throw new InvalidTypeException(description);
-        return type.cloneDataType();
-    }
-
-    static public DataType getDataType(int typeID)
-            throws InvalidTypeException {
-        DataTypeFactory.initialize();
-        
-        DataType type = (DataType) types.get(new Integer(typeID));
-
-        if (type == null)
-            throw new InvalidTypeException(new String("" + typeID));
-        return type.cloneDataType();
-    }
-
-    static void registerDataType(DataType type) {
-        initialized = true;
-        if (types.containsKey(type.getDescription()))
+    static public void initialize() {
+        if(initialized)
             return;
-        types.put(type.getDescription(), type.cloneDataType());
-        types.put(new Integer(type.getID()), type.cloneDataType());
-    }
 
-    static public Collection getDataTypes() {
-        DataTypeFactory.initialize();
-        
-        return types.values();
+        initializeFromDB();
     }
 }
 

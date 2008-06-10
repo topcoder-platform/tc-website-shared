@@ -6,7 +6,7 @@ import java.util.*;
 
 /**
  * @author unknown
- * @version  $Revision$
+ * @version  $Id$
  */
 public class StageQueue {
     private static Logger log = Logger.getLogger(StageQueue.class);

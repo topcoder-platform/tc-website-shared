@@ -13,6 +13,8 @@
     <property name="dist.artifacts" location="${dist}/artifacts" />
     <property name="dist.doc" location="${dist}/doc" />
     <property name="build" value="${dist}/classes" />
+	
+	<property name="svn.url.root" value="https://coder.topcoder.com/internal"/>
 
     <!-- - - - - - - - - - - - - - - - - -
           target: default-version
@@ -51,10 +53,17 @@
 	          target: checkout
 	         - - - - - - - - - - - - - - - - - -->
 	<target name="checkout" depends="init" description="checkouts dependencies">
+		<taskdef name="svn" classname="org.tigris.subversion.svnant.SvnTask" classpath="${ant.library.dir}/svnant.jar"/>
+		
 		<mkdir dir="${external.jars.path}"/>
-		<cvs command="checkout" dest="${rootdir}" package="external-artifacts/nodelete.txt"/>
-		<cvs command="update" dest="${external.jars.path}" package="nofile ${external.jars.compile}"/>
-		<cvs command="update" dest="${external.jars.path}" package="nofile ${external.jars.deploy}"/>
+		<svn>
+			<checkout url="${svn.url.root}/external-artifacts/trunk/nodelete.txt" destPath="${external.jars.path}" />
+		    <update dir="${external.jars.path}">
+		    	<fileset dir="${external.jars.path}">
+		    	    <includesfile name="nofile ${external.jars.compile} ${external.jars.deploy}"/>
+		    	</fileset>
+		   </update>
+	    </svn>
 	</target>
 	
     <!-- - - - - - - - - - - - - - - - - -
@@ -178,7 +187,7 @@
             <link href="http://logging.apache.org/log4j/docs/api/" />
             <link href="http://java.sun.com/j2se/1.5/docs/api/" />
             <doctitle><![CDATA[<h1>Project Name</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright TopCoder Inc. 2006. All Rights Reserved.</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright TopCoder Inc. 2008. All Rights Reserved.</i>]]></bottom>
         </javadoc>
     </target>
 </project>
