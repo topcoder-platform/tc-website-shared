@@ -6,14 +6,16 @@
 
 
     <!-- we need this target for web, they have to upgrade their build process first -->    
-    <target name="shared-all" depends="publish-workspace">
+    <target name="shared-all" depends="jar">
         <mkdir dir="${build.dir}" />
         <mkdir dir="${build.artifacts.dir}" />
-        <property name="jar.namex" value="${build.artifacts.dir}/${ant.project.name}-${app.version}x.jar" />
+        <property name="shared.tmp-name" location="${build.artifacts.dir}/${ant.project.name}-single-${app.version}.jar"/>
+        <copy file=${jar.name} tofile="${shared.tmp-name}" />
+        <property name="jar.all.name" value="${build.artifacts.dir}/${ant.project.name}-${app.version}.jar" />
         <echo message="--------------------------------------------------------------------------------------------"/>
         <echoproperties/>
         <echo message="--------------------------------------------------------------------------------------------"/>
-        <jar destfile="${jar.namex}" update="false" duplicate="preserve">
+        <jar destfile="${jar.all.name}" update="false" duplicate="preserve">
             <manifest>
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Build-Version" value="${app.version}" />
