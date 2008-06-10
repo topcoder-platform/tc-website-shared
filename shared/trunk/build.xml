@@ -6,15 +6,13 @@
 
 
     <!-- we need this target for web, they have to upgrade their build process first -->    
-    <target name="shared-all" depends="jar">
-        <mkdir dir="${build.dir}" />
-        <mkdir dir="${build.artifacts.dir}" />
+    <target name="shared-all" depends="rejar-all,publish-workspace">
+    </target>
+    
+    <target name="rejar-all" depends="jar">
         <property name="shared.tmp-name" location="${build.artifacts.dir}/${ant.project.name}-single-${app.version}.jar"/>
-        <copy file=${jar.name} tofile="${shared.tmp-name}" />
+        <copy file="${jar.name}"  tofile="${shared.tmp-name}" />
         <property name="jar.all.name" value="${build.artifacts.dir}/${ant.project.name}-${app.version}.jar" />
-        <echo message="--------------------------------------------------------------------------------------------"/>
-        <echoproperties/>
-        <echo message="--------------------------------------------------------------------------------------------"/>
         <jar destfile="${jar.all.name}" update="false" duplicate="preserve">
             <manifest>
                 <attribute name="Built-By" value="${user.name}"/>
@@ -26,6 +24,5 @@
             <zipfileset src="${build.lib.dir}/${filename.concurrent}"/>
             <zipfileset src="${build.lib.dir}/${filename.logging}"/>
         </jar>
-        <property name="jar_shared_set" value="true"/>
     </target>
 </project>
