@@ -14,18 +14,18 @@
         <dependency org="commons-collections" name="commons-collections" rev="3.2" transitive="false"/>
         <dependency org="commons-logging" name="commons-logging" rev="1.1" transitive="false"/>
         <dependency org="commons-digester" name="commons-digester" rev="1.8" transitive="false"/>
-        <dependency org="log4j" name="log4j" rev="1.2.13"/>
-        <dependency org="xerces" name="xerces" rev="2.6.2"/>
-        <dependency org="xerces" name="xml-apis" rev="2.6.2"/>
+        <dependency org="log4j" name="log4j" rev="1.2.13" transitive="false"/>
+        <dependency org="xerces" name="xerces" rev="2.6.2" transitive="false"/>
+        <dependency org="xerces" name="xml-apis" rev="2.6.2" transitive="false"/>
         
         <!--         <dependency org="xerces" name="xercesImpl" rev="2.6.2"/>
         <dependency org="xerces" name="xmlParserAPIs" rev="2.6.2"/>
          -->
-        <dependency org="xpp3" name="xpp3_min" rev="1.1.3.4.O"/>
-        <dependency org="xalan" name="xalan" rev="2.6.0"/>
-        <dependency org="xstream" name="xstream" rev="1.2.2"/>  
-        <dependency org="jms" name="jms" rev="1.1"/>
-        <dependency org="javax.mail" name="mail" rev="1.4.0"/>
+        <dependency org="xpp3" name="xpp3_min" rev="1.1.3.4.O" transitive="false"/>
+        <dependency org="xalan" name="xalan" rev="2.6.0" transitive="false"/>
+        <dependency org="xstream" name="xstream" rev="1.2.2" transitive="false"/>  
+        <dependency org="jms" name="jms" rev="1.1" transitive="false"/>
+        <dependency org="javax.mail" name="mail" rev="1.4.0" transitive="false"/>
         <!-- dependency org="javax.mail" name="mail" rev="1.4"/-->
         <dependency org="org.apache.activemq" name="activemq-core" rev="4.1.1" transitive="false" />
         <dependency org="org.apache.activemq" name="activeio-core" rev="3.0.1" transitive="false" />
