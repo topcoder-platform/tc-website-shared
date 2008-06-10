@@ -11,7 +11,7 @@
     
     <target name="rejar-all" depends="jar">
         <property name="shared.tmp-name" location="${build.artifacts.dir}/${ant.project.name}-single-${app.version}.jar"/>
-        <copy file="${jar.name}"  tofile="${shared.tmp-name}" />
+        <move file="${jar.name}"  tofile="${shared.tmp-name}" />
         <property name="jar.all.name" value="${build.artifacts.dir}/${ant.project.name}-${app.version}.jar" />
         <jar destfile="${jar.all.name}" update="false" duplicate="preserve">
             <manifest>
