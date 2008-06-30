@@ -1224,34 +1224,31 @@ public class TCLoadRound extends TCLoad {
             query.append("       ,r.round_type_id ");                    // 7
             query.append("       ,r.invitational ");                     // 8
             query.append("       ,r.notes ");                            // 9
-            query.append("       ,(SELECT rtlu.round_type_desc ");       // 10
-            query.append("           FROM round_type_lu rtlu ");
-            query.append("          WHERE rtlu.round_type_id = r.round_type_id) ");
+            query.append("       ,rtlu.round_type_desc ");               // 10
             query.append("       ,r.short_name ");                       // 11
             query.append("       ,r.forum_id");                          // 12
             query.append("       ,r.rated_ind");                         // 13
             query.append("       ,r.region_id");                         // 14
+            query.append("       ,rtlu.algo_rating_type_id");            // 15
             query.append("  FROM round r ");
             query.append("       ,round_segment rs ");
+            query.append("       ,round_type_lu rtlu ");
             query.append(" WHERE r.round_id = ? ");
             query.append("   AND rs.round_id = r.round_id ");
             query.append("   AND rs.segment_id = " + CODING_SEGMENT_ID);
+            query.append("   AND rtlu.round_type_id = r.round_type_id");
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
             query = new StringBuffer(100);
             query.append(" SELECT max(r1.rating_order)  ");
-            query.append("         from round r1, round r2 ");
-            query.append("         , round_type_lu rt1 ");
-            query.append("         , round_type_lu rt2 ");
-            query.append("         where  r2.round_id = ? ");
-            query.append("         AND r1.rated_ind = 1 ");
-            query.append("         AND r2.rated_ind = 1 ");
+            query.append("         from round r1");
+            query.append("         ,round_type_lu rt1 ");
+            query.append("         where r1.rated_ind = 1 ");
             query.append("         AND r1.round_type_id = rt1.round_type_id ");
-            query.append("         AND r2.round_type_id = rt2.round_type_id ");
-            query.append("         AND rt1.algo_rating_type_id = rt2.algo_rating_type_id ");
-            query.append("         AND ((r1.calendar_id < r2.calendar_id) ");
-            query.append("         OR (r1.calendar_id = r2.calendar_id AND r1.time_id < r2.time_id) ");
-            query.append("         OR  (r1.calendar_id = r2.calendar_id AND r1.time_id = r2.time_id AND r1.round_id < r2.round_id)) ");
+            query.append("         AND rt1.algo_rating_type_id = ? ");    //1
+            query.append("         AND ((r1.calendar_id < ?) ");          //2 
+            query.append("         OR (r1.calendar_id = ? AND r1.time_id < ?) "); //3 & 4
+            query.append("         OR (r1.calendar_id = ? AND r1.time_id = ? AND r1.round_id < ?)) "); // 5, 6 & 7
             psSelRatingOrder = prepareStatement(query.toString(), TARGET_DB);
 
             // We have 8 values in the insert as opposed to 7 in the select
@@ -1313,26 +1310,38 @@ public class TCLoadRound extends TCLoad {
             rs = psSel.executeQuery();
             while (rs.next()) {
                 int round_id = rs.getInt(1);
-                
-                psSelRatingOrder.clearParameters();
-                psSelRatingOrder.setInt(1, round_id);
-                rs2 = psSelRatingOrder.executeQuery();
-                int ratingOrder = rs2.next() ? rs2.getInt(1) : 0;
-                if (rs.getInt("rated_ind")==1) ratingOrder++;
-                close(rs2);
-
+                int rated_ind = rs.getInt(13);
+                int ratingType = rs.getInt(15);
                 psSel2.clearParameters();
                 psSel2.setInt(1, round_id);
                 rs2 = psSel2.executeQuery();
+                boolean roundExists = rs2.next();
+                close(rs2);
 
                 // Retrieve the calendar_id for the start_time of this round
                 java.sql.Timestamp stamp = rs.getTimestamp(6);
                 int calendar_id = lookupCalendarId(stamp, TARGET_DB);
                 int time_id = lookupTimeId(stamp, TARGET_DB);
+                
+                int ratingOrder = 0;
+                if (rated_ind==1) {
+                    psSelRatingOrder.clearParameters();
+                    psSelRatingOrder.setInt(1, ratingType);
+                    psSelRatingOrder.setInt(2, calendar_id);
+                    psSelRatingOrder.setInt(3, calendar_id);
+                    psSelRatingOrder.setInt(4, time_id);
+                    psSelRatingOrder.setInt(5, calendar_id);
+                    psSelRatingOrder.setInt(6, time_id);
+                    psSelRatingOrder.setInt(7, round_id);
+                    rs2 = psSelRatingOrder.executeQuery();
+                    ratingOrder = rs2.next() ? rs2.getInt(1) : 0;
+                    close(rs2);
+                    ratingOrder++;
+                }
 
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
-                if (rs2.next()) {
+                if (roundExists) {
                     psUpd.clearParameters();
                     psUpd.setInt(1, rs.getInt(2));  // contest_id
                     psUpd.setString(2, rs.getString(3));  // name
@@ -1346,7 +1355,7 @@ public class TCLoadRound extends TCLoad {
                     psUpd.setString(10, rs.getString(10));    // round_type_desc
                     psUpd.setString(11, rs.getString(11));   // shortname
                     psUpd.setInt(12, rs.getInt(12));   // forum_id
-                    psUpd.setInt(13, rs.getInt(13));   // rated_ind
+                    psUpd.setInt(13, rated_ind);   // rated_ind
                     if (rs.getString(14) != null) {
                         psUpd.setInt(14, rs.getInt(14));  // region_id
                     } else {
@@ -1396,8 +1405,6 @@ public class TCLoadRound extends TCLoad {
                                 " modified " + retVal + " rows, not one.");
                     }
                 }
-
-                close(rs2);
                 printLoadProgress(count, "round");
             }
 
