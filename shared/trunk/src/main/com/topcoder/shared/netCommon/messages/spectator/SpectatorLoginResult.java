@@ -36,7 +36,7 @@ public class SpectatorLoginResult extends SpectatorLogin {
      *  @param success whether the login request was successful or not
      *  @param message the message related to the login
      */
-    public SpectatorLoginResult(String userid, String password, boolean success, String message) {
+    public SpectatorLoginResult(String userid, SealedSerializable password, boolean success, String message) {
         super(userid, password);
         this.success = success;
         this.message = message;

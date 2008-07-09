@@ -20,7 +20,7 @@ public class SpectatorLogin extends Message {
     private String userid;
 
     /** password for authentication */
-    private String password;
+    private SealedSerializable password;
 
     /**
      * No-arg constructor needed by customserialization
@@ -35,7 +35,7 @@ public class SpectatorLogin extends Message {
      *  @param userid   the userid for authentication
      *  @param password the password for authentication
      */
-    public SpectatorLogin(String userid, String password) {
+    public SpectatorLogin(String userid, SealedSerializable password) {
         super();
         this.userid = userid;
         this.password = password;
@@ -54,7 +54,7 @@ public class SpectatorLogin extends Message {
      * Gets the password for authentication
      * @returns the password
      */
-    public String getPassword() {
+    public SealedSerializable getPassword() {
         return password;
     }
 
@@ -70,7 +70,7 @@ public class SpectatorLogin extends Message {
     public void customWriteObject(CSWriter writer) throws IOException {
         super.customWriteObject(writer);
         writer.writeString(userid);
-        writer.writeString(password);
+        writer.writeObject(password);
     }
 
     /**
@@ -87,7 +87,7 @@ public class SpectatorLogin extends Message {
     public void customReadObject(CSReader reader) throws IOException, ObjectStreamException {
         super.customReadObject(reader);
         userid = reader.readString();
-        password = reader.readString();
+        password = (SealedSerializable) reader.readObject();
     }
 
     /**

@@ -339,6 +339,10 @@ public class MessageUtil {
         public void writeCollection(Collection collection) throws IOException {
             throw new UnsupportedOperationException();            
         }
+        
+        public void writeEncrypt(Object object) throws IOException {
+            throw new UnsupportedOperationException();            
+        }
 	}
 	
 	private static class QueryReader implements CSReader
@@ -450,6 +454,9 @@ public class MessageUtil {
             throw new UnsupportedOperationException();
         }
         public Collection readCollection(Collection collection) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+        public Object readEncrypt() throws IOException {
             throw new UnsupportedOperationException();
         }
 	}
