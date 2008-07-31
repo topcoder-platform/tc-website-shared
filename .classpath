@@ -21,10 +21,10 @@
 	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS/xalan-2.6.0.jar"/>
 	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS/xerces-2.6.2.jar"/>
 	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS/xml-apis-2.6.2.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.5.0_11"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/custom-serialization"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/arena-shared"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/concurrent"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/logging"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.5.0_12"/>
+	<classpathentry kind="lib" path="/IvyCache/com.topcoder.internal/arena-shared/jars/arena-shared-6.5.1.jar"/>
+	<classpathentry kind="lib" path="/IvyCache/com.topcoder.internal/custom-serialization/jars/custom-serialization-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/IvyCache/com.topcoder.internal/concurrent/jars/concurrent-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/IvyCache/com.topcoder.internal/logging/jars/logging-1.0.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
