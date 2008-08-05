@@ -624,13 +624,13 @@ public class ResultSetContainer implements Serializable, List<ResultSetContainer
                 return new TCStringResult(s);
 
                 // Booleans map to OTHER
+            case Types.BOOLEAN:
             case Types.OTHER:
                 if (columns[i].getSourceType().equals("boolean"))
                     return new TCBooleanResult(rs.getBoolean(i + 1));
-                throw new SQLException("Unsupported data type in ResultSetContainer.getItem()");
 
             default:
-                throw new SQLException("Unsupported data type in ResultSetContainer.getItem()");
+                throw new SQLException("Unsupported data type in ResultSetContainer.getItem() type="+columns[i].getType()+" name="+columns[i].getSourceType());
 
         } // end switch statement
     }
