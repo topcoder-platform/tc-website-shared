@@ -54,6 +54,7 @@ public class DBMS {
     public final static String OPENAIM_DATASOURCE_NAME = getProperty("OPENAIM_DATASOURCE_NAME", "java:JTS_OPENAIM_OLTP");
     public final static String CSF_DATASOURCE_NAME = getProperty("CSF_DATASOURCE_NAME", "java:JTS_CSF_OLTP");
     public final static String TRUVEO_DATASOURCE_NAME = getProperty("TRUVEO_DATASOURCE_NAME", "java:JTS_TRUVEO_OLTP");
+    public final static String AOLICQ_DATASOURCE_NAME = getProperty("AOLICQ_DATASOURCE_NAME", "java:JTS_AOLICQ_OLTP");
     public final static String WINFORMULA_DATASOURCE_NAME = getProperty("WINFORMULA_DATASOURCE_NAME", "java:JTS_WINFORMULA_OLTP");
     public final static String PIPELINE_DATASOURCE_NAME = getProperty("PIPELINE_DATASOURCE_NAME", "java:PIPELINE");
     public final static String JIRA_DATASOURCE_NAME = getProperty("JIRA_DATASOURCE_NAME", "java:BUGS");
