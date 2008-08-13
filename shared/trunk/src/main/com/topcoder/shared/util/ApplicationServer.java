@@ -27,6 +27,7 @@ public class ApplicationServer {
     public static String STUDIO_SERVER_NAME = bundle.getProperty("STUDIO_SERVER_NAME", "studio.dev.topcoder.com");
     public static String OPENAIM_SERVER_NAME = bundle.getProperty("OPENAIM_SERVER_NAME", "openaim.dev.topcoder.com");
     public static String TRUVEO_SERVER_NAME = bundle.getProperty("TRUVEO_SERVER_NAME", "www.dev.topcoder.com/truveo");
+    public static String AOLICQ_SERVER_NAME = bundle.getProperty("AOLICQ_SERVER_NAME", "www.dev.topcoder.com/aolicq");
     public static String WINFORMULA_SERVER_NAME = bundle.getProperty("WINFORMULA_SERVER_NAME", "www.dev.topcoder.com/winformula");
     public static String CSF_SERVER_NAME = bundle.getProperty("CSF_SERVER_NAME", "csf.dev.topcoder.com");
     public static String CORP_SERVER_NAME = bundle.getProperty("CORP_SERVER_NAME", "172.16.20.20/corp");
