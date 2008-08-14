@@ -13,6 +13,7 @@ public class DataAccessConstants {
     public static String QUERY_KEY = bundle.getProperty("QUERY", "query");
     public static String COMMAND = bundle.getProperty("COMMAND", "c");
     public static String NUMBER_RECORDS = bundle.getProperty("NUMBER_RECORDS", "nr");
+    public static String NUMBER_PAGE = bundle.getProperty("NUMBER_PAGE", "np");
     public static String START_RANK = bundle.getProperty("START_RANK", "sr");
     public static String END_RANK = bundle.getProperty("END_RANK", "er");
     public static String SORT_COLUMN = bundle.getProperty("SORT_COLUMN", "sc");
