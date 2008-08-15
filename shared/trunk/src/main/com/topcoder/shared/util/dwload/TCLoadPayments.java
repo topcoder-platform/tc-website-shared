@@ -295,8 +295,8 @@ public class TCLoadPayments extends TCLoad {
                         psInsPayment.setNull(12, Types.VARCHAR);
                     }
 
-                    psInsPayment.setLong(13, lookupCalendarId(rs.getTimestamp("date_modified"), TARGET_DB);
-                    psInsPayment.setLong(14, lookupTimeId(rs.getTimestamp("date_modified"), TARGET_DB);
+                    psInsPayment.setLong(13, lookupCalendarId(rs.getTimestamp("date_modified"), TARGET_DB));
+                    psInsPayment.setLong(14, lookupTimeId(rs.getTimestamp("date_modified"), TARGET_DB));
 
                     log.debug("inserting payment_id = " + paymentId);
 
