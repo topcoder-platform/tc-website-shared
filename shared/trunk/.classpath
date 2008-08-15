@@ -21,10 +21,9 @@
 	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS/xalan-2.6.0.jar"/>
 	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS/xerces-2.6.2.jar"/>
 	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS/xml-apis-2.6.2.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.5.0_11"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/custom-serialization"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/arena-shared"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/concurrent"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/logging"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/external-artifacts"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/internal-artifacts"/>
+	<classpathentry kind="var" path="INTERNAL_ARTIFACTS"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
