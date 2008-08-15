@@ -87,7 +87,7 @@ public class TCLoadPayments extends TCLoad {
             query.append("show_in_profile_ind = ?, show_details_ind = ? ");
             query.append("where payment_type_id = ?");
             psUpd = prepareStatement(query.toString(), TARGET_DB);
-            
+
             rs = psSel.executeQuery();
 
             while (rs.next()) {
@@ -107,7 +107,7 @@ public class TCLoadPayments extends TCLoad {
                     psIns.setLong(4, rs.getLong("show_details_ind"));
                     psIns.executeUpdate();
                 }
-                
+
                 count = count++;
                 printLoadProgress(count, "payment types");
             }
@@ -117,7 +117,7 @@ public class TCLoadPayments extends TCLoad {
             throw new Exception("Load of 'payment_type' table failed.\n" +
                     sqle.getMessage());
         } finally {
-            DBMS.close(rs);            
+            DBMS.close(rs);
             DBMS.close(psSel);
             DBMS.close(psIns);
             DBMS.close(psUpd);
@@ -231,8 +231,8 @@ public class TCLoadPayments extends TCLoad {
                 query.append("pd.payment_type_id, ptl.payment_type_desc, show_in_profile_ind, show_details_ind, ");
                 query.append("ptl.payment_reference_id, date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
-                query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, "); 
-                query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind, pd.client "); 
+                query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, ");
+                query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind, pd.client, pd.date_modified ");
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, payment_status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
@@ -248,8 +248,8 @@ public class TCLoadPayments extends TCLoad {
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, payment_desc, payment_type_id, ");
                 query.append("payment_type_desc, reference_id, parent_payment_id, charity_ind, ");
-                query.append("show_in_profile_ind, show_details_ind, payment_status_id, payment_status_desc, client) ");
-                query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+                query.append("show_in_profile_ind, show_details_ind, payment_status_id, payment_status_desc, client, modified_calendar_id, modified_time_id) ");
+                query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                 psInsPayment = prepareStatement(query.toString(), TARGET_DB);
 
                 query = new StringBuffer(100);
@@ -294,6 +294,9 @@ public class TCLoadPayments extends TCLoad {
                     } else {
                         psInsPayment.setNull(12, Types.VARCHAR);
                     }
+
+                    psInsPayment.setLong(13, lookupCalendarId(rs.getTimestamp("date_modified"), TARGET_DB);
+                    psInsPayment.setLong(14, lookupTimeId(rs.getTimestamp("date_modified"), TARGET_DB);
 
                     log.debug("inserting payment_id = " + paymentId);
 
@@ -372,8 +375,8 @@ public class TCLoadPayments extends TCLoad {
         }
         return 0;
     }
-    
-    
+
+
     private void doClearCache() throws Exception {
         String[] keys = new String[]{"member_profile", "payment_detail", "payment_summary"};
 
@@ -384,7 +387,7 @@ public class TCLoadPayments extends TCLoad {
         CacheClearer.removelike(s);
     }
 
-    
+
     private void setLastUpdateTime() throws Exception {
         PreparedStatement psUpd = null;
         StringBuffer query = null;
