@@ -5,14 +5,6 @@
  */
 package com.topcoder.shared.serviceevent;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import javax.jms.ObjectMessage;
 
 import com.topcoder.shared.common.ApplicationServer;
@@ -35,18 +27,13 @@ public class ServiceEventListener implements Runnable {
 
     private final static int TIMEOUT = 30000;
     private final static int MAX_ERRORS = 3;
-
-    /**
-     * Map containing listeners for eventType
-     */
-    private Map listeners = new HashMap();
+    
+    private ServiceEventMessageListener realListener;
 
     private Thread thread;
 
     private volatile boolean stopped;
 
-    private String serviceName;
-    
     /**
     * Constructs a new ServiceEventListener.
     * 
@@ -55,7 +42,7 @@ public class ServiceEventListener implements Runnable {
     */
     public ServiceEventListener(String topicName, String serviceName) throws IllegalStateException {
         try {
-            this.serviceName = serviceName;
+            realListener = new ServiceEventMessageListener(serviceName);
             logger.info("Initializing ServiceEventListener for topic="+topicName+" service="+serviceName);
             tms = new TopicMessageSubscriber(ApplicationServer.JMS_FACTORY, topicName);
             tms.setSelector("serviceName = '" + serviceName + "'");
@@ -75,7 +62,7 @@ public class ServiceEventListener implements Runnable {
             if (thread != null) {
                 stopped = true;
                 thread.interrupt();
-                listeners.clear();
+                realListener.clearListeners();
                 tms.close();
                 thread = null;
                 tms = null;
@@ -85,50 +72,14 @@ public class ServiceEventListener implements Runnable {
         }
     }
     
-    public void addListener(String eventType, Listener listener) {
-        List typeListeners = null;
-        synchronized (listeners) {
-            typeListeners = (List) listeners.get(eventType);
-            if (typeListeners == null) {
-                typeListeners = new ArrayList();
-                listeners.put(eventType, typeListeners);
-            }
-            typeListeners.add(listener);
-        }
+    public void addListener(String eventType, ServiceEventHandler listener) {
+        realListener.addListener(eventType, listener);
     }
     
-    public void removeListener(Listener listener) {
-        synchronized (listeners) {
-            for (Iterator it = listeners.values().iterator(); it.hasNext();) {
-                Set typeListeners= (Set) it.next();
-                typeListeners.remove(listener);
-            }
-            listeners.remove(listener);
-        }
+    public void removeListener(ServiceEventHandler listener) {
+        realListener.removeListener(listener);
     }
     
-    protected void notifyListeners(String eventType, Serializable eventObject) {
-        List allListeners = null;
-        synchronized (listeners) {
-            List typeListeners = (List) listeners.get(eventType);
-            if (typeListeners == null) {
-                allListeners = new ArrayList();
-            } else {
-                allListeners = new ArrayList(typeListeners);
-            }
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Incoming notification: "+serviceName+"#"+eventType);
-        }
-        for (Iterator it = allListeners.iterator(); it.hasNext();) {
-            Listener listener = (Listener) it.next();
-            try {
-                listener.eventReceived(eventType, eventObject);
-            } catch (RuntimeException e) {
-                logger.error("ServiceEventListener.Listener throw exception during notification.", e);
-            }
-        }
-    }
     
    /* Listens for messages on the topic.  When a message comes in, the method
     * calls notifyListener 
@@ -148,20 +99,8 @@ public class ServiceEventListener implements Runnable {
                 logger.error("Error reading message from topic.", e);
             }
 
-            if (message != null) {
-                try {
-                    if (message.propertyExists("eventType")) {
-                        notifyListeners(message.getStringProperty("eventType"), message.getObject());
-                    }
-                } catch (Exception e) {
-                    logger.error("Invalid message received.", e);
-                }
-            }
+            realListener.onMessage(message);
         }
         logger.error("Too many errors in ServiceEventListener, giving up connections.");
-    }    
-    
-    public interface Listener {
-        public void eventReceived(String eventType, Serializable object);
     }
 }
