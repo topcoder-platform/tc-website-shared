@@ -100,4 +100,8 @@ public class ServiceEventMessageListener implements MessageListener {
             listeners.clear();
         }
     }
+
+    public String getServiceName() {
+        return serviceName;
+    }
 }
