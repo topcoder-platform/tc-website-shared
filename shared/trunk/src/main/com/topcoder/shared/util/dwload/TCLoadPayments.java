@@ -232,7 +232,8 @@ public class TCLoadPayments extends TCLoad {
                 query.append("ptl.payment_reference_id, date_due, algorithm_round_id, algorithm_problem_id, ");
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
                 query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, ");
-                query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind, pd.client, pd.date_modified ");
+                query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind, pd.client, pd.date_modified, ");
+                query.append("digital_run_track_id ");
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, payment_status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
@@ -276,7 +277,8 @@ public class TCLoadPayments extends TCLoad {
                             rs.getLong("component_project_id"),
                             rs.getLong("studio_contest_id"),
                             rs.getLong("digital_run_stage_id"),
-                            rs.getLong("digital_run_season_id"));
+                            rs.getLong("digital_run_season_id"),
+                            rs.getLong("digital_run_track_id"));
                     if (referenceId > 0) {
                         psInsPayment.setLong(5, referenceId);
                     } else {
@@ -355,7 +357,7 @@ public class TCLoadPayments extends TCLoad {
 
     private long selectReferenceId(int paymentReferenceId, long algorithmRoundId, long algorithmProblemId,
                                    long componentContestId, long componentProjectId, long studioContestId, long digitalRunStageId,
-                                   long digitalRunSeasonId) {
+                                   long digitalRunSeasonId, long digitalRunTrackId) {
 
         switch (paymentReferenceId) {
             case 1:
@@ -372,6 +374,8 @@ public class TCLoadPayments extends TCLoad {
                 return digitalRunStageId;
             case 7:
                 return digitalRunSeasonId;
+            case 9:
+                return digitalRunTrackId;
         }
         return 0;
     }
