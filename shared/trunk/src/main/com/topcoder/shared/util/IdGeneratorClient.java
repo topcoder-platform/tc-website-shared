@@ -25,12 +25,12 @@ public class IdGeneratorClient {
      */
 
     public static long getSeqId(String seqName) throws IDGenerationException {
-        if (log.isTraceEnabled()) {
-            log.trace("getSeqId(" + seqName + ") called");
+        if (log.isDebugEnabled()) {
+            log.debug("getSeqId(" + seqName + ") called");
         }
         long ret = IDGeneratorFactory.getIDGenerator(seqName).getNextID();
-        if (log.isTraceEnabled()) {
-            log.trace("returning " + ret);
+        if (log.isDebugEnabled()) {
+            log.debug("returning " + ret);
         }
         return ret;
     }
