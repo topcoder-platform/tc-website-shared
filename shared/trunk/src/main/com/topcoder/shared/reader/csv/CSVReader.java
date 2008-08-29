@@ -54,4 +54,8 @@ public class CSVReader implements Closeable {
     public void close() throws IOException {
         reader.close();
     }
+
+    public boolean isEmpty(int i) {
+        return values[i-1] == null || values[i-1].length() == 0;
+    }
 }
