@@ -100,6 +100,10 @@ public class ProblemComponentFactory
             parser.parse(new InputSource(reader));
             doc = parser.getDocument();
             root = getChildByName(doc.getChildNodes(), "problem");
+            if (root.hasAttributes() && root.getAttributes().getNamedItem("code_length_limit") != null) {
+                // No need to verify if it is an integer, since the schema enforced it.
+                stmt.setCodeLengthLimit(Integer.parseInt(root.getAttributes().getNamedItem("code_length_limit").getNodeValue()));
+            }
             sections = root.getChildNodes();
             checkTypes(root);
             if(!stmt.isValid()) {
