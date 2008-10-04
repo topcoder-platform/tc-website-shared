@@ -5,7 +5,7 @@
     <import file="${glue.dir}/glue-jar.xml" />
 
 
-    <!-- we need this target for web, they have to upgrade their build process first -->    
+    <!-- we need this target for web, they have to upgrade their build process first. -->    
     <target name="shared-all" depends="rejar-all,publish-workspace">
     </target>
     
