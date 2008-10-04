@@ -36,7 +36,5 @@
         
         <dependency org="com.topcoder.tcs" name="base_exception" rev="1.0.0" transitive="false" />
         <dependency org="com.topcoder.tcs" name="id_generator" rev="3.0.1" transitive="false" />
-        
-
     </dependencies>
 </ivy-module>
