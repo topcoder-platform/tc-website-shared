@@ -5,8 +5,6 @@
  */
 package com.topcoder.shared.arena.remoteactions;
 
-
-
 /**
  * Factory object for Arena Actions Listeners and Requesters.<p>
  * 
