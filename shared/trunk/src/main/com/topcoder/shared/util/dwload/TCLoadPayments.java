@@ -233,7 +233,7 @@ public class TCLoadPayments extends TCLoad {
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
                 query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, ");
                 query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind, pd.client, pd.date_modified, ");
-                query.append("digital_run_track_id ");
+                query.append("digital_run_track_id, installment_number, total_amount ");
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, payment_status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
@@ -249,14 +249,16 @@ public class TCLoadPayments extends TCLoad {
                 query = new StringBuffer(100);
                 query.append("insert into payment (payment_id, payment_desc, payment_type_id, ");
                 query.append("payment_type_desc, reference_id, parent_payment_id, charity_ind, ");
-                query.append("show_in_profile_ind, show_details_ind, payment_status_id, payment_status_desc, client, modified_calendar_id, modified_time_id) ");
-                query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+                query.append("show_in_profile_ind, show_details_ind, payment_status_id, ");
+                query.append("payment_status_desc, client, modified_calendar_id, modified_time_id, ");
+                query.append("installment_number) ");
+                query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                 psInsPayment = prepareStatement(query.toString(), TARGET_DB);
 
                 query = new StringBuffer(100);
                 query.append("insert into user_payment (payment_id, user_id, net_amount, ");
-                query.append("gross_amount, due_calendar_id, paid_calendar_id) ");
-                query.append("values (?, ?, ?, ?, ?, ?) ");
+                query.append("gross_amount, due_calendar_id, paid_calendar_id, total_amount) ");
+                query.append("values (?, ?, ?, ?, ?, ?, ?) ");
                 psInsUsrPayment = prepareStatement(query.toString(), TARGET_DB);
 
 
@@ -299,6 +301,7 @@ public class TCLoadPayments extends TCLoad {
 
                     psInsPayment.setLong(13, lookupCalendarId(rs.getTimestamp("date_modified"), TARGET_DB));
                     psInsPayment.setLong(14, lookupTimeId(rs.getTimestamp("date_modified"), TARGET_DB));
+                    psInsPayment.setInt(15, rs.getInt("installment_number"));
 
                     log.debug("inserting payment_id = " + paymentId);
 
@@ -325,6 +328,7 @@ public class TCLoadPayments extends TCLoad {
                     } else {
                         psInsUsrPayment.setNull(6, Types.DECIMAL);
                     }
+                    psInsUsrPayment.setDouble(7, rs.getDouble("total_amount"));
                     retVal = psInsUsrPayment.executeUpdate();
 
                     if (retVal != 1) {
