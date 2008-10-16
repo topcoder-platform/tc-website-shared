@@ -54,6 +54,12 @@ public class ApplicationServer {
     public final static String TRANS_FACTORY = bundle.getProperty("TRANS_FACTORY", "javax.transaction.UserTransaction");
     public final static String TRANS_MANAGER = bundle.getProperty("TRANS_MANAGER", "weblogic/transaction/TransactionManager");
     public final static String SECURITY_CONTEXT_FACTORY = bundle.getProperty("SECURITY_CONTEXT_FACTORY", "org.jnp.interfaces.NamingContextFactory");
+    
+    public final static String STUDIO_SERVICES_PROVIDER_URL = bundle.getProperty("STUDIO_SERVICES_PROVIDER_URL", "127.0.0.1:1399");
+    public final static String STUDIO_SERVICES_USERNAME = bundle.getProperty("STUDIO_SERVICES_USERNAME", "user");
+    public final static String STUDIO_SERVICES_PASSWORD = bundle.getProperty("STUDIO_SERVICES_PASSWORD", "password");
+
+
     public final static int SESSION_ID_LENGTH = bundle.getIntProperty("SESSION_ID_LENGTH", 50);
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
