@@ -58,8 +58,11 @@ public class ApplicationServer {
     public final static String STUDIO_SERVICES_PROVIDER_URL = bundle.getProperty("STUDIO_SERVICES_PROVIDER_URL", "127.0.0.1:1399");
     public final static String STUDIO_SERVICES_USERNAME = bundle.getProperty("STUDIO_SERVICES_USERNAME", "user");
     public final static String STUDIO_SERVICES_PASSWORD = bundle.getProperty("STUDIO_SERVICES_PASSWORD", "password");
-
-
+    public final static String STUDIO_SERVICES_CONTEXT_FACTORY = bundle.getProperty("STUDIO_SERVICES_CONTEXT_FACTORY", "org.jboss.security.jndi.LoginInitialContextFactory");
+    public final static String STUDIO_SERVICES_PKG_PREFIXES = bundle.getProperty("STUDIO_SERVICES_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
+    public final static String STUDIO_SERVICES_PROTOCOL = bundle.getProperty("STUDIO_SERVICES_PROTOCOL", "cockpitDomain");
+    public final static String STUDIO_SERVICES_JNDI_NAME = bundle.getProperty("STUDIO_SERVICES_JNDI_NAME", "StudioServiceBean/remote");
+    
     public final static int SESSION_ID_LENGTH = bundle.getIntProperty("SESSION_ID_LENGTH", 50);
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
