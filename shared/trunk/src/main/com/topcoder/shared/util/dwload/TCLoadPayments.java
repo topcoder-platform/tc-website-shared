@@ -386,7 +386,7 @@ public class TCLoadPayments extends TCLoad {
 
 
     private void doClearCache() throws Exception {
-        String[] keys = new String[]{"member_profile", "payment_detail", "payment_summary"};
+        String[] keys = new String[]{"member_profile", "payment_detail", "payment_summary", "software_"};
 
         HashSet<String> s = new HashSet<String>();
         for (String key : keys) {
