@@ -26,5 +26,7 @@
 	<classpathentry exported="true" kind="var" path="ARTIFACTS/concurrent-1.0.0.jar"/>
 	<classpathentry exported="true" kind="var" path="ARTIFACTS/custom-serialization-1.0.0.jar"/>
 	<classpathentry exported="true" kind="var" path="ARTIFACTS/logging-1.0.0.jar"/>
+	<classpathentry kind="var" path="ARTIFACTS"/>
+	<classpathentry kind="var" path="EXTERNAL_ARTIFACTS"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
