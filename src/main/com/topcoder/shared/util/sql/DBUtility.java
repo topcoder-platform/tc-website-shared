@@ -3,6 +3,7 @@
  */
 package com.topcoder.shared.util.sql;
 
+import com.topcoder.shared.util.DBMS;
 import com.topcoder.shared.util.EmailEngine;
 import com.topcoder.shared.util.TCSEmailMessage;
 import com.topcoder.shared.util.logging.Logger;
@@ -17,13 +18,21 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * <strong>Purpose</strong>:
  * A base class for building DB utilities.
  *
- * @author pulky
- * @version 1.0.1
+ * <p>
+ *   Version 1.0.2 (PACTS Release Assembly 1.1.1) Change notes:
+ *   <ol>
+ *     <li>All connections are closed after running utility.</li>
+ *   </ol>
+ * </p>
+ *
+ * @author pulky, TCSDEVELOPER
+ * @version 1.0.2
  */
 public abstract class DBUtility {
     /**
@@ -287,6 +296,10 @@ public abstract class DBUtility {
             runUtility();
         } catch (Exception e) {
             fatal_error(e);
+        } finally {
+            for (Object entry : conn.entrySet()) {
+                DBMS.close(((Map.Entry<String, Connection>) entry).getValue());
+            }
         }
     }
 }
