@@ -34,6 +34,8 @@ public class TCLoadRequests extends TCLoad {
     protected java.sql.Timestamp fStartTime = null;
     protected java.sql.Timestamp fLastLogTime = null;
     protected java.sql.Timestamp fLastWebLogTime = null;
+    private static final int MAX_DAYS_TO_LOAD = 7;
+    private static final int DAYS_TO_MILLISECONDS = 24 * 60 * 60 * 1000;
     private HashMap urlMap = new HashMap();
     private static final int WEB_REQUEST_LOAD = 5;
     private static final String[] CODER_ID_KEYS = {"cr", "uid", "mid"};
@@ -86,7 +88,7 @@ public class TCLoadRequests extends TCLoad {
             " VALUES (0, ?, ?, ?)";
 
     private static final String NEWEST_REQUEST_TIME =
-            " select max(timestamp) from request";
+            " select max(timestamp) from request where timestamp <= ?";
 
     private static final String DELETE =
             " delete from request where timestamp <= ?";
@@ -108,14 +110,16 @@ public class TCLoadRequests extends TCLoad {
      */
     public void performLoad() throws Exception {
         try {
-            //this should only be use for web requests, it doesn't mean anything for other
-            //types of requests.
-            fStartTime = getNewestTime();
 /*
             fLastLogTime = getLastUpdateTime(REQUEST_LOAD);
             log.debug("set last log time for request load to " + fLastLogTime);
 */
             fLastWebLogTime = getLastUpdateTime(WEB_REQUEST_LOAD);
+            
+            //this should only be use for web requests, it doesn't mean anything for other
+            //types of requests.
+            fStartTime = getNewestTime();
+            
             log.info("loading requests that happened between " +
                     fLastWebLogTime + " and " + fStartTime);
 
@@ -196,7 +200,7 @@ public class TCLoadRequests extends TCLoad {
 
         try {
             psClean = prepareStatement(CLEAN, TARGET_DB);
-            psClean.setTimestamp(1, fStartTime);
+            psClean.setTimestamp(1, fLastWebLogTime);
             long deleted = psClean.executeUpdate();
             log.info("deleted " + deleted + " rows from site hit that shouldn't exist yet");
 
@@ -433,8 +437,13 @@ public class TCLoadRequests extends TCLoad {
         ResultSet rs = null;
         PreparedStatement ps = null;
         Timestamp ret = null;
+        
+        Timestamp maxTime = (Timestamp) fLastWebLogTime.clone();
+        maxTime.setTime(fLastWebLogTime.getTime() + MAX_DAYS_TO_LOAD * DAYS_TO_MILLISECONDS);
+        
         try {
             ps = prepareStatement(NEWEST_REQUEST_TIME, SOURCE_DB);
+            ps.setTimestamp(1, maxTime);
             rs = ps.executeQuery();
             if (rs.next()) {
                 ret = rs.getTimestamp(1);
