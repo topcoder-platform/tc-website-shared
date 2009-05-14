@@ -34,7 +34,8 @@ public class TCLoadRequests extends TCLoad {
     protected java.sql.Timestamp fStartTime = null;
     protected java.sql.Timestamp fLastLogTime = null;
     protected java.sql.Timestamp fLastWebLogTime = null;
-    private static final int MAX_DAYS_TO_LOAD = 1;
+	//edited by TGH on 14 May 2009 to increase max days to load from 1 to 7
+    private static final int MAX_DAYS_TO_LOAD = 7;
     private static final int DAYS_TO_MILLISECONDS = 24 * 60 * 60 * 1000;
     private HashMap urlMap = new HashMap();
     private static final int WEB_REQUEST_LOAD = 5;
