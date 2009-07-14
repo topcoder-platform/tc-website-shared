@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2004 - 2009 TopCoder Inc., All Rights Reserved.
+ */
 package com.topcoder.shared.util;
 
 import com.topcoder.shared.util.logging.Logger;
@@ -8,10 +11,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 /**
- * A class to hold application wide constants
+ * <p>This class holds application wide constants.</p>
  *
- * @author Steve Burrows
- * @version $Revision$
+ * <p>
+ *   Version 1.1 (Configurable Contest Terms Release Assembly v1.0) Change notes:
+ *   <ol>
+ *     <li>Added constants to configure Project Role User Terms Of Use Service host URL for service location.</li>
+ *   </ol>
+ * </p>
+ *
+ * @author Steve Burrows, pulky
+ * @version 1.1
  */
 public class ApplicationServer {
     private static Logger log = Logger.getLogger(ApplicationServer.class);
@@ -67,6 +77,13 @@ public class ApplicationServer {
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
     public final static int WEB_SERVER_ID = bundle.getIntProperty("WEB_SERVER_ID", 1);
+    
+    /**
+     * Host URL for terms of use related services
+     * 
+     * @since 1.1
+     */
+    public static String TERMS_OF_USE_HOST_URL = bundle.getProperty("TERMS_OF_USE_HOST_URL", "jnp://localhost:1199");
 
     public static void close(ResultSet rs) {
         if (rs != null) {
