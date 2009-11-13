@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2004 - 2009 TopCoder Inc., All Rights Reserved.
+ */
 package com.topcoder.shared.ejb;
 
 import com.topcoder.shared.util.TCContext;
@@ -17,9 +20,15 @@ import java.rmi.RemoteException;
  * First cut for a Generics based service locator.  What we're missing is the ability
  * to do local calls.
  *
- * @author dok
- * @version $Id$
- *          Create Date: Feb 27, 2008
+ * <p>
+ *   Version 1.1 (Competition Registration Eligibility v1.0) Change notes:
+ *   <ol>
+ *     <li>Added constructor to allow custom JNDI names.</li>
+ *   </ol>
+ * </p>
+ *
+ * @author dok, pulky
+ * @version 1.1
  */
 public abstract class EJB3Locator<T> {
 
@@ -62,9 +71,32 @@ public abstract class EJB3Locator<T> {
      * @param contextURL The initial context URL.
      */
     public EJB3Locator(String contextURL) {
+        this(contextURL, null);
+    }
+
+    /**
+     * Creates a new Service locator.
+     * <p/>
+     * In this constructor, you can specify the JNDI name so that it's not defaulted to interface+Bean+/remote
+     * <p/>
+     * So, if you pass in com.topcoder.myinterface, you'll be looking up myinterfaceBean/remote
+     *
+     * @param contextURL The initial context URL.
+     * @param remoteJNDIName The remote JNDI name
+     *
+     * @since 1.1
+     */
+    public EJB3Locator(String contextURL, String remoteJNDIName) {
         Class<T> clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         iName = clazz.getName().substring(clazz.getName().lastIndexOf('.') + 1);
-        this.remoteJNDIName = iName + "Bean/remote";
+
+        // if JNDI name is specified, use that one, otherwise build default
+        if (remoteJNDIName != null) {
+            this.remoteJNDIName = remoteJNDIName;
+        } else {
+            this.remoteJNDIName = iName + "Bean/remote";
+        }
+
         this.contextURL = contextURL;
         this.proxiedServices = (T) Proxy.newProxyInstance(
                 clazz.getClassLoader(),

@@ -20,8 +20,16 @@ import java.sql.ResultSet;
  *   </ol>
  * </p>
  *
+ * <p>
+ *   Version 1.2 (Competition Registration Eligibility v1.0) Change notes:
+ *   <ol>
+ *     <li>Added constant for Cockpit Service provider URL for service location.</li>
+ *     <li>Added constant for Contest eligibility services JNDI name.</li>
+ *   </ol>
+ * </p>
+ *
  * @author Steve Burrows, pulky
- * @version 1.1
+ * @version 1.2
  */
 public class ApplicationServer {
     private static Logger log = Logger.getLogger(ApplicationServer.class);
@@ -64,7 +72,7 @@ public class ApplicationServer {
     public final static String TRANS_FACTORY = bundle.getProperty("TRANS_FACTORY", "javax.transaction.UserTransaction");
     public final static String TRANS_MANAGER = bundle.getProperty("TRANS_MANAGER", "weblogic/transaction/TransactionManager");
     public final static String SECURITY_CONTEXT_FACTORY = bundle.getProperty("SECURITY_CONTEXT_FACTORY", "org.jnp.interfaces.NamingContextFactory");
-    
+
     public final static String STUDIO_SERVICES_PROVIDER_URL = bundle.getProperty("STUDIO_SERVICES_PROVIDER_URL", "127.0.0.1:1399");
     public final static String STUDIO_SERVICES_USERNAME = bundle.getProperty("STUDIO_SERVICES_USERNAME", "user");
     public final static String STUDIO_SERVICES_PASSWORD = bundle.getProperty("STUDIO_SERVICES_PASSWORD", "password");
@@ -72,18 +80,33 @@ public class ApplicationServer {
     public final static String STUDIO_SERVICES_PKG_PREFIXES = bundle.getProperty("STUDIO_SERVICES_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
     public final static String STUDIO_SERVICES_PROTOCOL = bundle.getProperty("STUDIO_SERVICES_PROTOCOL", "cockpitDomain");
     public final static String STUDIO_SERVICES_JNDI_NAME = bundle.getProperty("STUDIO_SERVICES_JNDI_NAME", "StudioServiceBean/remote");
-    
+
     public final static int SESSION_ID_LENGTH = bundle.getIntProperty("SESSION_ID_LENGTH", 50);
 
     public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
     public final static int WEB_SERVER_ID = bundle.getIntProperty("WEB_SERVER_ID", 1);
-    
+
     /**
      * Host URL for terms of use related services
-     * 
+     *
      * @since 1.1
      */
     public static String TERMS_OF_USE_HOST_URL = bundle.getProperty("TERMS_OF_USE_HOST_URL", "jnp://localhost:1199");
+
+    /**
+     * Provider URL for cockpit related services
+     *
+     * @since 1.2
+     */
+    public static String COCKPIT_PROVIDER_URL = bundle.getProperty("COCKPIT_PROVIDER_URL", "jnp://localhost:1199");
+
+    /**
+     * The contest eligibility services JNDI name
+     *
+     * @since 1.2
+     */
+    public static String CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME =
+        bundle.getProperty("CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME", "remote/ContestEligibilityServiceBean");
 
     public static void close(ResultSet rs) {
         if (rs != null) {
