@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004 - 2009 TopCoder Inc., All Rights Reserved.
+ * Copyright (C) 2001 - 2009 TopCoder Inc., All Rights Reserved.
  */
 package com.topcoder.shared.util;
 
@@ -28,8 +28,15 @@ import java.sql.ResultSet;
  *   </ol>
  * </p>
  *
+ * <p>
+ *   Version 1.3 (Project View) Change notes:
+ *   <ol>
+ *     <li>Added constants for Pipeline Facade Services lookup.</li>
+ *   </ol>
+ * </p>
+ *
  * @author Steve Burrows, pulky
- * @version 1.2
+ * @version 1.3
  */
 public class ApplicationServer {
     private static Logger log = Logger.getLogger(ApplicationServer.class);
@@ -107,6 +114,54 @@ public class ApplicationServer {
      */
     public static String CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME =
         bundle.getProperty("CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME", "remote/ContestEligibilityServiceBean");
+
+    /**
+     * The pipeline service facade JNDI name
+     *
+     * @since 1.3
+     */
+    public static String PIPELINE_SERVICE_FACADE_JNDI_NAME =
+        bundle.getProperty("PIPELINE_SERVICE_FACADE_JNDI_NAME", "remote/PipelineServiceFacadeBean");
+
+    /**
+     * The pipeline service facade username
+     *
+     * @since 1.3
+     */
+    public final static String PIPELINE_SERVICE_FACADE_USERNAME =
+        bundle.getProperty("PIPELINE_SERVICE_FACADE_USERNAME", "user");
+
+    /**
+     * The pipeline service facade password
+     *
+     * @since 1.3
+     */
+    public final static String PIPELINE_SERVICE_FACADE_PASSWORD =
+        bundle.getProperty("PIPELINE_SERVICE_FACADE_PASSWORD", "password");
+
+    /**
+     * The pipeline service facade context factory
+     *
+     * @since 1.3
+     */
+    public final static String PIPELINE_SERVICE_FACADE_CONTEXT_FACTORY =
+        bundle.getProperty("PIPELINE_SERVICE_FACADE_CONTEXT_FACTORY", "org.jboss.security.jndi.LoginInitialContextFactory");
+
+    /**
+     * The pipeline service facade pkg prefixes
+     *
+     * @since 1.3
+     */
+    public final static String PIPELINE_SERVICE_FACADE_PKG_PREFIXES =
+        bundle.getProperty("PIPELINE_SERVICE_FACADE_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
+
+    /**
+     * The pipeline service facade protocol
+     *
+     * @since 1.3
+     */
+    public final static String PIPELINE_SERVICE_FACADE_PROTOCOL =
+        bundle.getProperty("PIPELINE_SERVICE_FACADE_PROTOCOL", "other");
 
     public static void close(ResultSet rs) {
         if (rs != null) {
