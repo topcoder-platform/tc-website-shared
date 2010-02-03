@@ -31,8 +31,15 @@ import java.util.Map;
  *   </ol>
  * </p>
  *
- * @author pulky, TCSDEVELOPER
- * @version 1.0.2
+ * <p>
+ *   Version 1.0.3 (Miscellaneous TC Improvements Release Assembly 1.0) Change notes:
+ *   <ol>
+ *     <li>Added methods for re-connecting to DB if connection is closed.</li>
+ *   </ol>
+ * </p>
+ *
+ * @author pulky, isv
+ * @version 1.0.3
  */
 public abstract class DBUtility {
     /**
@@ -105,14 +112,17 @@ public abstract class DBUtility {
     /**
      * Call this method to create a PreparedStatement for a given sql.
      *
+     * @param source The reference to target database.
      * @param sqlStr The sql query.
+     * @return a statement to be executed for specified query.
+     * @throws SQLException if an SQL error occurs while communicating to database.
      */
     protected PreparedStatement prepareStatement(String source, String sqlStr) throws SQLException {
         if (conn == null)
             return null;
         PreparedStatement ps = null;
         try {
-            ps = ((Connection) conn.get(source)).prepareStatement(sqlStr);
+            ps = getConnection(source).prepareStatement(sqlStr);
         } catch (SQLException sqle) {
             throw sqle;
         }
@@ -289,7 +299,6 @@ public abstract class DBUtility {
             sErrorMsg.append("Cannot continue.\n");
             sErrorMsg.append(sqle.getMessage());
             fatal_error(sqle);
-            ;
         }
 
         try {
@@ -301,5 +310,68 @@ public abstract class DBUtility {
                 DBMS.close(((Map.Entry<String, Connection>) entry).getValue());
             }
         }
+    }
+
+    /**
+     * <p>Sets the auto-commit flag for connection to target database referenced by the specified source.</p>
+     *
+     * @param source a <code>String</code> referencing the target database to get connection for.
+     * @param autoCommit <code>true</code> if auto-commit flag for connection must be set; <code>false</code> otherwise.
+     * @throws SQLException if SQL error occurs while setting the auto-commit flag.
+     * @since 1.0.3
+     */
+    protected void setAutoCommit(String source, boolean autoCommit) throws SQLException {
+        log.debug("DB Update Tool set auto-commit feature for connection for source: " + source + " to  " + autoCommit);
+        Connection connection = getConnection(source);
+        connection.setAutoCommit(autoCommit);
+    }
+
+    /**
+     * <p>Commits the current transaction for connection to target database referenced by the specified source.</p>
+     *
+     * @param source a <code>String</code> referencing the target database to get connection for.
+     * @throws SQLException if SQL error occurs while committing the transaction.
+     * @since 1.0.3
+     */
+    protected void commit(String source) throws SQLException {
+        log.debug("DB Update Tool commits the transaction for source: " + source + " ...");
+        Connection connection = getConnection(source);
+        connection.commit();
+        log.debug("DB Update Tool committed the transaction for source: " + source + " successfully");
+    }
+
+    /**
+     * <p>Rolls back the current transaction for connection to target database referenced by the specified source.</p>
+     *
+     * @param source a <code>String</code> referencing the target database to get connection for.
+     * @throws SQLException if SQL error occurs while rolling back the transaction.
+     * @since 1.0.3
+     */
+    protected void rollback(String source) throws SQLException {
+        log.debug("DB Update Tool rolls back the transaction for source: " + source);
+        Connection connection = getConnection(source);
+        connection.rollback();
+        log.debug("DB Update Tool rolled back the transaction for source: " + source + " successfully");
+    }
+
+    /**
+     * <p>Gets the connection to target database referenced by the specified source. If connection is not yet
+     * established or if it has been closed then it is re-created.</p>
+     *
+     * @param source a <code>String</code> referencing the target database to get connection for.
+     * @return a <code>Connection</code> to target database.
+     * @throws SQLException if SQL error occurs while re-connecting to target database.
+     * @since 1.0.3
+     */
+    private Connection getConnection(String source) throws SQLException {
+        Connection connection = (Connection) conn.get(source);
+        if ((connection == null) || (connection.isClosed())) {
+            log.debug("Re-creating source database connection...: " + source);
+            Connection tmpConn = DriverManager.getConnection((String) (sources.get(source)));
+            log.debug("Success!");
+            conn.put(source, tmpConn);
+            connection = tmpConn;
+        }
+        return connection;
     }
 }
