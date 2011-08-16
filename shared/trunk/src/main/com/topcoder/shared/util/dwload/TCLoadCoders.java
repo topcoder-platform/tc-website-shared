@@ -338,7 +338,7 @@ public class TCLoadCoders extends TCLoad {
         try {
             // Our select statement
             query = new StringBuffer(100);
-            query.append("SELECT c.coder_id ");                  // 1
+            query.append("SELECT u.user_id ");                  // 1
             query.append("       ,a.state_code ");               // 2
             query.append("       ,a.country_code ");             // 3
             query.append("       ,u.first_name ");               // 4
@@ -358,11 +358,10 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,e.address ");                  // 18
             query.append("       ,c.comp_country_code");         // 19
             query.append("       ,u.last_site_hit_date");        // 20
-            query.append("  FROM coder c ");
-            query.append("       ,user u ");
+            query.append("  FROM user u  ");
+            query.append("       ,outer coder c");
             query.append("       ,email e ");
-            query.append("       ,user_address_xref x ");
-            query.append("       ,address a ");
+            query.append("       ,outer (user_address_xref x , address a) ");
             query.append(" WHERE c.coder_id = u.user_id ");
             query.append("   AND u.user_id = e.user_id ");
             query.append("   and e.primary_ind = 1 ");
