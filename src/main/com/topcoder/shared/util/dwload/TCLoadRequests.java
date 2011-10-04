@@ -13,7 +13,6 @@ package com.topcoder.shared.util.dwload;
  *****************************************************************************/
 
 import com.topcoder.shared.util.DBMS;
-import com.topcoder.shared.util.IdGeneratorClient;
 import com.topcoder.shared.util.logging.Logger;
 
 import java.sql.PreparedStatement;
@@ -49,6 +48,7 @@ public class TCLoadRequests extends TCLoad {
     private PreparedStatement getNamePs = null;
     private PreparedStatement addSiteHitPs = null;
     private PreparedStatement createUrlPs = null;
+    long nextSessionID = 0;
 
     private final static String GET_URL =
             " select url_id" +
@@ -94,6 +94,8 @@ public class TCLoadRequests extends TCLoad {
     private static final String DELETE =
             " delete from request where timestamp <= ?";
 
+    private static final String GET_NEXT_SESSION_ID =
+            "select max(session_id)+1 as next_session_id from site_hit";
 
     public TCLoadRequests() {
         //DEBUG = false;
@@ -111,25 +113,13 @@ public class TCLoadRequests extends TCLoad {
      */
     public void performLoad() throws Exception {
         try {
-/*
-            fLastLogTime = getLastUpdateTime(REQUEST_LOAD);
-            log.debug("set last log time for request load to " + fLastLogTime);
-*/
             fLastWebLogTime = getLastUpdateTime(WEB_REQUEST_LOAD);
             
-            //this should only be use for web requests, it doesn't mean anything for other
-            //types of requests.
+            //this should only be use for web requests, it doesn't mean anything for other types of requests.
             fStartTime = getNewestTime();
             
             log.info("loading requests that happened between " +
                     fLastWebLogTime + " and " + fStartTime);
-
-
-/*            loadRequests();
-
-            setLastUpdateTime(REQUEST_LOAD);
-*/
-
 
             //creating this one ahead of time so that we can reuse it.
             getUrlPs = prepareStatement(GET_URL, TARGET_DB);
@@ -200,6 +190,8 @@ public class TCLoadRequests extends TCLoad {
         int retVal = 0;
 
         try {
+            nextSessionID = getNextSessionID();
+
             psClean = prepareStatement(CLEAN, TARGET_DB);
             psClean.setTimestamp(1, fLastWebLogTime);
             long deleted = psClean.executeUpdate();
@@ -380,6 +372,23 @@ public class TCLoadRequests extends TCLoad {
         return ret;
     }
 
+    private long getNextSessionID() throws SQLException {
+        PreparedStatement ps = null;
+        ResultSet rs;
+        try {
+            ps = prepareStatement(GET_NEXT_SESSION_ID, TARGET_DB);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getLong("next_session_id");
+            } else {
+                return 0;
+            }
+        } finally {
+            close(ps);
+            close(ps);
+        }
+    }
+
     private long getSessionId(String sessionId) throws Exception {
         //log.debug("called getSessionId() " + sessionId);
         long ret = 0;
@@ -387,7 +396,7 @@ public class TCLoadRequests extends TCLoad {
             ret = ((Long) sessionMap.get(sessionId)).longValue();
         } else {
             //look it up and see if it's in the db
-            ret = IdGeneratorClient.getSeqId("HTTP_SESSION_SEQ");
+            ret = nextSessionID++;
             sessionMap.put(sessionId, new Long(ret));
         }
         return ret;
@@ -703,132 +712,5 @@ public class TCLoadRequests extends TCLoad {
         }
 
     }
-
-
-
-/*
-    private void loadRequests() throws Exception {
-        PreparedStatement psSel = null;
-        PreparedStatement psIns = null;
-        PreparedStatement psDel = null;
-        StringBuffer query = null;
-
-        ResultSet rs = null;
-        int count = 0;
-        int retVal = 0;
-
-        try {
-            // Our select statement
-            query = new StringBuffer(100);
-            query.append("SELECT rt.request_id ");           // 1
-            query.append("       ,rt.request_type_id ");     // 2
-            query.append("       ,rt.coder_id ");            // 3
-            query.append("       ,rt.round_id ");            // 4
-            query.append("       ,rt.room_id ");             // 5
-            query.append("       ,rt.open_window ");         // 6
-            query.append("       ,rt.open_period ");         // 7
-            query.append("       ,rt.connection_id ");       // 8
-            query.append("       ,rt.server_id ");           // 9
-            query.append("       ,rt.timestamp ");           //10
-            query.append("       ,rt.close_window ");        //11
-            query.append("  FROM request rt ");
-            query.append("   WHERE timestamp > ?");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = rt.coder_id ");
-            query.append("           AND gu.group_id = 13)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM group_user gu ");
-            query.append("         WHERE gu.user_id = rt.coder_id ");
-            query.append("           AND gu.group_id = 14)");
-            query.append("   AND NOT EXISTS ");
-            query.append("       (SELECT 'pops' ");
-            query.append("          FROM room ro ");
-            query.append("         WHERE ro.room_id = rt.room_id ");
-            query.append("           AND ro.room_type_id <> 1)");
-
-            psSel = prepareStatement(query.toString(), SOURCE_DB);
-            // Our insert statement
-            query = new StringBuffer(100);
-            query.append("INSERT INTO request ");
-            query.append("       (request_id ");          // 1
-            query.append("       ,request_type_id ");     // 2
-            query.append("       ,coder_id ");            // 3
-            query.append("       ,round_id ");            // 4
-            query.append("       ,room_id ");             // 5
-            query.append("       ,open_window ");         // 6
-            query.append("       ,open_period ");         // 7
-            query.append("       ,connection_id ");       // 8
-            query.append("       ,server_id ");           // 9
-            query.append("       ,timestamp ");           //10
-            query.append("       ,close_window) ");        //11
-            query.append("VALUES (");
-            query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
-            query.append("?)");                    // 11
-
-            psIns = prepareStatement(query.toString(), TARGET_DB);
-
-            query = new StringBuffer(100);
-            query.append("DELETE FROM request ");
-            query.append(" WHERE request_id = ? ");
-            psDel = prepareStatement(query.toString(), TARGET_DB);
-
-            // On to the load
-            psSel.setTimestamp(1, fLastLogTime);
-            rs = psSel.executeQuery();
-
-            while (rs.next()) {
-                int request_id = rs.getInt(1);
-
-                psDel.clearParameters();
-                psDel.setInt(1, request_id);
-                psDel.executeUpdate();
-                int round_id = rs.getInt(4);
-//          System.out.println(round_id);
-                int room_id = rs.getInt(5);
-//          System.out.println(room_id);
-
-                psIns.clearParameters();
-                psIns.setInt(1, request_id);  // request_id
-                psIns.setInt(2, rs.getInt(2));  // request_type_id
-                psIns.setInt(3, rs.getInt(3));  // coder_id
-                psIns.setInt(4, round_id);  // round_id
-                psIns.setInt(5, room_id);  // room_id
-                psIns.setTimestamp(6, rs.getTimestamp(6));  // open_window
-                psIns.setTimestamp(7, rs.getTimestamp(7));  // open_period
-                psIns.setInt(8, rs.getInt(8));  // connection_id
-                psIns.setInt(9, rs.getInt(9));  // server_id
-                psIns.setTimestamp(10, rs.getTimestamp(10)); // timestamp
-                psIns.setTimestamp(11, rs.getTimestamp(11)); // close_window
-
-                //System.out.println(rs.getInt(1)+" "+rs.getInt(2)+" "+rs.getInt(3)+" "+rs.getInt(4)+" "+rs.getInt(5)+rs.getTimestamp(10).toString());
-
-                retVal = psIns.executeUpdate();
-                count += retVal;
-                if (retVal != 1) {
-                    log.info("TCLoadRequests: Insert for " +
-                            "request_id " + request_id +
-                            " modified " + retVal + " rows, not one.");
-                }
-
-                printLoadProgress(count, "request");
-            }
-
-            log.info("Records loaded for request: " + count);
-        } catch (SQLException sqle) {
-            DBMS.printSqlException(true, sqle);
-            throw new Exception("Load of 'request' table failed.\n" +
-                    sqle.getMessage());
-        } finally {
-            close(rs);
-            close(psSel);
-            close(psIns);
-            close(psDel);
-        }
-    }
-*/
-
 
 }
