@@ -137,7 +137,7 @@ public class EmailJobBean extends BaseEJB {
         int rowsAdded;
         int rowsUpdated;
 
-        log.debug("New email job requested (template_id " + templateId
+        log.info("New email job requested (template_id " + templateId
                 + ", list_id " + listId + ", command_id " + commandId
                 + ", start " + startAfter + ", stop " + stopBefore
                 + ", from " + fromAddress + " (" + fromPersonal + ")"
@@ -303,7 +303,7 @@ public class EmailJobBean extends BaseEJB {
         int rows;
         int id = 0;
 
-        log.debug("createEmailReportJob(" + sourceJobId + ", ...)");
+        log.info("createEmailReportJob(" + sourceJobId + ", ...)");
 
         int jobId = createJob(templateId, listId, commandId,
                 startAfter, stopBefore, fromAddress,
@@ -361,7 +361,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         int rowsUpdated;
 
-        log.debug("Cancel email job requested (job_id " + jobId + ")");
+        log.info("Cancel email job requested (job_id " + jobId + ")");
 
         /*
          * Change the job's status to canceled if the current status
@@ -389,7 +389,7 @@ public class EmailJobBean extends BaseEJB {
             ps.setInt(4, JOB_STATUS_ACTIVE);
             rowsUpdated = ps.executeUpdate();
             if (rowsUpdated == 0) {
-                log.debug("Cancel request for job_id " + jobId
+                log.info("Cancel request for job_id " + jobId
                         + " had no effect."
                         + " Either the job is not ready or active,"
                         + " or the job does not exist.");
@@ -423,7 +423,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         int rowsUpdated;
 
-        log.debug("Resume email job requested (job_id " + jobId + ")");
+        log.info("Resume email job requested (job_id " + jobId + ")");
 
         /*
          * Change the job's status to READY if the current status
@@ -448,7 +448,7 @@ public class EmailJobBean extends BaseEJB {
             ps.setInt(3, JOB_STATUS_CANCELED);
             rowsUpdated = ps.executeUpdate();
             if (rowsUpdated == 0) {
-                log.debug("Resume request for job_id " + jobId
+                log.info("Resume request for job_id " + jobId
                         + " had no effect."
                         + " Either the job has not been canceled,"
                         + " or the job does not exist.");
@@ -501,7 +501,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getJobTypeIdText requested for typeId " + typeId);
+        log.info("getJobTypeIdText requested for typeId " + typeId);
 
         try {
             conn = DBMS.getConnection();
@@ -565,7 +565,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getStatusIdText requested for statusId " + statusId);
+        log.info("getStatusIdText requested for statusId " + statusId);
 
         try {
             conn = DBMS.getConnection();
@@ -613,7 +613,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         Map ret = new HashMap();
 
-        log.debug("getJobDetailResults requested for jobId " + jobId);
+        log.info("getJobDetailResults requested for jobId " + jobId);
 
         try {
             conn = DBMS.getConnection();
@@ -687,7 +687,7 @@ public class EmailJobBean extends BaseEJB {
         arrRet[1] = new Integer(0);
         arrRet[2] = new Integer(0);
 
-        log.debug("getJobDetailResults requested for jobId " + jobId
+        log.info("getJobDetailResults requested for jobId " + jobId
                 + " range (" + firstRecordOffset + "," + lastRecordOffset + ")");
 
         try {
@@ -779,7 +779,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getJobDetailReason requested for jobId " + jobId + ", jobDetailId " + jobDetailId);
+        log.info("getJobDetailReason requested for jobId " + jobId + ", jobDetailId " + jobDetailId);
 
         try {
             conn = DBMS.getConnection();
@@ -848,7 +848,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getJobDetailData requested for jobId " + jobId + ", jobDetailId " + jobDetailId);
+        log.info("getJobDetailData requested for jobId " + jobId + ", jobDetailId " + jobDetailId);
 
         try {
             conn = DBMS.getConnection();
@@ -917,7 +917,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         boolean ret = false;
 
-        log.debug("isJobDetailArchived requested for jobId " + jobId);
+        log.info("isJobDetailArchived requested for jobId " + jobId);
 
         try {
             conn = DBMS.getConnection();
@@ -962,7 +962,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getDetailStatusIdText requested for jobDetailStatusId "
+        log.info("getDetailStatusIdText requested for jobDetailStatusId "
                 + jobDetailStatusId);
 
         try {
@@ -1036,7 +1036,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getCommandName requested for jobId " + jobId);
+        log.info("getCommandName requested for jobId " + jobId);
 
         int commandId = getCommandId(jobId);
 
@@ -1130,7 +1130,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         int ret = 0;
 
-        log.debug("getIntField requested for jobId " + jobId + ", field=" + fieldName);
+        log.info("getIntField requested for jobId " + jobId + ", field=" + fieldName);
 
         try {
             conn = DBMS.getConnection();
@@ -1180,7 +1180,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         Date ret = null;
 
-        log.debug("getDateField requested for jobId " + jobId + ", field=" + fieldName);
+        log.info("getDateField requested for jobId " + jobId + ", field=" + fieldName);
 
         try {
             conn = DBMS.getConnection();
@@ -1230,7 +1230,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getStringField requested for jobId " + jobId + ", field=" + fieldName);
+        log.info("getStringField requested for jobId " + jobId + ", field=" + fieldName);
 
         try {
             conn = DBMS.getConnection();
@@ -1396,7 +1396,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         int rows;
 
-        log.debug("setField requested for table " + tableName + ", "
+        log.info("setField requested for table " + tableName + ", "
                 + idName + " " + id + ", " + fieldName + " (" + valueI
                 + ", " + valueS + ", " + valueD + ")");
 
@@ -1422,7 +1422,7 @@ public class EmailJobBean extends BaseEJB {
             ps.setInt(2, id);
             rows = ps.executeUpdate();
             if (rows == 0) {
-                log.debug("The update had no effect."
+                log.info("The update had no effect."
                         + " Most likely the job does not exist.");
                 throw new Exception("The update command affected "
                         + rows + " rows.");
@@ -1461,7 +1461,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         int rows;
 
-        log.debug("setCommandParam requested for jobId " + jobId);
+        log.info("setCommandParam requested for jobId " + jobId);
 
         try {
             conn = DBMS.getConnection();
@@ -1539,7 +1539,7 @@ public class EmailJobBean extends BaseEJB {
                 ps.setInt(2, paramId);
                 rows = ps.executeUpdate();
                 if (rows == 0) {
-                    log.debug("The update had no effect. Was the record removed?");
+                    log.info("The update had no effect. Was the record removed?");
                     throw new Exception("The update command affected " + rows + " rows.");
                 } else {
                     if (rows != 1) {
@@ -1573,7 +1573,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         Map ret = new HashMap();
 
-        log.debug("getCommandParams requested for jobId " + jobId);
+        log.info("getCommandParams requested for jobId " + jobId);
 
         try {
             conn = DBMS.getConnection();
@@ -1620,7 +1620,7 @@ public class EmailJobBean extends BaseEJB {
         StringBuffer sqlStmt = new StringBuffer(500);
         String ret = null;
 
-        log.debug("getCommandParamName requested for inputId " + inputId);
+        log.info("getCommandParamName requested for inputId " + inputId);
 
         try {
             conn = DBMS.getConnection();
