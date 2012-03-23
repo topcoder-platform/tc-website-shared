@@ -61,7 +61,7 @@ public class EmailServerBean extends BaseEJB {
         //log.debug("getJobs based on status=" + status);
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             java.sql.Timestamp now = new java.sql.Timestamp(new Date().getTime());
 
@@ -123,7 +123,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setJobStatus (jobId " + jobId + ", status " + status + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -173,7 +173,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setJobType (jobId " + jobId + ", type " + type + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -223,7 +223,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("clearDetailRecords jobId " + jobId);
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE");
@@ -274,7 +274,7 @@ public class EmailServerBean extends BaseEJB {
 
             id = (int) IdGeneratorClient.getSeqId("SCHED_JOB_DETAIL_SEQ");
             try {
-                conn = DBMS.getConnection();
+                conn = getConnection();
 
                 sqlStmt.setLength(0);
                 sqlStmt.append(" INSERT INTO");
@@ -331,7 +331,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setDetailStatus (jobId " + jobId + ", detailId " + detailId + ", status " + status + ":" + reason + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -384,7 +384,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("setJobBuilt (jobId " + jobId + ")");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE");
@@ -521,7 +521,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("acquireJob(" + jobId + "," + controlId + ") requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" INSERT INTO");
@@ -574,7 +574,7 @@ public class EmailServerBean extends BaseEJB {
         if (oldId == 0 && acquireJob(jobId, controlId)) return true;
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" UPDATE ");
@@ -619,7 +619,7 @@ public class EmailServerBean extends BaseEJB {
         log.debug("getJobControlId(" + jobId + ") requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" SELECT ");
@@ -659,7 +659,7 @@ public class EmailServerBean extends BaseEJB {
         //log.debug("clearJobControlIds(" + controlId + ") requested");
 
         try {
-            conn = DBMS.getConnection();
+            conn = getConnection();
 
             sqlStmt.setLength(0);
             sqlStmt.append(" DELETE");
@@ -676,6 +676,42 @@ public class EmailServerBean extends BaseEJB {
             DBMS.close(ps);
             DBMS.close(conn);
             ApplicationServer.close(ctx);
+        }
+    }
+
+
+    /**
+     * Creates a DB connection. The method tries to get a connection few times in a row.
+     * @return DB Connection
+     * @throws Exception
+     */
+    private java.sql.Connection getConnection() throws Exception {
+        Exception lastException = null;
+        java.sql.Connection conn = null;
+
+        for(int i=0;i<10;i++) {
+            try {
+                conn = DBMS.getConnection();
+                setLockMode(conn);
+                return conn;
+            } catch (Exception e) {
+                lastException = e;
+                DBMS.close(conn);
+                conn = null;
+            }
+        }
+
+        throw lastException;
+    }
+
+    private void setLockMode(java.sql.Connection conn) throws Exception {
+        java.sql.PreparedStatement ps = null;
+
+        try {
+            ps = conn.prepareStatement("SET LOCK MODE TO WAIT 100;");
+            ps.executeUpdate();
+        } finally {
+            DBMS.close(ps);
         }
     }
 }
