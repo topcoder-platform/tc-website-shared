@@ -85,6 +85,7 @@ public class EmailJobBean extends BaseEJB {
      * @param templateId
      * @param listId
      * @param commandId
+     * @param jobGroupId
      * @param startAfter
      * @param stopBefore
      * @param fromAddress
@@ -96,18 +97,20 @@ public class EmailJobBean extends BaseEJB {
     public int createEmailJob(int templateId,
                               int listId,
                               int commandId,
+                              int jobGroupId,
                               Date startAfter,
                               Date stopBefore,
                               String fromAddress,
                               String fromPersonal,
                               String subject) throws EJBException {
-        return createJob(templateId, listId, commandId, startAfter, stopBefore, fromAddress, fromPersonal, subject, JOB_TYPE_EMAIL_PRE);
+        return createJob(templateId, listId, commandId, jobGroupId, startAfter, stopBefore, fromAddress, fromPersonal, subject, JOB_TYPE_EMAIL_PRE);
     }
 
     /**
      * @param templateId
      * @param listId
      * @param commandId
+     * @param jobGroupId
      * @param startAfter
      * @param stopBefore
      * @param fromAddress
@@ -120,6 +123,7 @@ public class EmailJobBean extends BaseEJB {
     public int createJob(int templateId,
                          int listId,
                          int commandId,
+                         int jobGroupId,
                          Date startAfter,
                          Date stopBefore,
                          String fromAddress,
@@ -138,7 +142,7 @@ public class EmailJobBean extends BaseEJB {
         int rowsUpdated;
 
         log.info("New email job requested (template_id " + templateId
-                + ", list_id " + listId + ", command_id " + commandId
+                + ", list_id " + listId + ", command_id " + commandId + ", job_group_id " + jobGroupId
                 + ", start " + startAfter + ", stop " + stopBefore
                 + ", from " + fromAddress + " (" + fromPersonal + ")"
                 + ", subject " + subject + ")");
@@ -187,7 +191,9 @@ public class EmailJobBean extends BaseEJB {
             sqlStmt.append(" start_after_date");
             sqlStmt.append(",");
             sqlStmt.append(" end_before_date");
-            sqlStmt.append(") VALUES (?,?,?,?,?)");
+            sqlStmt.append(",");
+            sqlStmt.append(" email_job_group_id");
+            sqlStmt.append(") VALUES (?,?,?,?,?,?)");
             ps2 = conn.prepareStatement(sqlStmt.toString());
 
             // create ps3
@@ -218,6 +224,7 @@ public class EmailJobBean extends BaseEJB {
             ps2.setInt(3, JOB_STATUS_CREATING);
             ps2.setTimestamp(4, new java.sql.Timestamp(startAfter.getTime()));
             ps2.setTimestamp(5, new java.sql.Timestamp(stopBefore.getTime()));
+            ps2.setInt(6, jobGroupId);
             rowsAdded = ps2.executeUpdate();
             if (rowsAdded != 1) {
                 conn.rollback();
@@ -277,6 +284,7 @@ public class EmailJobBean extends BaseEJB {
      * @param templateId
      * @param listId
      * @param commandId
+     * @param jobGroupId
      * @param startAfter
      * @param stopBefore
      * @param fromAddress
@@ -290,6 +298,7 @@ public class EmailJobBean extends BaseEJB {
             int templateId,
             int listId,
             int commandId,
+            int jobGroupId,
             Date startAfter,
             Date stopBefore,
             String fromAddress,
@@ -305,7 +314,7 @@ public class EmailJobBean extends BaseEJB {
 
         log.info("createEmailReportJob(" + sourceJobId + ", ...)");
 
-        int jobId = createJob(templateId, listId, commandId,
+        int jobId = createJob(templateId, listId, commandId, jobGroupId,
                 startAfter, stopBefore, fromAddress,
                 fromPersonal, subject, JOB_TYPE_EMAIL_REPORT);
 
@@ -1114,6 +1123,15 @@ public class EmailJobBean extends BaseEJB {
      */
     public String getSubject(int jobId) throws EJBException {
         return getStringField(jobId, "subject");
+    }
+
+    /**
+     * @param jobId
+     * @return
+     * @throws EJBException
+     */
+    public int getJobGroupId(int jobId) throws EJBException {
+        return getIntField(jobId, "email_job_group_id");
     }
 
     /**
