@@ -65,6 +65,20 @@
             <session-type>Stateless</session-type>
         </session>
         <session>
+            <description>Email Job Group</description>
+            <display-name>Email Job Group EJB</display-name>
+            <ejb-name>EmailJobGroup</ejb-name>
+            <home>com.topcoder.shared.ejb.EmailServices.EmailJobGroupHome</home>
+            <remote>com.topcoder.shared.ejb.EmailServices.EmailJobGroup</remote>
+            <!--
+                        <local-home>com.topcoder.ejb.ContestAdminServices.ContestAdminServicesHome</local-home>
+                        <local>com.topcoder.ejb.ContestAdminServices.ContestAdminServices</local>
+            -->
+            <ejb-class>com.topcoder.shared.ejb.EmailServices.EmailJobGroupBean</ejb-class>
+            <transaction-type>Bean</transaction-type>
+            <session-type>Stateless</session-type>
+        </session>
+        <session>
             <description>Email Template Group</description>
             <display-name>Email Template Group EJB</display-name>
             <ejb-name>EmailTemplateGroup</ejb-name>
@@ -110,6 +124,10 @@
             </method>
             <method>
                 <ejb-name>EmailListGroup</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <method>
+                <ejb-name>EmailJobGroup</ejb-name>
                 <method-name>*</method-name>
             </method>
             <method>

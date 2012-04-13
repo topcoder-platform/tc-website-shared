@@ -19,6 +19,7 @@ public interface EmailJob extends EJBObject {
      * @param templateId
      * @param listId
      * @param commandId
+     * @param jobGroupId
      * @param startAfter
      * @param stopBefore
      * @param fromAddress
@@ -30,6 +31,7 @@ public interface EmailJob extends EJBObject {
     int createEmailJob(int templateId,
                               int listId,
                               int commandId,
+                              int jobGroupId,
                               Date startAfter,
                               Date stopBefore,
                               String fromAddress,
@@ -45,6 +47,7 @@ public interface EmailJob extends EJBObject {
      * @param templateId
      * @param listId
      * @param commandId
+     * @param jobGroupId
      * @param startAfter
      * @param stopBefore
      * @param fromAddress
@@ -58,6 +61,7 @@ public interface EmailJob extends EJBObject {
             int templateId,
             int listId,
             int commandId,
+            int jobGroupId,
             Date startAfter,
             Date stopBefore,
             String fromAddress,
@@ -217,6 +221,15 @@ public interface EmailJob extends EJBObject {
      * @throws RemoteException
      */
     String getSubject(int jobId) throws RemoteException;
+
+    /**
+     * Returns the requested information about the job.
+     *
+     * @param jobId
+     * @return     the group ID for the job
+     * @throws RemoteException
+     */
+    int getJobGroupId(int jobId) throws RemoteException;
 
     /**
      * Returns a map of the results for the job.
