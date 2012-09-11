@@ -374,11 +374,11 @@ public class TCLoadCoders extends TCLoad {
             query.append("          FROM user_group_xref ugx ");
             query.append("         WHERE ugx.login_id= c.coder_id ");
             query.append("           AND ugx.group_id = 2000115)");
-            query.append("   AND NOT EXISTS ");
+        /*    query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
             query.append("         WHERE gu.user_id = c.coder_id ");
-            query.append("           AND gu.group_id = 13)");
+            query.append("           AND gu.group_id = 13)");*/
 
             psSel = prepareStatement(query.toString(), SOURCE_DB);
 
