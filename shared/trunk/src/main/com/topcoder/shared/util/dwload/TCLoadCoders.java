@@ -369,12 +369,12 @@ public class TCLoadCoders extends TCLoad {
             query.append("   and a.address_type_id = 2 ");
             query.append("   and x.user_id = u.user_id ");
             query.append("   AND (c.modify_date > ? OR a.modify_date > ? OR e.modify_date > ? OR u.modify_date > ?)");
-            query.append("   AND NOT EXISTS ");
+      /*      query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM user_group_xref ugx ");
             query.append("         WHERE ugx.login_id= c.coder_id ");
             query.append("           AND ugx.group_id = 2000115)");
-        /*    query.append("   AND NOT EXISTS ");
+            query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM group_user gu ");
             query.append("         WHERE gu.user_id = c.coder_id ");
