@@ -22,7 +22,7 @@ public class EmailEngine {
     /**
      *
      */
-    public static final String SMTP_HOST_ADDR = "172.16.20.41";
+    public static final String SMTP_HOST_ADDR = "smtp.topcoder.com";
     /**
      *
      */
