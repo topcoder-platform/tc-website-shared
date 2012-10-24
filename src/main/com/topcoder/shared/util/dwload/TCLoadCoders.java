@@ -368,7 +368,17 @@ public class TCLoadCoders extends TCLoad {
             query.append("   and a.address_id = x.address_id ");
             query.append("   and a.address_type_id = 2 ");
             query.append("   and x.user_id = u.user_id ");
-            query.append("   AND (c.modify_date > ? OR a.modify_date > ? OR e.modify_date > ? OR u.modify_date > ?)");
+			query.append("  and u.user_id in ");
+            query.append("   ( ");
+            query.append("     select c2.coder_id from coder c2 where c2.modify_date > ?   ");
+            query.append("     union ");
+            query.append("     select x2.user_id from address a2, user_address_xref x2 where a2.modify_date > ?  and a2.address_id = x2.address_id  ");
+            query.append("     union ");
+            query.append("     select e2.user_id from email e2 where e2.modify_date  > ?   ");
+            query.append("     union ");
+            query.append("     select u2.user_id from user u2 where u2.modify_date > ?   ");
+            query.append("   ) ");
+           
       /*      query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM user_group_xref ugx ");
