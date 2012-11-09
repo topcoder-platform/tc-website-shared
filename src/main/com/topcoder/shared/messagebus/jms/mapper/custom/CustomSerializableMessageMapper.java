@@ -7,8 +7,6 @@ package com.topcoder.shared.messagebus.jms.mapper.custom;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import javax.jms.BytesMessage;
@@ -16,6 +14,10 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
+import com.topcoder.io.serialization.basictype.BasicTypeDataInput;
+import com.topcoder.io.serialization.basictype.BasicTypeDataOutput;
+import com.topcoder.io.serialization.basictype.impl.BasicTypeDataInputImpl;
+import com.topcoder.io.serialization.basictype.impl.BasicTypeDataOutputImpl;
 import com.topcoder.shared.messagebus.BusMessage;
 import com.topcoder.shared.messagebus.jms.mapper.MessageMapper;
 import com.topcoder.shared.netCommon.CSHandler;
@@ -59,18 +61,16 @@ public class CustomSerializableMessageMapper extends MessageMapper {
     private byte[] buildByteArray(Object o) throws IOException {
         CSHandler handler = getCSHandler();
         ByteArrayOutputStream bos = new ByteArrayOutputStream(512);
-        DataOutputStream dataOut = new DataOutputStream(bos);
+        BasicTypeDataOutput dataOut = new BasicTypeDataOutputImpl(bos);
         handler.setDataOutput(dataOut);
         handler.writeObject(o);
-        dataOut.flush();
-        dataOut.close();
         byte[] byteArray = bos.toByteArray();
         handler.setDataOutput(null);
         return byteArray;
     }
     
     private Object buildObject(byte[] buf, int bytes) throws IOException {
-        DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(buf, 0, bytes));
+        BasicTypeDataInput dataInputStream = new BasicTypeDataInputImpl(new ByteArrayInputStream(buf, 0, bytes), bytes);
         CSHandler handler = getCSHandler();
         handler.setDataInput(dataInputStream);
         Object object = handler.readObject();

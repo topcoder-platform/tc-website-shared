@@ -28,7 +28,7 @@ public class ServiceEventListener implements Runnable {
     private final static int TIMEOUT = 30000;
     private final static int MAX_ERRORS = 3;
     
-    private ServiceEventMessageListener realListener;
+    private ServiceEventMessageListener messageListener;
 
     private Thread thread;
 
@@ -41,13 +41,23 @@ public class ServiceEventListener implements Runnable {
     *                              listener mechanism
     */
     public ServiceEventListener(String topicName, String serviceName) throws IllegalStateException {
+    	this(topicName, new ServiceEventMessageListener(serviceName));
+    }
+    
+    /**
+    * Constructs a new ServiceEventListener.
+    * 
+    * @throws IllegalStateException If a problem arises when triying to start the
+    *                              listener mechanism
+    */
+    public ServiceEventListener(String topicName, ServiceEventMessageListener messageListener) throws IllegalStateException {
         try {
-            realListener = new ServiceEventMessageListener(serviceName);
-            logger.info("Initializing ServiceEventListener for topic="+topicName+" service="+serviceName);
+            this.messageListener = messageListener;
+            logger.info("Initializing ServiceEventListener for topic="+topicName+" service="+messageListener.getServiceName());
             tms = new TopicMessageSubscriber(ApplicationServer.JMS_FACTORY, topicName);
-            tms.setSelector("serviceName = '" + serviceName + "'");
+            tms.setSelector("serviceName = '" + messageListener.getServiceName() + "'");
             tms.setFaultTolerant(false);
-            thread = new Thread(this, "SvcEventListener["+topicName+","+serviceName+"]");
+            thread = new Thread(this, "SvcEventListener["+topicName+","+messageListener.getServiceName()+"]");
             thread.setDaemon(true);
             thread.start();
             logger.info("ServiceEventListener connected");
@@ -62,7 +72,7 @@ public class ServiceEventListener implements Runnable {
             if (thread != null) {
                 stopped = true;
                 thread.interrupt();
-                realListener.clearListeners();
+                messageListener.clearListeners();
                 tms.close();
                 thread = null;
                 tms = null;
@@ -73,14 +83,22 @@ public class ServiceEventListener implements Runnable {
     }
     
     public void addListener(String eventType, ServiceEventHandler listener) {
-        realListener.addListener(eventType, listener);
+        messageListener.addListener(eventType, listener);
     }
     
     public void removeListener(ServiceEventHandler listener) {
-        realListener.removeListener(listener);
+        messageListener.removeListener(listener);
     }
     
     
+   public ServiceEventMessageListener getMessageListener() {
+        return messageListener;
+    }
+
+    public void setRealListener(ServiceEventMessageListener realListener) {
+        this.messageListener = realListener;
+    }
+
    /* Listens for messages on the topic.  When a message comes in, the method
     * calls notifyListener 
     */
@@ -99,7 +117,7 @@ public class ServiceEventListener implements Runnable {
                 logger.error("Error reading message from topic.", e);
             }
 
-            realListener.onMessage(message);
+            messageListener.onMessage(message);
         }
         logger.error("Too many errors in ServiceEventListener, giving up connections.");
     }
