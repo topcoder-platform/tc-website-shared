@@ -5,8 +5,6 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -19,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import com.topcoder.io.serialization.basictype.BasicTypeDataInput;
+import com.topcoder.io.serialization.basictype.BasicTypeDataOutput;
 import com.topcoder.shared.netCommon.CSReader;
 import com.topcoder.shared.netCommon.CSWriter;
 import com.topcoder.shared.netCommon.messages.spectator.RequestComponentRoundInfo;
@@ -249,7 +249,7 @@ public class MessageUtil {
 		private int id = 0;
 		private StringBuffer buf = new StringBuffer(200);
 		
-		public void setDataOutput(DataOutput output) {
+		public void setDataOutput(BasicTypeDataOutput output) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -339,6 +339,10 @@ public class MessageUtil {
         public void writeCollection(Collection collection) throws IOException {
             throw new UnsupportedOperationException();            
         }
+        
+        public void writeEncrypt(Object object) throws IOException {
+            throw new UnsupportedOperationException();            
+        }
 	}
 	
 	private static class QueryReader implements CSReader
@@ -366,8 +370,16 @@ public class MessageUtil {
 			}
 			return strings[idx++];
 		}
+
+        public void setMemoryUsageLimit(long limit) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void resetMemoryUsage() {
+            throw new UnsupportedOperationException();
+        }
 		
-		public void setDataInput(DataInput input) {
+		public void setDataInput(BasicTypeDataInput input) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -450,6 +462,9 @@ public class MessageUtil {
             throw new UnsupportedOperationException();
         }
         public Collection readCollection(Collection collection) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+        public Object readEncrypt() throws IOException {
             throw new UnsupportedOperationException();
         }
 	}

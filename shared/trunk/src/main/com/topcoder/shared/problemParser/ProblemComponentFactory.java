@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) - 2012 TopCoder Inc., All Rights Reserved.
+ */
 package com.topcoder.shared.problemParser;
 
 import java.io.IOException;
@@ -30,8 +33,23 @@ import com.topcoder.shared.util.logging.Logger;
  * This factory does all of the work of parsing an XML description of a problem statement and constructing
  * an appropriate instance of the <code>ProblemComponent</code> class.  Uses xerces2-j for parsing.
  *
+ * <p>
+ * Version 1.1 (TC Competition Engine Code Execution Time Issue) changes:
+ *  <ul>
+ *      <li>Update {@link #buildFromXML(Reader, boolean)} method to populate the execution time limit.</li>
+ *  </ul>
+ * </p>
+ * 
+ * <p>
+ * Version 1.2 (TC Competition Engine - Code Compilation Issues) changes:
+ *  <ul>
+ *      <li>Update {@link #buildFromXML(Reader, boolean)} method to populate the compile time limit.</li>
+ *  </ul>
+ * </p>
+ * 
  * @see ProblemComponent
- * @author Logan Hanks
+ * @author Logan Hanks, TCSASSEMBER
+ * @version 1.2
  */
 public class ProblemComponentFactory
     implements ErrorHandler
@@ -104,6 +122,13 @@ public class ProblemComponentFactory
                 // No need to verify if it is an integer, since the schema enforced it.
                 stmt.setCodeLengthLimit(Integer.parseInt(root.getAttributes().getNamedItem("code_length_limit").getNodeValue()));
             }
+            if (root.hasAttributes() && root.getAttributes().getNamedItem("execution_time_limit") != null) {
+                stmt.setExecutionTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("execution_time_limit").getNodeValue()));
+            }
+            if (root.hasAttributes() && root.getAttributes().getNamedItem("compile_time_limit") != null) {
+                stmt.setCompileTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("compile_time_limit").getNodeValue()));
+            }
+            
             sections = root.getChildNodes();
             checkTypes(root);
             if(!stmt.isValid()) {
