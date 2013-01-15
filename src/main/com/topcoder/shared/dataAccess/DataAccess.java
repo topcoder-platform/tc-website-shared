@@ -52,13 +52,12 @@ public class DataAccess implements DataAccessInt {
     public Map<String, ResultSetContainer> getData(RequestInt request) throws Exception {
         Connection conn = null;
         try {
-            log.debug(conn.getMetaData().getURL());
-
             if (dataSource!=null) {
                 conn = dataSource.getConnection();
             } else {
                 conn = DBMS.getConnection(dataSourceName);
             }
+            log.debug(conn.getMetaData().getURL());
             DataRetrieverInt dr = getDataRetriever(conn);
             return dr.executeCommand(request.getProperties());
         } catch (Exception e) {
