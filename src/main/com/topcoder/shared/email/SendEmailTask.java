@@ -377,8 +377,6 @@ public class SendEmailTask extends EmailTask implements Runnable {
         RequestInt dataRequest = new Request(m);
         DataAccessInt dai = new DataAccess(new InformixSimpleDataSource(DBMS.INFORMIX_CONNECT_STRING));
 
-        log.info("INFORMIX_CONNECT_STRING = " + DBMS.INFORMIX_CONNECT_STRING);
-
         try {
             listMap = dai.getData(dataRequest);
         } catch (Exception ignore) {
