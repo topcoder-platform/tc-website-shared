@@ -46,7 +46,7 @@ import com.topcoder.shared.util.logging.Logger;
  *      <li>Update {@link #buildFromXML(Reader, boolean)} method to populate the compile time limit.</li>
  *  </ul>
  * </p>
- *
+ * 
  * @see ProblemComponent
  * @author Logan Hanks, TCSASSEMBER
  * @version 1.2
@@ -594,27 +594,6 @@ public class ProblemComponentFactory
         types.put("int[]", t_aint);
         types.put("long", t_long);
         types.put("Matrix2D", t_matrix2d);
-
-        FileReader reader = new FileReader(args[0]);
-
-        ProblemComponentFactory factory = new ProblemComponentFactory();
-        ProblemComponent stmt = factory.buildFromXML(reader, true);
-        ArrayList messages = stmt.getMessages();
-
-        for(int i = 0; i < messages.size(); i++)
-            ((ProblemMessage)messages.get(i)).log(factory.trace);
-
-        if(stmt.isValid()) {
-            System.out.println("XML:\n\n" + stmt.toXML());
-//            System.out.println("\nHTML (Java):\n\n" + stmt.toHTML(new JavaLanguage()));
-//            System.out.println("\nHTML (C++):\n\n" + stmt.toHTML(new CPPLanguage()));
-        } else
-            System.out.println("Problem statement not valid!");
-    }
-*/
-}
-
-    types.put("Matrix2D", t_matrix2d);
 
         FileReader reader = new FileReader(args[0]);
 
