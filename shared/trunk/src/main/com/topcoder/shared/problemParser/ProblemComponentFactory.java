@@ -1,5 +1,5 @@
 /*
- * Copyright (C) - 2012 TopCoder Inc., All Rights Reserved.
+ * Copyright (C) 2012 - 2013 TopCoder Inc., All Rights Reserved.
  */
 package com.topcoder.shared.problemParser;
 
@@ -46,10 +46,18 @@ import com.topcoder.shared.util.logging.Logger;
  *      <li>Update {@link #buildFromXML(Reader, boolean)} method to populate the compile time limit.</li>
  *  </ul>
  * </p>
- * 
+ *
+ * <p>
+ * Changes in version 1.3 (TC Competition Engine - CPP Language Upgrade And Customization Support v1.0):
+ * <ol>
+ * 	    <li>Update {@link #buildFromXML(Reader, boolean)} method for the gcc build command and approved path.</li>
+ * 	    <li>Add {@link #GCC_BUILD_COMMAND} field.</li>
+ * 	    <li>Add {@link #CPP_APPROVED_PATH} field.</li>
+ * </ol>
+ * </p>
  * @see ProblemComponent
  * @author Logan Hanks, TCSASSEMBER
- * @version 1.2
+ * @version 1.3
  */
 public class ProblemComponentFactory
     implements ErrorHandler
@@ -79,6 +87,14 @@ public class ProblemComponentFactory
     static final String SIGNATURE_PARAM_NAME = "name";
     static final String MEM_LIMIT = "memlimit";
     static final String ROUND_TYPE = "roundType";
+    /**
+     * the gcc build command key.
+     */
+    static final String GCC_BUILD_COMMAND = "gcc_build_command";
+    /**
+     * the cpp approved path.
+     */
+    static final String CPP_APPROVED_PATH = "cpp_approved_path";
 
     Node doc, root;
     NodeList sections;
@@ -129,6 +145,14 @@ public class ProblemComponentFactory
                 stmt.setCompileTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("compile_time_limit").getNodeValue()));
             }
             
+            //set the gcc build command
+            if (root.hasAttributes() && root.getAttributes().getNamedItem(GCC_BUILD_COMMAND) != null) {
+                stmt.setGccBuildCommand(root.getAttributes().getNamedItem(GCC_BUILD_COMMAND).getNodeValue());
+            }
+            //set the cpp approved path
+            if (root.hasAttributes() && root.getAttributes().getNamedItem(CPP_APPROVED_PATH) != null) {
+                stmt.setCppApprovedPath(root.getAttributes().getNamedItem(CPP_APPROVED_PATH).getNodeValue());
+            }
             sections = root.getChildNodes();
             checkTypes(root);
             if(!stmt.isValid()) {
@@ -533,7 +557,6 @@ public class ProblemComponentFactory
             }
         }
     }
-
 /*
     static public void main(String[] args)
         throws Exception
