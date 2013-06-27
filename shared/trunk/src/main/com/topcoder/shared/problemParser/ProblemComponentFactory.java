@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 - 2013 TopCoder Inc., All Rights Reserved.
+ * Copyright (C) - 2013 TopCoder Inc., All Rights Reserved.
  */
 package com.topcoder.shared.problemParser;
 
@@ -55,9 +55,18 @@ import com.topcoder.shared.util.logging.Logger;
  * 	    <li>Add {@link #CPP_APPROVED_PATH} field.</li>
  * </ol>
  * </p>
+ *
+ * <p>
+ * Changes in version 1.4 (TC Competition Engine - Python Language Upgrade And Customization Support v1.0):
+ * <ol>
+ *      <li>Update {@link #buildFromXML(Reader, boolean)} method.</li>
+ *      <li>Add {@link #PYTHON_COMMAND} field.</li>
+ *      <li>Add {@link #PYTHON_APPROVED_PATH} field.</li>
+ * </ol>
+ * </p>
  * @see ProblemComponent
- * @author Logan Hanks, TCSASSEMBER
- * @version 1.3
+ * @author Logan Hanks, savon_cn
+ * @version 1.4
  */
 public class ProblemComponentFactory
     implements ErrorHandler
@@ -96,6 +105,16 @@ public class ProblemComponentFactory
      */
     static final String CPP_APPROVED_PATH = "cpp_approved_path";
 
+    /**
+     * the python command key.
+     * @since 1.4
+     */
+    static final String PYTHON_COMMAND = "python_command";
+    /**
+     * the python approved path.
+     * @since 1.4
+     */
+    static final String PYTHON_APPROVED_PATH = "python_approved_path";
     Node doc, root;
     NodeList sections;
     ProblemComponent stmt;
@@ -153,6 +172,16 @@ public class ProblemComponentFactory
             if (root.hasAttributes() && root.getAttributes().getNamedItem(CPP_APPROVED_PATH) != null) {
                 stmt.setCppApprovedPath(root.getAttributes().getNamedItem(CPP_APPROVED_PATH).getNodeValue());
             }
+            
+            //set the python command
+            if (root.hasAttributes() && root.getAttributes().getNamedItem(PYTHON_COMMAND) != null) {
+                stmt.setPythonCommand(root.getAttributes().getNamedItem(PYTHON_COMMAND).getNodeValue());
+            }
+            //set the python approved path
+            if (root.hasAttributes() && root.getAttributes().getNamedItem(PYTHON_APPROVED_PATH) != null) {
+                stmt.setPythonApprovedPath(root.getAttributes().getNamedItem(PYTHON_APPROVED_PATH).getNodeValue());
+            }
+            
             sections = root.getChildNodes();
             checkTypes(root);
             if(!stmt.isValid()) {
