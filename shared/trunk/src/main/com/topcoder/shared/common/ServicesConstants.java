@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) - 2013 TopCoder Inc., All Rights Reserved.
+ */
 package com.topcoder.shared.common;
 
 //import com.topcoder.server.common.ApplicationServer;
@@ -13,8 +16,27 @@ import java.io.File;
 /**
  * Contains constant variables for the services package.
  *
- * @author Alex Roman
- * @version 1.0
+ * <p>
+ * Changes in version 1.0 (TC Competition Engine - R Language Compilation Support):
+ * <ol>
+ * <li>Added {@link #R_COMPILER} field.</li>
+ * </ol>
+ * </p>
+ *
+
+ * <p>
+ * Changes in version 1.1 (TC Competition Engine - R Language Test Support):
+ * <ol>
+ *      <li>Added {@link #R_C_HELPER} field.</li>
+ *      <li>Added {@link #LONG_CONTEST_R_EXPOSED_WRAPPER} field.</li>
+ *      <li>Added {@link #LONG_CONTEST_R_USER_WRAPPER} field.</li>
+ *      <li>Added {@link #R_SUBMISSIONS} field.</li>
+ *      <li>Added {@link #R_RUNNER} field.</li>
+ *      <li>Added {@link #SANDBOX2_LONG_R_CONFIG} field.</li>
+ * </ol>
+ * </p>
+ * @author Alex Roman, TCSASEMBLER
+ * @version 1.1
  */
 public class ServicesConstants {
 
@@ -35,7 +57,10 @@ public class ServicesConstants {
     /** base directory of java problem user submissions */
     public static final String JAVA_SUBMISSIONS = BASE + "/submissions/java/";
     public static final String PYTHON_SUBMISSIONS = BASE + "/submissions/python/";
-
+    /**
+     * <p>the R submission.</p>
+     */
+    public static final String R_SUBMISSIONS = BASE + "/submissions/r/";
     public static final String PYTHON_COMPILER = BASE + "/src/python/compiler.py";
 
     public static final String CSHARP_SUBMISSIONS = BASE + "/submissions/csharp/";
@@ -63,13 +88,36 @@ public class ServicesConstants {
     public static final String LONG_CONTEST_DOTNET_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.cs";
     public static final String LONG_CONTEST_PYTHON_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.py";
 
+    /**
+     * <p>the R language long contest user wrapper.</p>
+     */
+    public static final String LONG_CONTEST_R_USER_WRAPPER = BASE + "/wrapper/lcontest/LongContestUserWrapper.R";
+    
+    /**
+     * the c helper used for R language testing.
+     */
+    public static final String R_C_HELPER = BASE + "/src/r/chelper.so";
+    
     public static final String LONG_CONTEST_DOTNET_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.cs";
     public static final String LONG_CONTEST_EXOPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.java";
     public static final String LONG_CONTEST_CPP_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.cpp";
     public static final String LONG_CONTEST_PYTHON_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.py";
 
+    /**
+     * the R language long contest exposed wrapper.
+     */
+    public static final String LONG_CONTEST_R_EXPOSED_WRAPPER = BASE + "/wrapper/lcontest/LongContestExposedWrapper.R";
+    
     public static final String PYTHON_WRAPPER = BASE + "/wrapper/srm/PythonUserWrapper.py";
 
+    /**
+     * <p> the R language compiler assistant.</p>
+     */
+    public static final String R_COMPILER = BASE + "/src/r/Compile.R";
+    /**
+     * <p> the R language runner script.</p>
+     */
+    public static final String R_RUNNER = BASE + "/src/r/Run.R";
     /** argparser.h C++ header file */
     public static final String CPP_INCLUDE_FOLDER = BASE + "/cpp/"; 
     public static final String WRAPPER = "wrapper.cc";
@@ -88,6 +136,11 @@ public class ServicesConstants {
 
     public static final String SANDBOX2_PYTHON_CONFIG = BASE + "/cpp/sandbox2/config_files/python.config";
 
+    /**
+     * <p> the R language sandbox2 running configuration file.</p>
+     */
+    public static final String SANDBOX2_LONG_R_CONFIG = BASE + "/cpp/sandbox2/config_files/long_r.config";
+    
     /** The directory path to the timeout application */
     public static final String ALARM = BASE + "/cpp/timeout/timeout";
 
