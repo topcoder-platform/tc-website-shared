@@ -35,8 +35,16 @@ import java.sql.ResultSet;
  *   </ol>
  * </p>
  *
+ * <p>
+ *   Version 1.4 (TCCC-5802  https://apps.topcoder.com/bugs/browse/TCCC-5802) Change notes:
+ *   <ol>
+ *     <li>Add SSO_COOKIE_NAME and SSO_HASH_SECRET.</li>
+ *     <li>Add Auth0 related properties</li>
+ *   </ol>
+ * </p>
+ *
  * @author Steve Burrows, pulky
- * @version 1.3
+ * @version 1.4
  */
 public class ApplicationServer {
     private static Logger log = Logger.getLogger(ApplicationServer.class);
@@ -163,6 +171,50 @@ public class ApplicationServer {
      */
     public final static String PIPELINE_SERVICE_FACADE_PROTOCOL =
         bundle.getProperty("PIPELINE_SERVICE_FACADE_PROTOCOL", "other");
+
+    /**
+     * <p>The name for SSO cookie.</p>
+     * @since 1.4
+     */
+    public final static String SSO_COOKIE_KEY =
+        bundle.getProperty("SSO_COOKIE_KEY", "tcsso");
+
+    /**
+     * <p>
+     * Just some random junk no one else knows, for SSO cookie hash purpose.
+     * </p>
+     * @since 1.4
+     */
+    public final static String SSO_HASH_SECRET =
+        bundle.getProperty("SSO_HASH_SECRET", "");
+
+
+    /**
+     * <p>A <code>String</code> providing the client id in auth0.com to enable login with 
+     * social accounts like Google, Facebook.</p>
+     *
+     * @since 1.4
+     */
+    public final static String CLIENT_ID_AUTH0 =
+        bundle.getProperty("CLIENT_ID_AUTH0", "CMaBuwSnY0Vu68PLrWatvvu3iIiGPh7t");
+    
+
+    /**
+     * <p>The callback url of the Auth0 account.</p>
+     * 
+     * @since 1.4
+     */
+    public final static String REDIRECT_URL_AUTH0 = 
+        bundle.getProperty("REDIRECT_URL_AUTH0", "/reg2/callback.action");
+
+    /**
+     * <p>The server name of tc_reg_revamp host.</p>
+     * 
+     *  @since 1.4
+     */
+    public final static String REG_SERVER_NAME =
+        bundle.getProperty("REG_SERVER_NAME", "tc.cloud.topcoder.com");
+
 
     public static void close(ResultSet rs) {
         if (rs != null) {
