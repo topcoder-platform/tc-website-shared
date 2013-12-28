@@ -215,6 +215,13 @@ public class ApplicationServer {
     public final static String REG_SERVER_NAME =
         bundle.getProperty("REG_SERVER_NAME", "tc.cloud.topcoder.com");
 
+    /**
+     * <p>The auth0 domain.</p>
+     * 
+     *  @since 1.4
+     */
+    public final static String DOMAIN_AUTH0 =
+        bundle.getProperty("DOMAIN_AUTH0", "topcoder.auth0.com");
 
     public static void close(ResultSet rs) {
         if (rs != null) {
