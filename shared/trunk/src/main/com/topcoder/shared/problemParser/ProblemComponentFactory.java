@@ -64,17 +64,9 @@ import com.topcoder.shared.util.logging.Logger;
  *      <li>Add {@link #PYTHON_APPROVED_PATH} field.</li>
  * </ol>
  * </p>
- *
- * <p>
- * Changes in version 1.5 (TopCoder Competition Engine Improvement Series 3 v1.0):
- * <ol>
- *      <li>Update {@link #parseMemLimit()} method.</li>
- *      <li>Update {@link #buildFromXML(Reader reader, boolean unsafe)} method.</li>
- * </ol>
- * </p>
  * @see ProblemComponent
  * @author Logan Hanks, savon_cn
- * @version 1.5
+ * @version 1.4
  */
 public class ProblemComponentFactory
     implements ErrorHandler
@@ -166,28 +158,28 @@ public class ProblemComponentFactory
                 stmt.setCodeLengthLimit(Integer.parseInt(root.getAttributes().getNamedItem("code_length_limit").getNodeValue()));
             }
             if (root.hasAttributes() && root.getAttributes().getNamedItem("execution_time_limit") != null) {
-                stmt.getProblemCustomSettings().setExecutionTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("execution_time_limit").getNodeValue()));
+                stmt.setExecutionTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("execution_time_limit").getNodeValue()));
             }
             if (root.hasAttributes() && root.getAttributes().getNamedItem("compile_time_limit") != null) {
-                stmt.getProblemCustomSettings().setCompileTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("compile_time_limit").getNodeValue()));
+                stmt.setCompileTimeLimit(Integer.parseInt(root.getAttributes().getNamedItem("compile_time_limit").getNodeValue()));
             }
             
             //set the gcc build command
             if (root.hasAttributes() && root.getAttributes().getNamedItem(GCC_BUILD_COMMAND) != null) {
-                stmt.getProblemCustomSettings().setGccBuildCommand(root.getAttributes().getNamedItem(GCC_BUILD_COMMAND).getNodeValue());
+                stmt.setGccBuildCommand(root.getAttributes().getNamedItem(GCC_BUILD_COMMAND).getNodeValue());
             }
             //set the cpp approved path
             if (root.hasAttributes() && root.getAttributes().getNamedItem(CPP_APPROVED_PATH) != null) {
-                stmt.getProblemCustomSettings().setCppApprovedPath(root.getAttributes().getNamedItem(CPP_APPROVED_PATH).getNodeValue());
+                stmt.setCppApprovedPath(root.getAttributes().getNamedItem(CPP_APPROVED_PATH).getNodeValue());
             }
             
             //set the python command
             if (root.hasAttributes() && root.getAttributes().getNamedItem(PYTHON_COMMAND) != null) {
-                stmt.getProblemCustomSettings().setPythonCommand(root.getAttributes().getNamedItem(PYTHON_COMMAND).getNodeValue());
+                stmt.setPythonCommand(root.getAttributes().getNamedItem(PYTHON_COMMAND).getNodeValue());
             }
             //set the python approved path
             if (root.hasAttributes() && root.getAttributes().getNamedItem(PYTHON_APPROVED_PATH) != null) {
-                stmt.getProblemCustomSettings().setPythonApprovedPath(root.getAttributes().getNamedItem(PYTHON_APPROVED_PATH).getNodeValue());
+                stmt.setPythonApprovedPath(root.getAttributes().getNamedItem(PYTHON_APPROVED_PATH).getNodeValue());
             }
             
             sections = root.getChildNodes();
@@ -565,9 +557,6 @@ public class ProblemComponentFactory
         stmt.setTestCases(testCases);
     }
     
-    /**
-     * parse memory limit.
-     */
     void parseMemLimit()
     {
         Node node = getChildByName(sections, MEM_LIMIT);
@@ -575,7 +564,7 @@ public class ProblemComponentFactory
             try {
                 int memLimit = Integer.parseInt(getText(node));
                 removeTextChildren(node);
-                stmt.getProblemCustomSettings().setMemLimit(memLimit);
+                stmt.setMemLimitMB(memLimit);
             } catch (Exception e) {
                 stmt.addMessage(new ProblemMessage(ProblemMessage.ERROR, "Non-numeric memory limit: "+getText(node)));
                 stmt.setValid(false);
