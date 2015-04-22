@@ -5,8 +5,13 @@ package com.topcoder.shared.util.dwload;
  *
  * TCLoadPayments loads payments information to the DW.
  *
- * @author pulky
- * @version 1.0.1
+ * <p>
+ *  Version 1.1 (TopCoder Data Warehouse Loading Update 1)
+ *  - Adds new column jira_ticket_id to topcoder_dw:payment and loads data for this new column
+ * </p>
+ *
+ * @author pulky, Veve
+ * @version 1.1
  */
 
 import com.topcoder.shared.util.DBMS;
@@ -222,6 +227,8 @@ public class TCLoadPayments extends TCLoad {
             }
             log.info("total old payment deleted = " + i);
 
+            loadJiraTicketsFirstTime();
+
             if (paymentsFound) {
                 //StringBuffer charity = new StringBuffer(100);
 
@@ -233,7 +240,7 @@ public class TCLoadPayments extends TCLoad {
                 query.append("component_contest_id, component_project_id, studio_contest_id, ");
                 query.append("digital_run_stage_id, digital_run_season_id, parent_payment_id, ");
                 query.append("pd.date_paid, sl.payment_status_id, sl.payment_status_desc, charity_ind, pd.client, pd.date_modified, ");
-                query.append("digital_run_track_id, installment_number, total_amount ");
+                query.append("digital_run_track_id, installment_number, total_amount, pd.jira_issue_id ");
                 query.append("from payment_detail pd, payment p, payment_type_lu ptl, payment_status_lu sl ");
                 query.append("where pd.payment_detail_id = p.most_recent_detail_id ");
                 query.append("and pd.payment_type_id = ptl.payment_type_id ");
@@ -251,8 +258,8 @@ public class TCLoadPayments extends TCLoad {
                 query.append("payment_type_desc, reference_id, parent_payment_id, charity_ind, ");
                 query.append("show_in_profile_ind, show_details_ind, payment_status_id, ");
                 query.append("payment_status_desc, client, modified_calendar_id, modified_time_id, ");
-                query.append("installment_number) ");
-                query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+                query.append("installment_number, jira_ticket_id) ");
+                query.append("values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                 psInsPayment = prepareStatement(query.toString(), TARGET_DB);
 
                 query = new StringBuffer(100);
@@ -302,6 +309,12 @@ public class TCLoadPayments extends TCLoad {
                     psInsPayment.setLong(13, lookupCalendarId(rs.getTimestamp("date_modified"), TARGET_DB));
                     psInsPayment.setLong(14, lookupTimeId(rs.getTimestamp("date_modified"), TARGET_DB));
                     psInsPayment.setInt(15, rs.getInt("installment_number"));
+
+                    if (rs.getObject("jira_issue_id") != null) {
+                        psInsPayment.setString(16, rs.getString("jira_issue_id"));
+                    } else {
+                        psInsPayment.setNull(16, Types.VARCHAR);
+                    }
 
                     log.debug("inserting payment_id = " + paymentId);
 
@@ -358,6 +371,103 @@ public class TCLoadPayments extends TCLoad {
             DBMS.close(psSelModified);
         }
     }
+
+    /**
+     * Load new columns (issue_type, payment_status) data for the existing jira_issue records in tcs_dw.
+     *
+     * @throws SQLException if any error occurs.
+     * @since 1.1
+     */
+    private void loadJiraTicketsFirstTime() throws Exception {
+        PreparedStatement countJiraTicketIdColumnPS = null;
+        PreparedStatement selectExistingPaymentToUpdatePS = null;
+        PreparedStatement selectJiraTicketDataPS = null;
+        PreparedStatement updateJiraTicketIDPS = null;
+
+
+        ResultSet rs = null;
+        ResultSet jiraTicketIdRS = null;
+
+        StringBuffer query = null;
+        int totalCount = 0;
+        long paymentId = -1;
+
+
+        try {
+
+            query = new StringBuffer(100);
+            // check if there existing any records in topcoder_dw:payment
+            query.append("SELECT count(*) from payment WHERE jira_ticket_id IS NOT NULL");
+            countJiraTicketIdColumnPS = prepareStatement(query.toString(), TARGET_DB);
+
+            rs = countJiraTicketIdColumnPS.executeQuery();
+            rs.next();
+
+            boolean firstRun = (rs.getInt(1) == 0);
+
+            if(firstRun) {
+
+                log.info("Start to do the first full load of jira_ticket_id for the existing DW payment records");
+
+                // load jira_ticket_id for the existing payment records in topcoder_dw
+                query.delete(0, query.length());
+                query.append("SELECT payment_id FROM payment");
+                selectExistingPaymentToUpdatePS = prepareStatement(query.toString(), TARGET_DB);
+                rs = selectExistingPaymentToUpdatePS.executeQuery();
+
+                // query to get jira_ticket_id data to update from payment_detail
+                query.delete(0, query.length());
+                query.append("SELECT pd.jira_issue_id FROM payment_detail pd, payment p ");
+                query.append("WHERE pd.payment_detail_id = p.most_recent_detail_id AND p.payment_id = ? ");
+                selectJiraTicketDataPS = prepareStatement(query.toString(), SOURCE_DB);
+
+                // query to update the existing payment records in topcoder_dw
+                query.delete(0, query.length());
+                query.append("UPDATE payment SET jira_ticket_id = ? WHERE payment_id = ?");
+                updateJiraTicketIDPS = prepareStatement(query.toString(), TARGET_DB);
+
+                while (rs.next()) {
+                    paymentId = rs.getLong(1);
+
+                    selectJiraTicketDataPS.clearParameters();
+                    selectJiraTicketDataPS.setLong(1, paymentId);
+                    jiraTicketIdRS = selectJiraTicketDataPS.executeQuery();
+                    jiraTicketIdRS.next();
+
+                    // only update if the jira_ticket_id value is not null
+                    if (jiraTicketIdRS.getObject(1) != null) {
+                        String jiraTicketId = jiraTicketIdRS.getString(1);
+
+                        updateJiraTicketIDPS.clearParameters();
+                        updateJiraTicketIDPS.setString(1, jiraTicketId);
+                        updateJiraTicketIDPS.setLong(2, paymentId);
+
+                        int countUpdated = updateJiraTicketIDPS.executeUpdate();
+
+                        if (countUpdated == 1) {
+                            log.info(String.format("Update %s with jira_ticket_id:%s", paymentId, jiraTicketId));
+                            totalCount++;
+                        }
+                    }
+
+                }
+            }
+
+            log.info("total payment records updated with jira ticket ID = " + totalCount);
+        } catch (SQLException sqle) {
+            DBMS.printSqlException(true, sqle);
+            throw new Exception("Full Load of jira ticket data for existing records in 'payment' table failed.\n"
+                    + "payment_id = " + paymentId + "\n" + sqle.getMessage());
+        } finally {
+            DBMS.close(jiraTicketIdRS);
+            DBMS.close(rs);
+            DBMS.close(countJiraTicketIdColumnPS);
+            DBMS.close(selectExistingPaymentToUpdatePS);
+            DBMS.close(selectJiraTicketDataPS);
+            DBMS.close(updateJiraTicketIDPS);
+        }
+    }
+
 
     private long selectReferenceId(int paymentReferenceId, long algorithmRoundId, long algorithmProblemId,
                                    long componentContestId, long componentProjectId, long studioContestId, long digitalRunStageId,
