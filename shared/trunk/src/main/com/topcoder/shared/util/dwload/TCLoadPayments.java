@@ -432,7 +432,9 @@ public class TCLoadPayments extends TCLoad {
                     selectJiraTicketDataPS.clearParameters();
                     selectJiraTicketDataPS.setLong(1, paymentId);
                     jiraTicketIdRS = selectJiraTicketDataPS.executeQuery();
-                    jiraTicketIdRS.next();
+                    boolean hasNext = jiraTicketIdRS.next();
+
+                    if(!hasNext) continue;
 
                     // only update if the jira_ticket_id value is not null
                     if (jiraTicketIdRS.getObject(1) != null) {
