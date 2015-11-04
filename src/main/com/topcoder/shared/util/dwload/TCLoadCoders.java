@@ -106,7 +106,8 @@ public class TCLoadCoders extends TCLoad {
 
             loadEventRegistration();
             
-            loadUserNotifications();
+            // this will cause java.sql.SQLException: Long transaction aborted
+            //loadUserNotifications();
 
             clearCache(coders);
 
