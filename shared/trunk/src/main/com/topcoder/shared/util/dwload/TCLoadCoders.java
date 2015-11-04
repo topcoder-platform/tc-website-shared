@@ -343,7 +343,7 @@ public class TCLoadCoders extends TCLoad {
             query = new StringBuffer(100);
             query.append("SELECT c.coder_id ");                  // 1
             query.append("       ,nvl(a.state_code, '') as state_code ");               // 2
-            query.append("       ,nvl(a.country_code, '') as  country_code");             // 3
+            query.append("       ,decode(a.country_code, null, '', lpad(trim(a.country_code), 3, '0')) as country_code "); // 3
             query.append("       ,u.first_name ");               // 4
             query.append("       ,u.last_name ");                // 5
             query.append("       ,nvl(a.address1, '') as  address1");                 // 6
@@ -359,7 +359,7 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,u.handle ");                   // 16
             query.append("       ,u.status ");                   // 17
             query.append("       ,e.address ");                  // 18
-            query.append("       ,c.comp_country_code");         // 19
+            query.append("       ,decode(c.comp_country_code, null, '', lpad(trim(c.comp_country_code), 3, '0')) as comp_country_code "); // 19
             query.append("       ,u.last_site_hit_date");        // 20
             query.append("       ,u.reg_source");               // 21
             query.append("       ,u.utm_source");               // 22
@@ -487,40 +487,68 @@ public class TCLoadCoders extends TCLoad {
                 psSel2.setInt(1, coder_id);
                 rs2 = psSel2.executeQuery();
 
+                String state_code = rs.getString("state_code");
+                String country_code = rs.getString("country_code");
+                String first_name = rs.getString("first_name");
+                String last_name = rs.getString("last_name");
+                String address1 = rs.getString("address1");
+                String address2 = rs.getString("address2");
+                String city = rs.getString("city");
+                String zip = rs.getString("zip");
+                String middle_name = rs.getString("middle_name");
+                String activation_code = rs.getString("activation_code");
+                java.sql.Timestamp member_since = rs.getTimestamp("member_since");
+                String quote = rs.getString("quote");
+                int language_id = rs.getInt("language_id");
+                int coder_type_id = rs.getInt("coder_type_id");
+                String handle = rs.getString("handle");
+                String status = rs.getString("status");
+                String address = rs.getString("address");
+                String comp_country_code = rs.getString("comp_country_code");
+                java.sql.Timestamp last_site_hit_date = rs.getTimestamp("last_site_hit_date");
+                String reg_source = rs.getString("reg_source");
+                String utm_source = rs.getString("utm_source");
+                String utm_medium = rs.getString("utm_medium");
+                String utm_campaign = rs.getString("utm_campaign");
+                java.sql.Timestamp create_date = rs.getTimestamp("create_date");
+
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
                 if (rs2.next()) {
                     psUpd.clearParameters();
-                    psUpd.setString(1, rs.getString("state_code"));
-                    psUpd.setString(2, rs.getString("country_code"));
-                    psUpd.setString(3, rs.getString("first_name"));
-                    psUpd.setString(4, rs.getString("last_name"));
-                    psUpd.setString(5, rs.getString("address1"));
-                    psUpd.setString(6, rs.getString("address2"));
-                    psUpd.setString(7, rs.getString("city"));
-                    psUpd.setString(8, rs.getString("zip"));
-                    psUpd.setString(9, rs.getString("middle_name"));
-                    psUpd.setString(10, rs.getString("activation_code"));
-                    psUpd.setTimestamp(11, rs.getTimestamp("member_since"));
-                    psUpd.setString(12, rs.getString("quote"));
-                    psUpd.setInt(13, rs.getInt("language_id"));
-                    psUpd.setInt(14, rs.getInt("coder_type_id"));
-                    psUpd.setString(15, rs.getString("handle"));
-                    psUpd.setString(16, rs.getString("status"));
-                    psUpd.setString(17, rs.getString("address"));
-                    psUpd.setString(18, rs.getString("comp_country_code"));
-                    psUpd.setTimestamp(19, rs.getTimestamp("last_site_hit_date"));
-                    psUpd.setString(20, rs.getString("reg_source"));
-                    psUpd.setString(21, rs.getString("utm_source"));
-                    psUpd.setString(22, rs.getString("utm_medium"));
-                    psUpd.setString(23, rs.getString("utm_campaign"));
-                    psUpd.setTimestamp(24, rs.getTimestamp("create_date"));
-
-
+                    psUpd.setString(1, state_code);
+                    psUpd.setString(2, country_code);
+                    psUpd.setString(3, first_name);
+                    psUpd.setString(4, last_name);
+                    psUpd.setString(5, address1);
+                    psUpd.setString(6, address2);
+                    psUpd.setString(7, city);
+                    psUpd.setString(8, zip);
+                    psUpd.setString(9, middle_name);
+                    psUpd.setString(10, activation_code);
+                    psUpd.setTimestamp(11, member_since);
+                    psUpd.setString(12, quote);
+                    psUpd.setInt(13, language_id);
+                    psUpd.setInt(14, coder_type_id);
+                    psUpd.setString(15, handle);
+                    psUpd.setString(16, status);
+                    psUpd.setString(17, address);
+                    psUpd.setString(18, comp_country_code);
+                    psUpd.setTimestamp(19, last_site_hit_date);
+                    psUpd.setString(20, reg_source);
+                    psUpd.setString(21, utm_source);
+                    psUpd.setString(22, utm_medium);
+                    psUpd.setString(23, utm_campaign);
+                    psUpd.setTimestamp(24, create_date);
                     psUpd.setLong(25, coder_id);
 
-                    // Now, execute the insert of the new row
-                    retVal = psUpd.executeUpdate();
+                    // Now, execute the update of the new row
+                    try {
+                        retVal = psUpd.executeUpdate();
+                    } catch(SQLException e) {
+                        log.error("Failed to load coder {coder_id:"+coder_id+", state_code:"+state_code+", country_code:"+country_code+", first_name:"+first_name+", last_name:"+last_name+", address1:"+address1+", address2:"+address2+", city:"+city+", zip:"+zip+", middle_name:"+middle_name+", activation_code:"+activation_code+", member_since:"+member_since+", quote:"+quote+", language_id:"+language_id+", coder_type_id:"+coder_type_id+", handle:"+handle+", status:"+status+", address:"+address+", comp_country_code:"+comp_country_code+", last_site_hit_date:"+last_site_hit_date+", reg_source:"+reg_source+", utm_source:"+utm_source+", utm_medium:"+utm_medium+", utm_campaign:"+utm_campaign+", create_date:"+create_date+"}");
+                        throw e;
+                    }
                     count = count + retVal;
                     if (retVal != 1) {
                         throw new SQLException("TCLoadCoders: Update for coder_id " +
@@ -530,34 +558,38 @@ public class TCLoadCoders extends TCLoad {
                 } else {
                     psIns.clearParameters();
                     psIns.setInt(1, coder_id);
-                    psIns.setString(2, rs.getString("state_code"));
-                    psIns.setString(3, rs.getString("country_code"));
-                    psIns.setString(4, rs.getString("first_name"));
-                    psIns.setString(5, rs.getString("last_name"));
-                    psIns.setString(6, rs.getString("address1"));
-                    psIns.setString(7, rs.getString("address2"));
-                    psIns.setString(8, rs.getString("city"));
-                    psIns.setString(9, rs.getString("zip"));
-                    psIns.setString(10, rs.getString("middle_name"));
-                    psIns.setString(11, rs.getString("activation_code"));
-                    psIns.setTimestamp(12, rs.getTimestamp("member_since"));
-                    psIns.setString(13, rs.getString("quote"));
-                    psIns.setInt(14, rs.getInt("language_id"));
-                    psIns.setInt(15, rs.getInt("coder_type_id"));
-                    psIns.setString(16, rs.getString("handle"));
-                    psIns.setString(17, rs.getString("status"));
-                    psIns.setString(18, rs.getString("address"));
-                    psIns.setString(19, rs.getString("comp_country_code"));
-                    psIns.setTimestamp(20, rs.getTimestamp("last_site_hit_date"));
-                    psIns.setString(21, rs.getString("reg_source"));
-                    psIns.setString(22, rs.getString("utm_source"));
-                    psIns.setString(23, rs.getString("utm_medium"));
-                    psIns.setString(24, rs.getString("utm_campaign"));
-                    psIns.setTimestamp(25, rs.getTimestamp("create_date"));
-
+                    psIns.setString(2, state_code);
+                    psIns.setString(3, country_code);
+                    psIns.setString(4, first_name);
+                    psIns.setString(5, last_name);
+                    psIns.setString(6, address1);
+                    psIns.setString(7, address2);
+                    psIns.setString(8, city);
+                    psIns.setString(9, zip);
+                    psIns.setString(10, middle_name);
+                    psIns.setString(11, activation_code);
+                    psIns.setTimestamp(12, member_since);
+                    psIns.setString(13, quote);
+                    psIns.setInt(14, language_id);
+                    psIns.setInt(15, coder_type_id);
+                    psIns.setString(16, handle);
+                    psIns.setString(17, status);
+                    psIns.setString(18, address);
+                    psIns.setString(19, comp_country_code);
+                    psIns.setTimestamp(20, last_site_hit_date);
+                    psIns.setString(21, reg_source);
+                    psIns.setString(22, utm_source);
+                    psIns.setString(23, utm_medium);
+                    psIns.setString(24, utm_campaign);
+                    psIns.setTimestamp(25, create_date);
 
                     // Now, execute the insert of the new row
-                    retVal = psIns.executeUpdate();
+                    try {
+                        retVal = psIns.executeUpdate();
+                    } catch(SQLException e) {
+                        log.error("Failed to load coder {coder_id:"+coder_id+", state_code:"+state_code+", country_code:"+country_code+", first_name:"+first_name+", last_name:"+last_name+", address1:"+address1+", address2:"+address2+", city:"+city+", zip:"+zip+", middle_name:"+middle_name+", activation_code:"+activation_code+", member_since:"+member_since+", quote:"+quote+", language_id:"+language_id+", coder_type_id:"+coder_type_id+", handle:"+handle+", status:"+status+", address:"+address+", comp_country_code:"+comp_country_code+", last_site_hit_date:"+last_site_hit_date+", reg_source:"+reg_source+", utm_source:"+utm_source+", utm_medium:"+utm_medium+", utm_campaign:"+utm_campaign+", create_date:"+create_date+"}");
+                        throw e;
+                    }
                     count = count + retVal;
                     if (retVal != 1) {
                         throw new SQLException("TCLoadCoders: Insert for coder_id " +
