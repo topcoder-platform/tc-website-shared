@@ -105,7 +105,7 @@ public class TCLoadCoders extends TCLoad {
             loadEvent();
 
             loadEventRegistration();
-            
+
             // this will cause java.sql.SQLException: Long transaction aborted
             //loadUserNotifications();
 
@@ -367,27 +367,43 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,u.utm_medium");               // 23
             query.append("       ,u.utm_campaign");             // 24
             query.append("       ,u.create_date");              // 25
+            query.append("       ,hp.phone_number as home_phone");            // 26
+            query.append("       ,wp.phone_number as work_phone");            // 27
+            query.append("       ,u.modify_date");              // 28
+            query.append("       ,img.image_id as image");              // 29
+            query.append("       ,u.handle_lower");              // 30
+            query.append("       ,u.last_login");              // 31
             query.append("  FROM coder c ");
             query.append("       ,user u ");
             query.append("       ,email e ");
             query.append("       ,outer (user_address_xref x ,address a) ");
+            query.append("       ,outer (phone hp) ");
+            query.append("       ,outer (phone wp) ");
+            query.append("       ,outer (informixoltp:coder_image_xref imgx, informixoltp:image img) ");
             query.append(" WHERE c.coder_id = u.user_id ");
             query.append("   AND u.user_id = e.user_id ");
             query.append("   and e.primary_ind = 1 ");
             query.append("   and a.address_id = x.address_id ");
             query.append("   and a.address_type_id = 2 ");
+            query.append("   and hp.user_id = u.user_id and hp.phone_type_id = 2 and hp.primary_ind = 1 ");
+            query.append("   and wp.user_id = u.user_id and wp.phone_type_id = 1 and wp.primary_ind = 1  ");
+            query.append("   and imgx.coder_id = u.user_id and imgx.image_id = img.image_id and img.image_type_id = 1 and imgx.display_flag = 1");
             query.append("   and x.user_id = u.user_id ");
-			query.append("  and u.user_id in ");
+            query.append("  and u.user_id in ");
             query.append("   ( ");
             query.append("     select c2.coder_id from coder c2 where c2.modify_date > ?   ");
             query.append("     union ");
             query.append("     select x2.user_id from address a2, user_address_xref x2 where a2.modify_date > ?  and a2.address_id = x2.address_id  ");
             query.append("     union ");
+            query.append("     select p2.user_id from phone p2 where p2.modify_date  > ?   ");
+            query.append("     union ");
+            query.append("     select imgx2.coder_id from image m2, coder_image_xref imgx2 where m2.modify_date  > ? and m2.image_id = imgx2.image_id  ");
+            query.append("     union ");
             query.append("     select e2.user_id from email e2 where e2.modify_date  > ?   ");
             query.append("     union ");
             query.append("     select u2.user_id from user u2 where u2.modify_date > ?   ");
             query.append("   ) ");
-           
+
       /*      query.append("   AND NOT EXISTS ");
             query.append("       (SELECT 'pops' ");
             query.append("          FROM user_group_xref ugx ");
@@ -428,11 +444,16 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,utm_source ");                // 22
             query.append("       ,utm_medium ");                // 23
             query.append("       ,utm_campaign ");              // 24
-            query.append("       ,create_date )");              // 25
-
+            query.append("       ,create_date ");              // 25
+            query.append("       ,home_phone ");               // 26
+            query.append("       ,work_phone ");               // 27
+            query.append("       ,modify_date ");              // 28
+            query.append("       ,image ");                    // 29
+            query.append("       ,handle_lower ");              // 30
+            query.append("       ,last_login )");              // 31
             query.append("VALUES (");
             query.append("?,?,?,?,?,?,?,?,?,?,");  // 10
-            query.append("?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");  // 25
+            query.append("?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");  // 31
             psIns = prepareStatement(query.toString(), TARGET_DB);
 
             // Our update statement
@@ -462,7 +483,13 @@ public class TCLoadCoders extends TCLoad {
             query.append("       ,utm_medium = ?");                 // 22
             query.append("       ,utm_campaign = ?");               // 23
             query.append("       ,create_date = ?");                // 24
-            query.append(" WHERE coder_id = ?");                    // 25
+            query.append("       ,home_phone = ?");                 // 25
+            query.append("       ,work_phone = ?");                 // 26
+            query.append("       ,modify_date = ?");                // 27
+            query.append("       ,image = ?");                      // 28
+            query.append("       ,handle_lower = ?");               // 29
+            query.append("       ,last_login = ?");                 // 30
+            query.append(" WHERE coder_id = ?");                    // 31
             psUpd = prepareStatement(query.toString(), TARGET_DB);
 
             // Our select statement to determine if a particular row is
@@ -479,6 +506,8 @@ public class TCLoadCoders extends TCLoad {
             psSel.setTimestamp(2, fLastLogTime);
             psSel.setTimestamp(3, fLastLogTime);
             psSel.setTimestamp(4, fLastLogTime);
+            psSel.setTimestamp(5, fLastLogTime);
+            psSel.setTimestamp(6, fLastLogTime);
             rs = executeQuery(psSel, "loadCoder");
 
             while (rs.next()) {
@@ -512,6 +541,12 @@ public class TCLoadCoders extends TCLoad {
                 String utm_medium = rs.getString("utm_medium");
                 String utm_campaign = rs.getString("utm_campaign");
                 java.sql.Timestamp create_date = rs.getTimestamp("create_date");
+                String home_phone = rs.getString("home_phone");
+                String work_phone = rs.getString("work_phone");
+                java.sql.Timestamp modify_date = rs.getTimestamp("modify_date");
+                int image = rs.getInt("image");
+                String handle_lower = rs.getString("handle_lower");
+                java.sql.Timestamp last_login = rs.getTimestamp("last_login");
 
                 // If next() returns true that means this row exists. If so,
                 // we update. Otherwise, we insert.
@@ -541,13 +576,21 @@ public class TCLoadCoders extends TCLoad {
                     psUpd.setString(22, utm_medium);
                     psUpd.setString(23, utm_campaign);
                     psUpd.setTimestamp(24, create_date);
-                    psUpd.setLong(25, coder_id);
+                    psUpd.setString(25, home_phone);
+                    psUpd.setString(26, work_phone);
+                    psUpd.setTimestamp(27, modify_date);
+                    psUpd.setInt(28, image);
+                    psUpd.setString(29, handle_lower);
+                    psUpd.setTimestamp(30, last_login);
+                    psUpd.setLong(31, coder_id);
 
                     // Now, execute the update of the new row
                     try {
                         retVal = psUpd.executeUpdate();
                     } catch(SQLException e) {
-                        log.error("Failed to load coder {coder_id:"+coder_id+", state_code:"+state_code+", country_code:"+country_code+", first_name:"+first_name+", last_name:"+last_name+", address1:"+address1+", address2:"+address2+", city:"+city+", zip:"+zip+", middle_name:"+middle_name+", activation_code:"+activation_code+", member_since:"+member_since+", quote:"+quote+", language_id:"+language_id+", coder_type_id:"+coder_type_id+", handle:"+handle+", status:"+status+", address:"+address+", comp_country_code:"+comp_country_code+", last_site_hit_date:"+last_site_hit_date+", reg_source:"+reg_source+", utm_source:"+utm_source+", utm_medium:"+utm_medium+", utm_campaign:"+utm_campaign+", create_date:"+create_date+"}");
+                      log.error("Failed to load coder {coder_id:"+coder_id+", state_code:"+state_code+", country_code:"+country_code+", first_name:"+first_name+", last_name:"+last_name+", address1:"+address1+", address2:"+address2+", city:"+city+", zip:"+zip+", middle_name:"+middle_name+", activation_code:"+activation_code+", member_since:"+member_since+", quote:"+quote+", language_id:"+language_id+", coder_type_id:"+coder_type_id+
+                                ", handle:"+handle+", status:"+status+", address:"+address+", comp_country_code:"+comp_country_code+", last_site_hit_date:"+last_site_hit_date+", reg_source:"+reg_source+", utm_source:"+utm_source+", utm_medium:"+utm_medium+", utm_campaign:"+utm_campaign+", create_date:"+create_date+", home_phone:"+home_phone+", work_phone:"+work_phone+", modify_date:"+modify_date+", image:"+image+", handle_lower:"+handle_lower+
+                                ", last_login:"+last_login+"}");
                         throw e;
                     }
                     count = count + retVal;
@@ -583,12 +626,20 @@ public class TCLoadCoders extends TCLoad {
                     psIns.setString(23, utm_medium);
                     psIns.setString(24, utm_campaign);
                     psIns.setTimestamp(25, create_date);
+                    psIns.setString(26, home_phone);
+                    psIns.setString(27, work_phone);
+                    psIns.setTimestamp(28, modify_date);
+                    psIns.setInt(29, image);
+                    psIns.setString(30, handle_lower);
+                    psIns.setTimestamp(31, last_login);
 
                     // Now, execute the insert of the new row
                     try {
                         retVal = psIns.executeUpdate();
                     } catch(SQLException e) {
-                        log.error("Failed to load coder {coder_id:"+coder_id+", state_code:"+state_code+", country_code:"+country_code+", first_name:"+first_name+", last_name:"+last_name+", address1:"+address1+", address2:"+address2+", city:"+city+", zip:"+zip+", middle_name:"+middle_name+", activation_code:"+activation_code+", member_since:"+member_since+", quote:"+quote+", language_id:"+language_id+", coder_type_id:"+coder_type_id+", handle:"+handle+", status:"+status+", address:"+address+", comp_country_code:"+comp_country_code+", last_site_hit_date:"+last_site_hit_date+", reg_source:"+reg_source+", utm_source:"+utm_source+", utm_medium:"+utm_medium+", utm_campaign:"+utm_campaign+", create_date:"+create_date+"}");
+                        log.error("Failed to load coder {coder_id:"+coder_id+", state_code:"+state_code+", country_code:"+country_code+", first_name:"+first_name+", last_name:"+last_name+", address1:"+address1+", address2:"+address2+", city:"+city+", zip:"+zip+", middle_name:"+middle_name+", activation_code:"+activation_code+", member_since:"+member_since+", quote:"+quote+", language_id:"+language_id+", coder_type_id:"+coder_type_id+
+                                  ", handle:"+handle+", status:"+status+", address:"+address+", comp_country_code:"+comp_country_code+", last_site_hit_date:"+last_site_hit_date+", reg_source:"+reg_source+", utm_source:"+utm_source+", utm_medium:"+utm_medium+", utm_campaign:"+utm_campaign+", create_date:"+create_date+", home_phone:"+home_phone+", work_phone:"+work_phone+", modify_date:"+modify_date+", image:"+image+", handle_lower:"+handle_lower+
+                                  ", last_login:"+last_login+"}");
                         throw e;
                     }
                     count = count + retVal;
