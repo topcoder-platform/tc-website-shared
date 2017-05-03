@@ -58,71 +58,71 @@ public class ApplicationServer {
 
     private static TCResourceBundle bundle = new TCResourceBundle("ApplicationServer");
 
-    public static final int PROD = bundle.getIntProperty("PROD", 1);
-    public static final int QA = bundle.getIntProperty("QA", 2);
-    public static final int DEV = bundle.getIntProperty("DEV", 3);
+    public static final int PROD = getIntProperty("PROD", 1);
+    public static final int QA = getIntProperty("QA", 2);
+    public static final int DEV = getIntProperty("DEV", 3);
 
-    public static int ENVIRONMENT = bundle.getIntProperty("ENVIRONMENT", DEV);
-    public static String SERVER_NAME = bundle.getProperty("SERVER_NAME", "172.16.20.20");
-    public static String STUDIO_SERVER_NAME = bundle.getProperty("STUDIO_SERVER_NAME", "studio.dev.topcoder.com");
-    public static String OPENAIM_SERVER_NAME = bundle.getProperty("OPENAIM_SERVER_NAME", "openaim.dev.topcoder.com");
-    public static String TRUVEO_SERVER_NAME = bundle.getProperty("TRUVEO_SERVER_NAME", "www.dev.topcoder.com/truveo");
-    public static String AOLICQ_SERVER_NAME = bundle.getProperty("AOLICQ_SERVER_NAME", "www.dev.topcoder.com/aolicq");
-    public static String WINFORMULA_SERVER_NAME = bundle.getProperty("WINFORMULA_SERVER_NAME", "www.dev.topcoder.com/winformula");
-    public static String CSF_SERVER_NAME = bundle.getProperty("CSF_SERVER_NAME", "csf.dev.topcoder.com");
-    public static String CORP_SERVER_NAME = bundle.getProperty("CORP_SERVER_NAME", "172.16.20.20/corp");
-    public static String SOFTWARE_SERVER_NAME = bundle.getProperty("SOFTWARE_SERVER_NAME", "172.16.20.222");
-    public static String FORUMS_SERVER_NAME = bundle.getProperty("FORUMS_SERVER_NAME", "forums.topcoder.com");
-	public static String COMMUNITY_SERVER_NAME = bundle.getProperty("COMMUNITY_SERVER_NAME", "community.topcoder.com");
-    public static String HOST_URL = bundle.getProperty("HOST_URL", "t3://172.16.20.41:7030");
-    public static String FORUMS_HOST_URL = bundle.getProperty("FORUMS_HOST_URL", "63.118.154.182:1099");
-    public static String JMS_HOST_URL = bundle.getProperty("JMS_HOST_URL", "jnp://172.16.210.55:1100,jnp://172.16.210.56:1100");
-    public static String CONTEST_HOST_URL = bundle.getProperty("CONTEST_HOST_URL", "t3://172.16.20.40:9003");
-    public static String PACTS_HOST_URL = bundle.getProperty("PACTS_HOST_URL", "t3://172.16.20.40:9003");
-    public static String USER_SERVICES_HOST_URL = bundle.getProperty("USER_SERVICES_HOST_URL", "t3://172.16.20.40:9003");
-    public static String BASE_DIR = bundle.getProperty("BASE_DIR", "/usr/web/build/classes");
-    public static String SECURITY_PROVIDER_URL = bundle.getProperty("SECURITY_PROVIDER_URL", "172.16.20.40:1099");
-    public static String FILE_CONVERSION_PROVIDER_URL = bundle.getProperty("FILE_CONVERSION_PROVIDER_URL", "172.16.210.53:1099");
-    public static String DISTRIBUTED_UI_SERVER_NAME = bundle.getProperty("DISTRIBUTED_UI_SERVER_NAME", "63.118.154.181:9380");
-    public static String OR_WEBSERVICES_SERVER_NAME = bundle.getProperty("OR_WEBSERVICES_SERVER_NAME", "63.118.154.186:8080");
-    public static String WIKI_SERVER_NAME = bundle.getProperty("WIKI_SERVER_NAME", "www.dev.topcoder.com/wiki");
-    public static String NEW_COMMUNITY_SERVER_NAME = bundle.getProperty("NEW_COMMUNITY_SERVER_NAME", "www.topcoder.com");
+    public static int ENVIRONMENT = getIntProperty("ENVIRONMENT", DEV);
+    public static String SERVER_NAME = getProperty("SERVER_NAME", "172.16.20.20");
+    public static String STUDIO_SERVER_NAME = getProperty("STUDIO_SERVER_NAME", "studio.dev.topcoder.com");
+    public static String OPENAIM_SERVER_NAME = getProperty("OPENAIM_SERVER_NAME", "openaim.dev.topcoder.com");
+    public static String TRUVEO_SERVER_NAME = getProperty("TRUVEO_SERVER_NAME", "www.dev.topcoder.com/truveo");
+    public static String AOLICQ_SERVER_NAME = getProperty("AOLICQ_SERVER_NAME", "www.dev.topcoder.com/aolicq");
+    public static String WINFORMULA_SERVER_NAME = getProperty("WINFORMULA_SERVER_NAME", "www.dev.topcoder.com/winformula");
+    public static String CSF_SERVER_NAME = getProperty("CSF_SERVER_NAME", "csf.dev.topcoder.com");
+    public static String CORP_SERVER_NAME = getProperty("CORP_SERVER_NAME", "172.16.20.20/corp");
+    public static String SOFTWARE_SERVER_NAME = getProperty("SOFTWARE_SERVER_NAME", "172.16.20.222");
+    public static String FORUMS_SERVER_NAME = getProperty("FORUMS_SERVER_NAME", "forums.topcoder.com");
+	public static String COMMUNITY_SERVER_NAME = getProperty("COMMUNITY_SERVER_NAME", "community.topcoder.com");
+    public static String HOST_URL = getProperty("HOST_URL", "t3://172.16.20.41:7030");
+    public static String FORUMS_HOST_URL = getProperty("FORUMS_HOST_URL", "63.118.154.182:1099");
+    public static String JMS_HOST_URL = getProperty("JMS_HOST_URL", "jnp://172.16.210.55:1100,jnp://172.16.210.56:1100");
+    public static String CONTEST_HOST_URL = getProperty("CONTEST_HOST_URL", "t3://172.16.20.40:9003");
+    public static String PACTS_HOST_URL = getProperty("PACTS_HOST_URL", "t3://172.16.20.40:9003");
+    public static String USER_SERVICES_HOST_URL = getProperty("USER_SERVICES_HOST_URL", "t3://172.16.20.40:9003");
+    public static String BASE_DIR = getProperty("BASE_DIR", "/usr/web/build/classes");
+    public static String SECURITY_PROVIDER_URL = getProperty("SECURITY_PROVIDER_URL", "172.16.20.40:1099");
+    public static String FILE_CONVERSION_PROVIDER_URL = getProperty("FILE_CONVERSION_PROVIDER_URL", "172.16.210.53:1099");
+    public static String DISTRIBUTED_UI_SERVER_NAME = getProperty("DISTRIBUTED_UI_SERVER_NAME", "63.118.154.181:9380");
+    public static String OR_WEBSERVICES_SERVER_NAME = getProperty("OR_WEBSERVICES_SERVER_NAME", "63.118.154.186:8080");
+    public static String WIKI_SERVER_NAME = getProperty("WIKI_SERVER_NAME", "www.dev.topcoder.com/wiki");
+    public static String NEW_COMMUNITY_SERVER_NAME = getProperty("NEW_COMMUNITY_SERVER_NAME", "www.topcoder.com");
 
-    public static String SSO_DOMAIN = bundle.getProperty("SSO_DOMAIN", ".topcoder.com");
+    public static String SSO_DOMAIN = getProperty("SSO_DOMAIN", ".topcoder.com");
 
-    public final static String JNDI_FACTORY = bundle.getProperty("JNDI_FACTORY", "weblogic.jndi.WLInitialContextFactory");
-    public final static String JMS_FACTORY = bundle.getProperty("JMS_FACTORY", "jms.connection.jmsFactory");
-    public final static String JMS_BKP_FACTORY = bundle.getProperty("JMS_BKP_FACTORY", "jms.connection.jmsFactory_BKP");
-    public final static String TRANS_FACTORY = bundle.getProperty("TRANS_FACTORY", "javax.transaction.UserTransaction");
-    public final static String TRANS_MANAGER = bundle.getProperty("TRANS_MANAGER", "weblogic/transaction/TransactionManager");
-    public final static String SECURITY_CONTEXT_FACTORY = bundle.getProperty("SECURITY_CONTEXT_FACTORY", "org.jnp.interfaces.NamingContextFactory");
+    public final static String JNDI_FACTORY = getProperty("JNDI_FACTORY", "weblogic.jndi.WLInitialContextFactory");
+    public final static String JMS_FACTORY = getProperty("JMS_FACTORY", "jms.connection.jmsFactory");
+    public final static String JMS_BKP_FACTORY = getProperty("JMS_BKP_FACTORY", "jms.connection.jmsFactory_BKP");
+    public final static String TRANS_FACTORY = getProperty("TRANS_FACTORY", "javax.transaction.UserTransaction");
+    public final static String TRANS_MANAGER = getProperty("TRANS_MANAGER", "weblogic/transaction/TransactionManager");
+    public final static String SECURITY_CONTEXT_FACTORY = getProperty("SECURITY_CONTEXT_FACTORY", "org.jnp.interfaces.NamingContextFactory");
 
-    public final static String STUDIO_SERVICES_PROVIDER_URL = bundle.getProperty("STUDIO_SERVICES_PROVIDER_URL", "127.0.0.1:1399");
-    public final static String STUDIO_SERVICES_USERNAME = bundle.getProperty("STUDIO_SERVICES_USERNAME", "user");
-    public final static String STUDIO_SERVICES_PASSWORD = bundle.getProperty("STUDIO_SERVICES_PASSWORD", "password");
-    public final static String STUDIO_SERVICES_CONTEXT_FACTORY = bundle.getProperty("STUDIO_SERVICES_CONTEXT_FACTORY", "org.jboss.security.jndi.LoginInitialContextFactory");
-    public final static String STUDIO_SERVICES_PKG_PREFIXES = bundle.getProperty("STUDIO_SERVICES_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
-    public final static String STUDIO_SERVICES_PROTOCOL = bundle.getProperty("STUDIO_SERVICES_PROTOCOL", "cockpitDomain");
-    public final static String STUDIO_SERVICES_JNDI_NAME = bundle.getProperty("STUDIO_SERVICES_JNDI_NAME", "StudioServiceBean/remote");
+    public final static String STUDIO_SERVICES_PROVIDER_URL = getProperty("STUDIO_SERVICES_PROVIDER_URL", "127.0.0.1:1399");
+    public final static String STUDIO_SERVICES_USERNAME = getProperty("STUDIO_SERVICES_USERNAME", "user");
+    public final static String STUDIO_SERVICES_PASSWORD = getProperty("STUDIO_SERVICES_PASSWORD", "password");
+    public final static String STUDIO_SERVICES_CONTEXT_FACTORY = getProperty("STUDIO_SERVICES_CONTEXT_FACTORY", "org.jboss.security.jndi.LoginInitialContextFactory");
+    public final static String STUDIO_SERVICES_PKG_PREFIXES = getProperty("STUDIO_SERVICES_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
+    public final static String STUDIO_SERVICES_PROTOCOL = getProperty("STUDIO_SERVICES_PROTOCOL", "cockpitDomain");
+    public final static String STUDIO_SERVICES_JNDI_NAME = getProperty("STUDIO_SERVICES_JNDI_NAME", "StudioServiceBean/remote");
 
-    public final static int SESSION_ID_LENGTH = bundle.getIntProperty("SESSION_ID_LENGTH", 50);
+    public final static int SESSION_ID_LENGTH = getIntProperty("SESSION_ID_LENGTH", 50);
 
-    public static String TCS_APP_SERVER_URL = bundle.getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
-    public final static int WEB_SERVER_ID = bundle.getIntProperty("WEB_SERVER_ID", 1);
+    public static String TCS_APP_SERVER_URL = getProperty("TCS_APP_SERVER_URL", "172.16.20.222:1099");
+    public final static int WEB_SERVER_ID = getIntProperty("WEB_SERVER_ID", 1);
 
     /**
      * Host URL for terms of use related services
      *
      * @since 1.1
      */
-    public static String TERMS_OF_USE_HOST_URL = bundle.getProperty("TERMS_OF_USE_HOST_URL", "jnp://localhost:1199");
+    public static String TERMS_OF_USE_HOST_URL = getProperty("TERMS_OF_USE_HOST_URL", "jnp://localhost:1199");
 
     /**
      * Provider URL for cockpit related services
      *
      * @since 1.2
      */
-    public static String COCKPIT_PROVIDER_URL = bundle.getProperty("COCKPIT_PROVIDER_URL", "jnp://localhost:1199");
+    public static String COCKPIT_PROVIDER_URL = getProperty("COCKPIT_PROVIDER_URL", "jnp://localhost:1199");
 
     /**
      * The contest eligibility services JNDI name
@@ -130,7 +130,7 @@ public class ApplicationServer {
      * @since 1.2
      */
     public static String CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME =
-        bundle.getProperty("CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME", "remote/ContestEligibilityServiceBean");
+        getProperty("CONTEST_ELIGIBILITY_SERVICES_JNDI_NAME", "remote/ContestEligibilityServiceBean");
 
     /**
      * The pipeline service facade JNDI name
@@ -138,7 +138,7 @@ public class ApplicationServer {
      * @since 1.3
      */
     public static String PIPELINE_SERVICE_FACADE_JNDI_NAME =
-        bundle.getProperty("PIPELINE_SERVICE_FACADE_JNDI_NAME", "remote/PipelineServiceFacadeBean");
+        getProperty("PIPELINE_SERVICE_FACADE_JNDI_NAME", "remote/PipelineServiceFacadeBean");
 
     /**
      * The pipeline service facade username
@@ -146,7 +146,7 @@ public class ApplicationServer {
      * @since 1.3
      */
     public final static String PIPELINE_SERVICE_FACADE_USERNAME =
-        bundle.getProperty("PIPELINE_SERVICE_FACADE_USERNAME", "user");
+        getProperty("PIPELINE_SERVICE_FACADE_USERNAME", "user");
 
     /**
      * The pipeline service facade password
@@ -154,7 +154,7 @@ public class ApplicationServer {
      * @since 1.3
      */
     public final static String PIPELINE_SERVICE_FACADE_PASSWORD =
-        bundle.getProperty("PIPELINE_SERVICE_FACADE_PASSWORD", "password");
+        getProperty("PIPELINE_SERVICE_FACADE_PASSWORD", "password");
 
     /**
      * The pipeline service facade context factory
@@ -162,7 +162,7 @@ public class ApplicationServer {
      * @since 1.3
      */
     public final static String PIPELINE_SERVICE_FACADE_CONTEXT_FACTORY =
-        bundle.getProperty("PIPELINE_SERVICE_FACADE_CONTEXT_FACTORY", "org.jboss.security.jndi.LoginInitialContextFactory");
+        getProperty("PIPELINE_SERVICE_FACADE_CONTEXT_FACTORY", "org.jboss.security.jndi.LoginInitialContextFactory");
 
     /**
      * The pipeline service facade pkg prefixes
@@ -170,7 +170,7 @@ public class ApplicationServer {
      * @since 1.3
      */
     public final static String PIPELINE_SERVICE_FACADE_PKG_PREFIXES =
-        bundle.getProperty("PIPELINE_SERVICE_FACADE_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
+        getProperty("PIPELINE_SERVICE_FACADE_PKG_PREFIXES", "org.jboss.naming:org.jnp.interfaces");
 
     /**
      * The pipeline service facade protocol
@@ -178,14 +178,14 @@ public class ApplicationServer {
      * @since 1.3
      */
     public final static String PIPELINE_SERVICE_FACADE_PROTOCOL =
-        bundle.getProperty("PIPELINE_SERVICE_FACADE_PROTOCOL", "other");
+        getProperty("PIPELINE_SERVICE_FACADE_PROTOCOL", "other");
 
     /**
      * <p>The name for SSO cookie.</p>
      * @since 1.4
      */
     public final static String SSO_COOKIE_KEY =
-        bundle.getProperty("SSO_COOKIE_KEY", "tcsso");
+        getProperty("SSO_COOKIE_KEY", "tcsso");
 
     /**
      * <p>
@@ -194,7 +194,7 @@ public class ApplicationServer {
      * @since 1.4
      */
     public final static String SSO_HASH_SECRET =
-        bundle.getProperty("SSO_HASH_SECRET", "");
+        getProperty("SSO_HASH_SECRET", "");
 
 
     /**
@@ -204,7 +204,7 @@ public class ApplicationServer {
      * @since 1.4
      */
     public final static String CLIENT_ID_AUTH0 =
-        bundle.getProperty("CLIENT_ID_AUTH0", "CMaBuwSnY0Vu68PLrWatvvu3iIiGPh7t");
+        getProperty("CLIENT_ID_AUTH0", "CMaBuwSnY0Vu68PLrWatvvu3iIiGPh7t");
     
 
     /**
@@ -213,7 +213,7 @@ public class ApplicationServer {
      * @since 1.4
      */
     public final static String REDIRECT_URL_AUTH0 = 
-        bundle.getProperty("REDIRECT_URL_AUTH0", "/reg2/callback.action");
+        getProperty("REDIRECT_URL_AUTH0", "/reg2/callback.action");
 
     /**
      * <p>The server name of tc_reg_revamp host.</p>
@@ -221,7 +221,7 @@ public class ApplicationServer {
      *  @since 1.4
      */
     public final static String REG_SERVER_NAME =
-        bundle.getProperty("REG_SERVER_NAME", "tc.cloud.topcoder.com");
+        getProperty("REG_SERVER_NAME", "tc.cloud.topcoder.com");
 
     /**
      * <p>The auth0 domain.</p>
@@ -229,7 +229,7 @@ public class ApplicationServer {
      *  @since 1.4
      */
     public final static String DOMAIN_AUTH0 =
-        bundle.getProperty("DOMAIN_AUTH0", "topcoder.auth0.com");
+        getProperty("DOMAIN_AUTH0", "topcoder.auth0.com");
 
     /**
      * <p>
@@ -238,7 +238,7 @@ public class ApplicationServer {
      * @since 1.5
      */
     public final static String JWT_COOKIE_KEY =
-        bundle.getProperty("JWT_COOKIE_KEY", "");
+        getProperty("JWT_COOKIE_KEY", "");
 
     public static void close(ResultSet rs) {
         if (rs != null) {
@@ -287,5 +287,22 @@ public class ApplicationServer {
 
     }
 
+    private static String getProperty(String key, String defaultValue) {
+        String val = System.getenv(key);
+        if (val == null) {
+            val = bundle.getProperty(key, defaultValue);
+        }
+
+        return val;
+    }
+
+    private static int getIntProperty(String key, int defaultValue) {
+        String strVal = System.getenv(key);
+        if (strVal == null) {
+            return bundle.getIntProperty(key, defaultValue);
+        }
+
+        return  Integer.parseInt(strVal);
+    }
 
 }
