@@ -572,7 +572,7 @@ public class DataRetriever implements DataRetrieverInt {
 
                 }
             }
-            trackExecution(commandId, conn, System.currentTimeMillis()-start, inputs);
+            //trackExecution(commandId, conn, System.currentTimeMillis()-start, inputs);
 
         } catch (Exception e) {
             handleException(e, queryText, inputs);
